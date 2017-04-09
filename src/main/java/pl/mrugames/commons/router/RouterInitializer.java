@@ -62,7 +62,7 @@ class RouterInitializer {
                     parameters.add(new RouteInfo.Parameter(name, parameter.getType(), defaultValue));
                 }
 
-                String path = pathMatcher.combine(baseRoute, route.value());
+                String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());
 
                 RouteInfo routeInfo = new RouteInfo(controller, method, parameters);
 

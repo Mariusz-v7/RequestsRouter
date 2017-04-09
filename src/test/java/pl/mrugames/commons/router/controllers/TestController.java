@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.controllers;
 
+import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.annotations.Arg;
 import pl.mrugames.commons.router.annotations.Controller;
 import pl.mrugames.commons.router.annotations.Route;
@@ -10,6 +11,11 @@ public class TestController {
     @Route("route1")
     public String route1() {
         return "route1";
+    }
+
+    @Route(value = "route1", method = RequestMethod.POST)
+    public String route1WithPost() {
+        return "route1_post";
     }
 
     @Route("sum")
