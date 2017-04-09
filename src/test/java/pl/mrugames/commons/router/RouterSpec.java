@@ -2,22 +2,37 @@ package pl.mrugames.commons.router;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.springframework.util.AntPathMatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.controllers.TestController;
 
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
 
-@RunWith(BlockJUnit4ClassRunner.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
+        TestConfiguration.class
+})
 public class RouterSpec {
-    private Map<String, String> routes;
+    @Autowired
+    private Router router;
 
-    // app/players/{playerId} -> should get playerId and assign it into playerId variable
+    @Autowired
+    private TestController controller;
+
     @Test
-    public void test() {
-        AntPathMatcher matcher = new AntPathMatcher();
-
-        Map<String, String> test = matcher.extractUriTemplateVariables("app/players/{playerId}", "app/players/12");
-
-        test.isEmpty();
+    public void shouldNavigateToRoute1() throws InvocationTargetException, IllegalAccessException {
+        Object result = router.route("app/test/route1", RequestMethod.GET);
+        assertThat(result).isEqualTo(controller.route1());
     }
+
+    @Test
+    public void shouldNavigateToRouteWithPost() throws InvocationTargetException, IllegalAccessException {
+        Object result = router.route("app/test/route1", RequestMethod.POST);
+        assertThat(result).isEqualTo(controller.route1WithPost());
+    }
+
 }

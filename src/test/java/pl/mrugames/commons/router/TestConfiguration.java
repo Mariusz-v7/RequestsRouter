@@ -13,4 +13,5 @@ public class TestConfiguration {
     public AntPathMatcher antPathMatcher() {
         return new AntPathMatcher();
     }
+
 }
