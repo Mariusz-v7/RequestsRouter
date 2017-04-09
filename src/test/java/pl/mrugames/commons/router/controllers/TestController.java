@@ -42,4 +42,9 @@ public class TestController {
         return id + exp;
     }
 
+    @Route("account/username")
+    public String getUseName(UserModel userModel) {
+        return userModel.getName();
+    }
+
 }

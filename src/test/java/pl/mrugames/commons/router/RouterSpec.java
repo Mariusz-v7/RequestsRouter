@@ -7,8 +7,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.controllers.TestController;
+import pl.mrugames.commons.router.controllers.UserModel;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +58,7 @@ public class RouterSpec {
         params.put("b", "- HELLO - ");
         params.put("c", 2.4);
         params.put("d", " bye");
-        Object result = router.route("app/test/concat", RequestMethod.GET, params);
+        Object result = router.route("app/test/concat", RequestMethod.GET, params, Collections.emptyMap());
 
         assertThat(result).isEqualTo("1- HELLO - 2.4 bye");
     }
@@ -67,8 +69,18 @@ public class RouterSpec {
         params.put("a", 1);
         params.put("b", "- HELLO - ");
         params.put("c", 2.4);
-        Object result = router.route("app/test/concat", RequestMethod.GET, params);
+        Object result = router.route("app/test/concat", RequestMethod.GET, params, Collections.emptyMap());
 
         assertThat(result).isEqualTo("1- HELLO - 2.4last");
+    }
+
+    @Test
+    public void shouldResolveSessionParameters() throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Map<Class<?>, Object> params = new HashMap<>();
+        params.put(UserModel.class, new UserModel("Natalia"));
+
+        Object result = router.route("app/test/account/username", RequestMethod.GET, Collections.emptyMap(), params);
+
+        assertThat(result).isEqualTo("Natalia");
     }
 }

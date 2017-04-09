@@ -26,23 +26,23 @@ public class Router {
     }
 
     public Object route(String route, RequestMethod requestMethod) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        return route(route, requestMethod, Collections.emptyMap());
+        return route(route, requestMethod, Collections.emptyMap(), Collections.emptyMap());
     }
 
-    public Object route(String route, RequestMethod requestMethod, Map<String, Object> params) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
+    public Object route(String route, RequestMethod requestMethod, Map<String, Object> payloadParams, Map<Class<?>, Object> sessionParams) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
         route = requestMethod.name() + ":" + route;
 
         for (Map.Entry<String, RouteInfo> entry : routes.entrySet()) {
             if (pathMatcher.match(entry.getKey(), route)) {
                 Map<String, String> pathParameters = pathMatcher.extractUriTemplateVariables(entry.getKey(), route);
-                return navigate(entry.getValue(), pathParameters, params);
+                return navigate(entry.getValue(), pathParameters, payloadParams, sessionParams);
             }
         }
 
         throw new IllegalArgumentException("Route not found: " + route);
     }
 
-    private Object navigate(RouteInfo routeInfo, Map<String, String> pathParameters, Map<String, Object> params) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
+    private Object navigate(RouteInfo routeInfo, Map<String, String> pathParameters, Map<String, Object> payloadParams, Map<Class<?>, Object> sessionParams) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
         List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
 
         List<Object> args = new ArrayList<>(parameters.size());
@@ -55,13 +55,15 @@ public class Router {
                     }
                     break;
                 case ARG:
-                    if (params.containsKey(parameter.getName())) {
-                        args.add(params.get(parameter.getName()));
+                    if (payloadParams.containsKey(parameter.getName())) {
+                        args.add(payloadParams.get(parameter.getName()));
                     } else {
                         args.add(convertFromString(parameter.getType(), parameter.getDefaultValue()));
                     }
                     break;
                 case NONE:
+                    Object o = sessionParams.get(parameter.getType());
+                    args.add(sessionParams.get(parameter.getType()));
                     break;
             }
         }
