@@ -29,25 +29,25 @@ public class RouterSpec {
 
     @Test
     public void shouldNavigateToRoute1() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        Object result = router.route("app/test/route1", RequestMethod.GET);
+        Object result = router.route("app/test/route1", RequestMethod.GET, Collections.emptyMap(), Collections.emptyMap());
         assertThat(result).isEqualTo(controller.route1());
     }
 
     @Test
     public void shouldNavigateToRouteWithPost() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        Object result = router.route("app/test/route1", RequestMethod.POST);
+        Object result = router.route("app/test/route1", RequestMethod.POST, Collections.emptyMap(), Collections.emptyMap());
         assertThat(result).isEqualTo(controller.route1WithPost());
     }
 
     @Test
     public void shouldResolvePathVariable() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        Object result = router.route("app/test/player/26", RequestMethod.GET);
+        Object result = router.route("app/test/player/26", RequestMethod.GET, Collections.emptyMap(), Collections.emptyMap());
         assertThat(result).isEqualTo(27);
     }
 
     @Test
     public void shouldResolveBothPathVariables() throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        Object result = router.route("app/test/player/26/add/0.1", RequestMethod.GET);
+        Object result = router.route("app/test/player/26/add/0.1", RequestMethod.GET, Collections.emptyMap(), Collections.emptyMap());
         assertThat(result).isEqualTo(26.1);
     }
 

@@ -6,10 +6,13 @@ import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class Router {
+class Router {
     private final Map<String, RouteInfo> routes;
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
@@ -25,11 +28,7 @@ public class Router {
         routes.putAll(initializer.getRoutes());
     }
 
-    public Object route(String route, RequestMethod requestMethod) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        return route(route, requestMethod, Collections.emptyMap(), Collections.emptyMap());
-    }
-
-    public Object route(String route, RequestMethod requestMethod, Map<String, Object> payloadParams, Map<Class<?>, Object> sessionParams) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
+    Object route(String route, RequestMethod requestMethod, Map<String, Object> payloadParams, Map<Class<?>, Object> sessionParams) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
         route = requestMethod.name() + ":" + route;
 
         for (Map.Entry<String, RouteInfo> entry : routes.entrySet()) {
@@ -62,7 +61,6 @@ public class Router {
                     }
                     break;
                 case NONE:
-                    Object o = sessionParams.get(parameter.getType());
                     args.add(sessionParams.get(parameter.getType()));
                     break;
             }
