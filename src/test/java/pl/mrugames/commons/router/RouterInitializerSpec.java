@@ -9,6 +9,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.controllers.TestController;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,8 +45,70 @@ public class RouterInitializerSpec {
     }
 
     @Test
-    public void givenApplicaitonStart_whenInvokeFirstRoute_thenItShouldReturnValueFromController() throws InvocationTargetException, IllegalAccessException {
+    public void givenApplicationStart_whenInvokeFirstRoute_thenItShouldReturnValueFromController() throws InvocationTargetException, IllegalAccessException {
         RouteInfo routeInfo = initializer.getRoutes().get("app/test/route1");
         assertThat(routeInfo.getMethod().invoke(routeInfo.getControllerInstance())).isEqualTo("route1");
+    }
+
+    @Test
+    public void givenMethodHasArgumentsWithoutAnnotations_thenAllOfThemShouldBeInserted() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/sum");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters).hasSize(2);
+    }
+
+    @Test
+    public void givenMethodHasArgumentsWithoutAnnotations_thenParameterNameShouldBeNull() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/sum");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+
+        for (RouteInfo.Parameter parameter : parameters) {
+            assertThat(parameter.getType().getName()).isEqualTo("int");
+            assertThat(parameter.getName()).isNull();
+            assertThat(parameter.getDefaultValue()).isNull();
+        }
+    }
+
+    @Test
+    public void givenAnnotatedParameters_thenAllOfThemAreInserted() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/concat");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters).hasSize(4);
+    }
+
+    @Test
+    public void givenParameterHasAnnotationWithName_thenFirstParamIsRecognized() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/concat");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(0).getType().getSimpleName()).isEqualTo("int");
+        assertThat(parameters.get(0).getName()).isEqualTo("a");
+        assertThat(parameters.get(0).getDefaultValue()).isEqualTo("");
+    }
+
+    @Test
+    public void givenParameterHasAnnotationWithName_thenSecondParamIsRecognized() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/concat");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(1).getType().getSimpleName()).isEqualTo("String");
+        assertThat(parameters.get(1).getName()).isEqualTo("b");
+        assertThat(parameters.get(1).getDefaultValue()).isEqualTo("");
+    }
+
+    @Test
+    public void givenParameterHasAnnotationWithName_thenThirdParamIsRecognized() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/concat");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(2).getType().getSimpleName()).isEqualTo("Double");
+        assertThat(parameters.get(2).getName()).isEqualTo("c");
+        assertThat(parameters.get(2).getDefaultValue()).isEqualTo("");
+    }
+
+    @Test
+    public void givenParameterHasAnnotationWithName_thenFourthParamIsRecognized() {
+        RouteInfo routeInfo = initializer.getRoutes().get("app/test/concat");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(3).getType().getSimpleName()).isEqualTo("String");
+        assertThat(parameters.get(3).getName()).isEqualTo("d");
+        assertThat(parameters.get(3).getDefaultValue()).isEqualTo("last");
     }
 }
