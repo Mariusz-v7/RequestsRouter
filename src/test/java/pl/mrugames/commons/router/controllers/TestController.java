@@ -30,4 +30,15 @@ public class TestController {
                               @Arg(value = "d", defaultValue = "last") String d) {
         return a + b + c + d;
     }
+
+    @Route("player/{playerId}")
+    public int incrementPlayerId(@Arg("playerId") int id) {
+        return ++id;
+    }
+
+    @Route("player/{playerId}/add/{exp}")
+    public double incrementExp(@Arg("playerId") int id, @Arg(value = "exp") double exp) {
+        return id + exp;
+    }
+
 }
