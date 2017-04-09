@@ -71,6 +71,7 @@ public class RouterInitializerSpec {
             assertThat(parameter.getType().getName()).isEqualTo("int");
             assertThat(parameter.getName()).isNull();
             assertThat(parameter.getDefaultValue()).isNull();
+            assertThat(parameter.getParameterType()).isEqualTo(RouteInfo.ParameterType.NONE);
         }
     }
 
@@ -88,6 +89,7 @@ public class RouterInitializerSpec {
         assertThat(parameters.get(0).getType().getSimpleName()).isEqualTo("int");
         assertThat(parameters.get(0).getName()).isEqualTo("a");
         assertThat(parameters.get(0).getDefaultValue()).isEqualTo("");
+        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 
     @Test
@@ -97,6 +99,7 @@ public class RouterInitializerSpec {
         assertThat(parameters.get(1).getType().getSimpleName()).isEqualTo("String");
         assertThat(parameters.get(1).getName()).isEqualTo("b");
         assertThat(parameters.get(1).getDefaultValue()).isEqualTo("");
+        assertThat(parameters.get(1).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 
     @Test
@@ -106,6 +109,7 @@ public class RouterInitializerSpec {
         assertThat(parameters.get(2).getType().getSimpleName()).isEqualTo("Double");
         assertThat(parameters.get(2).getName()).isEqualTo("c");
         assertThat(parameters.get(2).getDefaultValue()).isEqualTo("");
+        assertThat(parameters.get(2).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 
     @Test
@@ -115,5 +119,13 @@ public class RouterInitializerSpec {
         assertThat(parameters.get(3).getType().getSimpleName()).isEqualTo("String");
         assertThat(parameters.get(3).getName()).isEqualTo("d");
         assertThat(parameters.get(3).getDefaultValue()).isEqualTo("last");
+        assertThat(parameters.get(3).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
+    }
+
+    @Test
+    public void givenParameterHasAnnotationWithPathVar_thenParamTypeIsSet() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/player/{playerId}");
+        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.PATH_VAR);
     }
 }

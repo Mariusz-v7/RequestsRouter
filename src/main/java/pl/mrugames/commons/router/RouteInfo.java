@@ -4,15 +4,21 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 class RouteInfo {
-    static class Parameter {
-        private String name;
-        private Class<?> type;
-        private String defaultValue;
+    enum ParameterType {
+        PATH_VAR, ARG, NONE
+    }
 
-        Parameter(String name, Class<?> type, String defaultValue) {
+    static class Parameter {
+        private final String name;
+        private final Class<?> type;
+        private final String defaultValue;
+        private final ParameterType parameterType;
+
+        Parameter(String name, Class<?> type, String defaultValue, ParameterType parameterType) {
             this.name = name;
             this.type = type;
             this.defaultValue = defaultValue;
+            this.parameterType = parameterType;
         }
 
         String getName() {
@@ -25,6 +31,10 @@ class RouteInfo {
 
         String getDefaultValue() {
             return defaultValue;
+        }
+
+        ParameterType getParameterType() {
+            return parameterType;
         }
     }
 

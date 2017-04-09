@@ -9,6 +9,8 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.controllers.TestController;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,4 +49,26 @@ public class RouterSpec {
         assertThat(result).isEqualTo(26.1);
     }
 
+    @Test
+    public void shouldResolveArgs() throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("a", 1);
+        params.put("b", "- HELLO - ");
+        params.put("c", 2.4);
+        params.put("d", " bye");
+        Object result = router.route("app/test/concat", RequestMethod.GET, params);
+
+        assertThat(result).isEqualTo("1- HELLO - 2.4 bye");
+    }
+
+    @Test
+    public void shouldResolveArgsAndDefaultArg() throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("a", 1);
+        params.put("b", "- HELLO - ");
+        params.put("c", 2.4);
+        Object result = router.route("app/test/concat", RequestMethod.GET, params);
+
+        assertThat(result).isEqualTo("1- HELLO - 2.4last");
+    }
 }

@@ -3,6 +3,7 @@ package pl.mrugames.commons.router.controllers;
 import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.annotations.Arg;
 import pl.mrugames.commons.router.annotations.Controller;
+import pl.mrugames.commons.router.annotations.PathVar;
 import pl.mrugames.commons.router.annotations.Route;
 
 @Controller("app/test")
@@ -32,12 +33,12 @@ public class TestController {
     }
 
     @Route("player/{playerId}")
-    public int incrementPlayerId(@Arg("playerId") int id) {
+    public int incrementPlayerId(@PathVar("playerId") int id) {
         return ++id;
     }
 
     @Route("player/{playerId}/add/{exp}")
-    public double incrementExp(@Arg("playerId") int id, @Arg(value = "exp") double exp) {
+    public double incrementExp(@PathVar("playerId") int id, @PathVar(value = "exp") double exp) {
         return id + exp;
     }
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.Arg;
 import pl.mrugames.commons.router.annotations.Controller;
+import pl.mrugames.commons.router.annotations.PathVar;
 import pl.mrugames.commons.router.annotations.Route;
 
 import javax.annotation.PostConstruct;
@@ -52,14 +53,27 @@ class RouterInitializer {
                 for (Parameter parameter : method.getParameters()) {
                     String name = null;
                     String defaultValue = null;
+                    RouteInfo.ParameterType parameterType = RouteInfo.ParameterType.NONE;
 
                     Arg arg = parameter.getAnnotation(Arg.class);
+                    PathVar pathVar = parameter.getAnnotation(PathVar.class);
+
+                    if (arg != null && pathVar != null) {
+                        throw new IllegalStateException("Both Arg and PathVar annotations are not allowed. Found on: " +
+                                controller.getClass() + "#" + method.getName()
+                        );
+                    }
+
                     if (arg != null) {
                         name = arg.value();
                         defaultValue = arg.defaultValue();
+                        parameterType = RouteInfo.ParameterType.ARG;
+                    } else if (pathVar != null) {
+                        name = pathVar.value();
+                        parameterType = RouteInfo.ParameterType.PATH_VAR;
                     }
 
-                    parameters.add(new RouteInfo.Parameter(name, parameter.getType(), defaultValue));
+                    parameters.add(new RouteInfo.Parameter(name, parameter.getType(), defaultValue, parameterType));
                 }
 
                 String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());
