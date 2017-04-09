@@ -66,6 +66,15 @@ class RouterInitializer {
 
                 RouteInfo routeInfo = new RouteInfo(controller, method, parameters);
 
+                if (routes.containsKey(path)) {
+                    RouteInfo colliding = routes.get(path);
+                    throw new IllegalStateException("Route " + path + " was already defined. Controller: " +
+                            controller.getClass().getName() + "#" + method.getName() +
+                            " and " +
+                            colliding.getControllerInstance().getClass().getName() + "#" + colliding.getMethod().getName()
+                    );
+                }
+
                 routes.put(path, routeInfo);
                 logger.info("Mapped {} to {}#{}", path, controller.getClass().getSimpleName(), method.getName());
             }
