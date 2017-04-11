@@ -47,4 +47,8 @@ public class TestController {
         return userModel.getName();
     }
 
+    @Route(value = "player/{playerId}", method = RequestMethod.POST)
+    public void setDescription(@PathVar("playerId") int id, @Arg("description") String description) {
+
+    }
 }
