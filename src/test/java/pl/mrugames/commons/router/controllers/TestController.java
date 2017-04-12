@@ -51,4 +51,9 @@ public class TestController {
     public void setDescription(@PathVar("playerId") int id, @Arg("description") String description) {
 
     }
+
+    @Route(value = "player", method = RequestMethod.POST)
+    public void addUser(@Arg("user") UserModel userModel) {
+
+    }
 }

@@ -13,6 +13,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.RouterInitializer;
 import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.controllers.UserModel;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouterException;
@@ -127,6 +128,17 @@ public class JsonPayloadArgumentResolverSpec {
         expectedException.expect(RouterException.class);
 
         resolver.resolve(json, routeInfo.getParameters());
+    }
+
+    @Test
+    public void shouldResolveComplexType() {
+        String pattern = "POST:app/test/player";
+        RouteInfo routeInfo = routes.get(pattern);
+        String json = "{\"user\": { \"name\": \"Mariusz\", \"id\": 12 } }";
+
+        Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
+
+        assertThat(result).containsExactly(MapEntry.entry("user", new UserModel("Mariusz", 12)));
     }
 
 }

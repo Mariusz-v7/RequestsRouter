@@ -77,7 +77,7 @@ public class RouterSpec {
     @Test
     public void shouldResolveSessionParameters() throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         Map<Class<?>, Object> params = new HashMap<>();
-        params.put(UserModel.class, new UserModel("Natalia"));
+        params.put(UserModel.class, new UserModel("Natalia", 27));
 
         Object result = router.route("app/test/account/username", RequestMethod.GET, Collections.emptyMap(), params);
 

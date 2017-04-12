@@ -145,6 +145,6 @@ public class RequestPayloadArgumentResolverSpec {
         expectedException.expect(IncompatibleParameterException.class);
         expectedException.expectMessage("Incompatible parameter: 'description'. Expected: '" + String.class + "', but actual was: '" + UserModel.class + "'");
 
-        resolver.resolve(Collections.singletonMap("description", new UserModel("name")), routeInfo.getParameters());
+        resolver.resolve(Collections.singletonMap("description", new UserModel("name", 1)), routeInfo.getParameters());
     }
 }
