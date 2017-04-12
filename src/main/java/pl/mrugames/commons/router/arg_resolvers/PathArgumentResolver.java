@@ -27,7 +27,7 @@ class PathArgumentResolver {
         try {
             mappedValues = pathMatcher.extractUriTemplateVariables(pattern, path);
         } catch (IllegalStateException e) {
-            throw new PathParameterNotFoundException(path, pattern);
+            throw new PathParameterNotFoundException(path, pattern, e);
         }
 
         return parameters.stream()
@@ -50,7 +50,7 @@ class PathArgumentResolver {
 
             return new AbstractMap.SimpleEntry<>(parameter.getName(), converted);
         } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            throw new IncompatibleParameterException(parameter.getName(), parameter.getType());
+            throw new IncompatibleParameterException(parameter.getName(), parameter.getType(), e);
         }
     }
 }

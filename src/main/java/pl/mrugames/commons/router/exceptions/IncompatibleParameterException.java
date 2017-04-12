@@ -8,8 +8,8 @@ public class IncompatibleParameterException extends RouterException {
         this.incompatibleParameter = incompatibleParameter;
     }
 
-    public IncompatibleParameterException(String incompatibleParameter, Class<?> expected) {
-        super("Could not convert '" + incompatibleParameter + "' into '" + expected + "'");
+    public IncompatibleParameterException(String incompatibleParameter, Class<?> expected, Throwable cause) {
+        super("Could not convert '" + incompatibleParameter + "' into '" + expected + "'", cause);
         this.incompatibleParameter = incompatibleParameter;
     }
 

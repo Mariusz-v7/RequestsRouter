@@ -59,7 +59,7 @@ class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
         try {
             mapped = mapper.readValue(strNode, parameter.getType());
         } catch (InvalidFormatException e) {
-            throw new IncompatibleParameterException(parameter.getName(), e.getTargetType());
+            throw new IncompatibleParameterException(parameter.getName(), e.getTargetType(), e);
         } catch (IOException e) {
             throw new RouterException(e.getMessage(), e);
         }
