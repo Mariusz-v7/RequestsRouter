@@ -1,4 +1,4 @@
-package pl.mrugames.commons.router;
+package pl.mrugames.commons.router.arg_resolvers;
 
 import org.assertj.core.data.MapEntry;
 import org.junit.Before;
@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.RouterInitializer;
+import pl.mrugames.commons.router.TestConfiguration;
 
 import java.util.Map;
 

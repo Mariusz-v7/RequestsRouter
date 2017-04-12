@@ -1,6 +1,7 @@
 package pl.mrugames.commons.router;
 
 import org.springframework.stereotype.Component;
+import pl.mrugames.commons.router.arg_resolvers.PayloadArgumentResolver;
 
 import java.util.List;
 import java.util.Map;

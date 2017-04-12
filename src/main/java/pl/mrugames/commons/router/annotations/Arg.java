@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Arg {
     String value();
-    String defaultValue() default "";
+
+    String defaultValue() default ArgDefaultValue.ARG_DEFAULT_VALUE;
 }

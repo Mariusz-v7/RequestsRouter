@@ -1,13 +1,22 @@
-package pl.mrugames.commons.router;
+package pl.mrugames.commons.router.arg_resolvers;
 
 import org.assertj.core.data.MapEntry;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.Request;
+import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.RouterInitializer;
+import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.controllers.UserModel;
+import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
+import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +37,9 @@ public class RequestPayloadArgumentResolverSpec {
 
     private Map<String, RouteInfo> routes;
 
+    @Rule
+    public final ExpectedException expectedException = ExpectedException.none();
+
     @Before
     public void before() {
         routes = initializer.getRoutes();
@@ -41,7 +53,7 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("c", 12.1);
         payload.put("d", "xxx");
 
-        Request request = new Request(1, "session", "GET:app/test/concat", payload);
+        Request request = new Request(1, "session", "", payload);
 
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
@@ -64,7 +76,7 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("d", "xxx");
         payload.put("additional", "yyy");
 
-        Request request = new Request(1, "session", "GET:app/test/concat", payload);
+        Request request = new Request(1, "session", "", payload);
 
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
@@ -85,7 +97,7 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("b", "str");
         payload.put("c", 12.1);
 
-        Request request = new Request(1, "session", "GET:app/test/concat", payload);
+        Request request = new Request(1, "session", "", payload);
 
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
@@ -100,17 +112,52 @@ public class RequestPayloadArgumentResolverSpec {
     }
 
     @Test
+    public void givenRequestDoesNotHaveAllArguments_thenException() {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("a", 1);
+
+        Request request = new Request(1, "session", "", payload);
+
+        RouteInfo routeInfo = routes.get("GET:app/test/concat");
+
+        expectedException.expect(ParameterNotFoundException.class);
+        expectedException.expectMessage("Could not find 'b' parameter in the request");
+
+        resolver.resolve(request, routeInfo.getParameters());
+    }
+
+    @Test
     public void givenMethodHasNoArgAnnotations_thenReturnEmptyMap() {
         String pattern = "GET:app/test/player/{playerId}";
         RouteInfo routeInfo = routes.get(pattern);
 
-        Request request = new Request(1, "session", "GET:app/test/player/1", Collections.emptyMap());
+        Request request = new Request(1, "session", "", Collections.emptyMap());
         Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
 
         assertThat(result).isEmpty();
     }
 
-    //TODO: request payload lacks some of fields -> if default value -> use default -> else throw exception
-    //TODO: ignore other thatn @ARG
-    //TODO: incompatible fields
+    @Test
+    public void givenMixedAnnotations_thenOnlyArgAreResolved() {
+        String pattern = "POST:app/test/player/{playerId}";
+        RouteInfo routeInfo = routes.get(pattern);
+
+        Request request = new Request(1, "session", "", Collections.singletonMap("description", "Test"));
+        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+
+        assertThat(result).containsExactly(MapEntry.entry("description", "Test"));
+    }
+
+    @Test
+    public void givenRequestHasIncompatibleTypes_thenException() {
+        String pattern = "POST:app/test/player/{playerId}";
+        RouteInfo routeInfo = routes.get(pattern);
+
+        Request request = new Request(1, "session", "", Collections.singletonMap("description", new UserModel("name")));
+
+        expectedException.expect(IncompatibleParameterException.class);
+        expectedException.expectMessage("Incompatible parameter: 'description'. Expected: '" + String.class + "', but actual was: '" + UserModel.class + "'");
+
+        resolver.resolve(request, routeInfo.getParameters());
+    }
 }

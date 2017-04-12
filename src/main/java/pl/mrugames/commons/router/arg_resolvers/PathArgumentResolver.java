@@ -1,8 +1,9 @@
-package pl.mrugames.commons.router;
+package pl.mrugames.commons.router.arg_resolvers;
 
 import com.google.common.primitives.Primitives;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import pl.mrugames.commons.router.RouteInfo;
 
 import java.util.AbstractMap;
 import java.util.List;

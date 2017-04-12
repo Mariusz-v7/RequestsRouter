@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-class RouterInitializer {
+public class RouterInitializer {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ApplicationContext context;
     private final AntPathMatcher pathMatcher;
@@ -99,7 +99,7 @@ class RouterInitializer {
         return controllers;
     }
 
-    Map<String, RouteInfo> getRoutes() {
+    public Map<String, RouteInfo> getRoutes() {
         return routes;
     }
 }

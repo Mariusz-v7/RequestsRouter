@@ -3,12 +3,12 @@ package pl.mrugames.commons.router;
 import java.lang.reflect.Method;
 import java.util.List;
 
-class RouteInfo {
-    enum ParameterType {
+public class RouteInfo {
+    public enum ParameterType {
         PATH_VAR, ARG, NONE
     }
 
-    static class Parameter {
+    public static class Parameter {
         private final String name;
         private final Class<?> type;
         private final String defaultValue;
@@ -21,19 +21,19 @@ class RouteInfo {
             this.parameterType = parameterType;
         }
 
-        String getName() {
+        public String getName() {
             return name;
         }
 
-        Class<?> getType() {
+        public Class<?> getType() {
             return type;
         }
 
-        String getDefaultValue() {
+        public String getDefaultValue() {
             return defaultValue;
         }
 
-        ParameterType getParameterType() {
+        public ParameterType getParameterType() {
             return parameterType;
         }
     }
@@ -56,7 +56,7 @@ class RouteInfo {
         return method;
     }
 
-    List<Parameter> getParameters() {
+    public List<Parameter> getParameters() {
         return parameters;
     }
 }
