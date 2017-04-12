@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
 
 @Component
 class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Request> {
+
+    private RequestPayloadArgumentResolver() {
+    }
+
     @Override
     public Map<String, Object> resolve(Request input, List<RouteInfo.Parameter> parameters) {
         return parameters.stream()

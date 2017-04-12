@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 class PathArgumentResolver {
     private final AntPathMatcher pathMatcher;
 
-    PathArgumentResolver(AntPathMatcher pathMatcher) {
+    private PathArgumentResolver(AntPathMatcher pathMatcher) {
         this.pathMatcher = pathMatcher;
     }
 
