@@ -2,7 +2,6 @@ package pl.mrugames.commons.router.arg_resolvers;
 
 import com.google.common.primitives.Primitives;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
@@ -14,16 +13,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Request> {
+class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Map<String, Object>> {
 
     private RequestPayloadArgumentResolver() {
     }
 
     @Override
-    public Map<String, Object> resolve(Request input, List<RouteInfo.Parameter> parameters) {
+    public Map<String, Object> resolve(Map<String, Object> payload, List<RouteInfo.Parameter> parameters) {
         return parameters.stream()
                 .filter(p -> RouteInfo.ParameterType.ARG == p.getParameterType())
-                .map(p -> map(p, input.getPayload()))
+                .map(p -> map(p, payload))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

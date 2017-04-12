@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.RouterInitializer;
 import pl.mrugames.commons.router.TestConfiguration;
@@ -53,11 +52,9 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("c", 12.1);
         payload.put("d", "xxx");
 
-        Request request = new Request(1, "session", "", payload);
-
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
-        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+        Map<String, Object> result = resolver.resolve(payload, routeInfo.getParameters());
 
         assertThat(result).containsExactly(
                 MapEntry.entry("a", 1),
@@ -76,11 +73,9 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("d", "xxx");
         payload.put("additional", "yyy");
 
-        Request request = new Request(1, "session", "", payload);
-
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
-        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+        Map<String, Object> result = resolver.resolve(payload, routeInfo.getParameters());
 
         assertThat(result).containsExactly(
                 MapEntry.entry("a", 1),
@@ -97,11 +92,9 @@ public class RequestPayloadArgumentResolverSpec {
         payload.put("b", "str");
         payload.put("c", 12.1);
 
-        Request request = new Request(1, "session", "", payload);
-
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
-        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+        Map<String, Object> result = resolver.resolve(payload, routeInfo.getParameters());
 
         assertThat(result).containsExactly(
                 MapEntry.entry("a", 1),
@@ -116,14 +109,12 @@ public class RequestPayloadArgumentResolverSpec {
         Map<String, Object> payload = new HashMap<>();
         payload.put("a", 1);
 
-        Request request = new Request(1, "session", "", payload);
-
         RouteInfo routeInfo = routes.get("GET:app/test/concat");
 
         expectedException.expect(ParameterNotFoundException.class);
         expectedException.expectMessage("Could not find 'b' parameter in the request");
 
-        resolver.resolve(request, routeInfo.getParameters());
+        resolver.resolve(payload, routeInfo.getParameters());
     }
 
     @Test
@@ -131,8 +122,7 @@ public class RequestPayloadArgumentResolverSpec {
         String pattern = "GET:app/test/player/{playerId}";
         RouteInfo routeInfo = routes.get(pattern);
 
-        Request request = new Request(1, "session", "", Collections.emptyMap());
-        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+        Map<String, Object> result = resolver.resolve(Collections.emptyMap(), routeInfo.getParameters());
 
         assertThat(result).isEmpty();
     }
@@ -142,8 +132,7 @@ public class RequestPayloadArgumentResolverSpec {
         String pattern = "POST:app/test/player/{playerId}";
         RouteInfo routeInfo = routes.get(pattern);
 
-        Request request = new Request(1, "session", "", Collections.singletonMap("description", "Test"));
-        Map<String, Object> result = resolver.resolve(request, routeInfo.getParameters());
+        Map<String, Object> result = resolver.resolve(Collections.singletonMap("description", "Test"), routeInfo.getParameters());
 
         assertThat(result).containsExactly(MapEntry.entry("description", "Test"));
     }
@@ -153,11 +142,9 @@ public class RequestPayloadArgumentResolverSpec {
         String pattern = "POST:app/test/player/{playerId}";
         RouteInfo routeInfo = routes.get(pattern);
 
-        Request request = new Request(1, "session", "", Collections.singletonMap("description", new UserModel("name")));
-
         expectedException.expect(IncompatibleParameterException.class);
         expectedException.expectMessage("Incompatible parameter: 'description'. Expected: '" + String.class + "', but actual was: '" + UserModel.class + "'");
 
-        resolver.resolve(request, routeInfo.getParameters());
+        resolver.resolve(Collections.singletonMap("description", new UserModel("name")), routeInfo.getParameters());
     }
 }
