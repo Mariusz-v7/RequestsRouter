@@ -4,7 +4,10 @@ import com.google.common.primitives.Primitives;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
+import pl.mrugames.commons.router.exceptions.PathParameterNotFoundException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +23,12 @@ class PathArgumentResolver {
 
     Map<String, Object> resolve(String path, String pattern, List<RouteInfo.Parameter> parameters) {
 
-        Map<String, String> mappedValues = pathMatcher.extractUriTemplateVariables(pattern, path);
+        Map<String, String> mappedValues;
+        try {
+            mappedValues = pathMatcher.extractUriTemplateVariables(pattern, path);
+        } catch (IllegalStateException e) {
+            throw new PathParameterNotFoundException(path, pattern);
+        }
 
         return parameters.stream()
                 .filter(p -> p.getParameterType() == RouteInfo.ParameterType.PATH_VAR)
@@ -41,10 +49,8 @@ class PathArgumentResolver {
             Object converted = type.getConstructor(String.class).newInstance(strValue);
 
             return new AbstractMap.SimpleEntry<>(parameter.getName(), converted);
-        } catch (RuntimeException e) { // TODO: add some wrapper or better exception handling
-            throw e;
-        } catch (Exception e) {// TODO: add some wrapper or better exception handling
-            throw new RuntimeException(e);
+        } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+            throw new IncompatibleParameterException(parameter.getName(), parameter.getType());
         }
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.RouterInitializer;
 import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
+import pl.mrugames.commons.router.exceptions.PathParameterNotFoundException;
 
 import java.util.Map;
 
@@ -74,7 +76,8 @@ public class PathArgumentResolverSpec {
         RouteInfo route = routes.get(pattern);
         assertThat(route).isNotNull();
 
-        expectedException.expect(RuntimeException.class); // TODO: better exception handling...
+        expectedException.expect(IncompatibleParameterException.class);
+        expectedException.expectMessage("Could not convert 'playerId' into '" + int.class + "'");
 
         resolver.resolve("POST:app/test/player/incompatible", pattern, route.getParameters());
     }
@@ -85,7 +88,8 @@ public class PathArgumentResolverSpec {
         RouteInfo route = routes.get(pattern);
         assertThat(route).isNotNull();
 
-        expectedException.expect(RuntimeException.class); // TODO: better exception handling...
+        expectedException.expect(PathParameterNotFoundException.class);
+        expectedException.expectMessage("Invalid path: POST:app/test/player for pattern: " + pattern);
 
         resolver.resolve("POST:app/test/player", pattern, route.getParameters());
     }
