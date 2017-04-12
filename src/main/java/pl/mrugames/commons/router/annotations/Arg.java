@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface Arg {
     String value();
 
-    String defaultValue() default ArgDefaultValue.ARG_DEFAULT_VALUE;
+    String defaultValue() default ArgDefaultValue.ARG_NULL_DEFAULT_VALUE;
 }

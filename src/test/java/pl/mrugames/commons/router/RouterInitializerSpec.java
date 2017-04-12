@@ -89,7 +89,7 @@ public class RouterInitializerSpec {
         List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(0).getType().getSimpleName()).isEqualTo("int");
         assertThat(parameters.get(0).getName()).isEqualTo("a");
-        assertThat(parameters.get(0).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_DEFAULT_VALUE);
+        assertThat(parameters.get(0).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
         assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 
@@ -99,7 +99,7 @@ public class RouterInitializerSpec {
         List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(1).getType().getSimpleName()).isEqualTo("String");
         assertThat(parameters.get(1).getName()).isEqualTo("b");
-        assertThat(parameters.get(1).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_DEFAULT_VALUE);
+        assertThat(parameters.get(1).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
         assertThat(parameters.get(1).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 
@@ -109,7 +109,7 @@ public class RouterInitializerSpec {
         List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(2).getType().getSimpleName()).isEqualTo("Double");
         assertThat(parameters.get(2).getName()).isEqualTo("c");
-        assertThat(parameters.get(2).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_DEFAULT_VALUE);
+        assertThat(parameters.get(2).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
         assertThat(parameters.get(2).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
     }
 

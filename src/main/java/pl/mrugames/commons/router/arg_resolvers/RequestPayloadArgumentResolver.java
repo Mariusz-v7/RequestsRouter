@@ -26,7 +26,7 @@ class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Request>
     private Map.Entry<String, Object> map(RouteInfo.Parameter parameter, Map<String, Object> payload) {
         Object result = payload.get(parameter.getName());
         if (result == null) {
-            if (ArgDefaultValue.ARG_DEFAULT_VALUE.equals(parameter.getDefaultValue())) {
+            if (ArgDefaultValue.ARG_NULL_DEFAULT_VALUE.equals(parameter.getDefaultValue())) {
                 throw new ParameterNotFoundException(parameter.getName());
             }
 
