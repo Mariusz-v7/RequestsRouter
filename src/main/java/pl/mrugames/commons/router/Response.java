@@ -2,8 +2,8 @@ package pl.mrugames.commons.router;
 
 import java.io.Serializable;
 
-class Response implements Serializable {
-    enum Status {
+public class Response implements Serializable {
+    public enum Status {
         OK, ERROR, STREAM, CLOSE
     }
 
@@ -27,5 +27,14 @@ class Response implements Serializable {
 
     public Object getPayload() {
         return payload;
+    }
+
+    @Override
+    public String toString() {
+        return "Response{" +
+                "id=" + id +
+                ", status=" + status +
+                ", payload=" + payload +
+                '}';
     }
 }

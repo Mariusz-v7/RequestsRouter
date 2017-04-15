@@ -1,17 +1,16 @@
-package pl.mrugames.commons.router;
+package pl.mrugames.commons.router.request_handlers;
 
 import org.springframework.stereotype.Component;
+import pl.mrugames.commons.router.Request;
+import pl.mrugames.commons.router.Response;
 
 @Component
-public class RequestHandler {
-    private final Router router;
-
-    RequestHandler(Router router) {
-        this.router = router;
-    }
+public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
     //TODO: handle requests from different source e.g. strings (websocket), java objects (java socket)
-    public Response handleRequest(Request request) {
+    @Override
+    public Response handleRequest(Request request) { // TODO: this method should never throw exception - it should translate all exceptions into error response!
+        // if exception, then return response error
         /*
         request = {
             id: long
