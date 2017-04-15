@@ -56,4 +56,9 @@ public class TestController {
     public void addUser(@Arg("user") UserModel userModel) {
 
     }
+
+    @Route(value = "session/defaults")
+    public void sessionPrimitives(long l, double d, float f, int i, short s, byte b, boolean y, Object o) {
+
+    }
 }
