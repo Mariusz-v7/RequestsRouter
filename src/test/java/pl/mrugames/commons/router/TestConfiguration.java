@@ -1,6 +1,8 @@
 package pl.mrugames.commons.router;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,14 @@ import static org.mockito.Mockito.spy;
 @Configuration
 @ComponentScan("pl.mrugames.commons")
 public class TestConfiguration {
+
+    @Bean
+    public static PropertyPlaceholderConfigurer propertyPlaceholderConfigurer(ApplicationContext context) {
+        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+        configurer.setLocations(context.getResource("config.properties"));
+
+        return configurer;
+    }
 
     @Bean
     public AntPathMatcher antPathMatcher() {
