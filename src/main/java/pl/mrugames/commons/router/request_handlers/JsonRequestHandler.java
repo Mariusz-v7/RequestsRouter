@@ -9,8 +9,8 @@ import pl.mrugames.commons.router.Response;
 
 @Component
 public class JsonRequestHandler implements RequestHandler<String, String> {
-    public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"ERROR\",\"payload\":\"JSON read error: %s, %s\"}";
-    public static final String JSON_MAPPING_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"ERROR\",\"payload\":\"JSON mapping error: %s, %s\"}";
+    public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON read error: %s, %s\"}";
+    public static final String JSON_MAPPING_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON mapping error: %s, %s\"}";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
