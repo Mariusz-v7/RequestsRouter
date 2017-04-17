@@ -13,7 +13,7 @@ public class Session {
         return lastAccessed;
     }
 
-    void updateLastAccessed(Instant instant) {
+    synchronized void updateLastAccessed(Instant instant) {
         lastAccessed = instant;
     }
 }

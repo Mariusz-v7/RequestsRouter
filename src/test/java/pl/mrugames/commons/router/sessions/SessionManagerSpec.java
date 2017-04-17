@@ -9,6 +9,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.TestConfiguration;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -55,5 +56,17 @@ public class SessionManagerSpec {
         Instant now = Instant.now();
         Session session = sessionManager.getSession("11");
         assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
+    }
+
+    @Test
+    public void givenSessionLastAccessTimeIsExpired_thenItShouldBeDeleted() throws InterruptedException {
+        Session session = sessionManager.getSession("12");
+        assertThat(sessionManager.contains("12")).isTrue();
+
+        session.updateLastAccessed(Instant.now().minus(30, ChronoUnit.MINUTES));
+
+        TimeUnit.MILLISECONDS.sleep(200);
+
+        assertThat(sessionManager.contains("12")).isFalse();
     }
 }
