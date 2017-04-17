@@ -8,18 +8,8 @@ import pl.mrugames.commons.router.Response;
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
     @Override
-    public Response handleRequest(Request request) { // TODO: this method should never throw exception - it should translate all exceptions into error response!
-        // if exception, then return response error
-        /*
-        request = {
-            id: long
-            session: string 64,
-            route: String
-            payload: {
-                ...
-            }
-        }
-         */
+    public Response handleRequest(Request request) {
+
 
         /*
         todo:
