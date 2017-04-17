@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.Response;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 @Component
 public class JsonRequestHandler implements RequestHandler<String, String> {
     public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"ERROR\",\"payload\":\"JSON read error: %s, %s\"}";
@@ -32,7 +29,7 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
             request = mapper.readValue(json, JsonRequest.class);
         } catch (Exception e) {
             logger.error("Failed to read JSON: {}", json, e);
-            return getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1);
+            return ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1);
         }
 
         Response response = requestHandler.handleRequest(request);
@@ -41,14 +38,7 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
             return mapper.writeValueAsString(response);
         } catch (Exception e) {
             logger.error("Failed to write to JSON: {}, {}", json, response, e);
-            return getErrorResponse(JSON_MAPPING_ERROR_RESPONSE, e, request.getId());
+            return ErrorUtil.getErrorResponse(JSON_MAPPING_ERROR_RESPONSE, e, request.getId());
         }
-    }
-
-    private String getErrorResponse(String s, Exception e, long requestId) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return String.format(s, requestId, e.getMessage(), sw.toString());
     }
 }

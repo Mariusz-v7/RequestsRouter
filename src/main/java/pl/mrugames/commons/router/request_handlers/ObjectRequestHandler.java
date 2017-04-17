@@ -7,7 +7,6 @@ import pl.mrugames.commons.router.Response;
 @Component
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
-    //TODO: handle requests from different source e.g. strings (websocket), java objects (java socket)
     @Override
     public Response handleRequest(Request request) { // TODO: this method should never throw exception - it should translate all exceptions into error response!
         // if exception, then return response error
@@ -28,6 +27,15 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         2. check whether session has valid length and whether it exists
         3. if session is invalid, then session parameters = emptyMap()
          */
+
+        try {
+            return next(request);
+        } catch (Exception e) {
+            return new Response(request.getId(), Response.Status.ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
+        }
+    }
+
+    Response next(Request request) throws Exception {
 
         return null;
     }
