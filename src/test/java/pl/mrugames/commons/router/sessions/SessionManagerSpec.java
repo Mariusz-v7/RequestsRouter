@@ -8,6 +8,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.TestConfiguration;
 
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -32,5 +35,25 @@ public class SessionManagerSpec {
         Session session2 = sessionManager.getSession("2345");
 
         assertThat(session1).isSameAs(session2);
+    }
+
+    @Test
+    public void givenNewSessionIsCreated_thenLastAccessTimeIsNotNull_and() {
+        Instant now = Instant.now();
+
+        Session session = sessionManager.getSession("10");
+        assertThat(session.getLastAccessed()).isNotNull();
+
+        assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
+    }
+
+    @Test
+    public void givenSessionExists_whenGetSession_thenLastAccessTimeIsUpdated() throws InterruptedException {
+        sessionManager.getSession("11");
+        TimeUnit.MILLISECONDS.sleep(3);
+
+        Instant now = Instant.now();
+        Session session = sessionManager.getSession("11");
+        assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
     }
 }

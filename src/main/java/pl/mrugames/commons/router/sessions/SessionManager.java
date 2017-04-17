@@ -2,6 +2,7 @@ package pl.mrugames.commons.router.sessions;
 
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +16,7 @@ public class SessionManager {
     }
 
     public Session getSession(String sessionId) {
-        return sessions.computeIfAbsent(sessionId, this::createNewSession);
+        return sessions.compute(sessionId, this::compute);
     }
 
     Collection<Session> getAllSessions() {
@@ -26,7 +27,12 @@ public class SessionManager {
         return sessions.containsKey(sessionId);
     }
 
-    private Session createNewSession(String sessionId) {
-        return new Session();
+    private Session compute(String sessionId, Session current) {
+        if (current == null) {
+            return new Session();
+        } else {
+            current.updateLastAccessed(Instant.now());
+            return current;
+        }
     }
 }
