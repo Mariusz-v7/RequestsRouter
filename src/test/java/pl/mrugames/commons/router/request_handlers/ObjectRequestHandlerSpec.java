@@ -51,7 +51,7 @@ public class ObjectRequestHandlerSpec {
         Response response = handler.handleRequest(request);
 
         assertThat(response.getId()).isEqualTo(request.getId());
-        assertThat(response.getStatus()).isEqualTo(Response.Status.ERROR);
+        assertThat(response.getStatus()).isEqualTo(Response.Status.INTERNAL_ERROR);
         assertThat((String) response.getPayload()).matches("Error: test msg, [\\S\\s]*");
     }
 }

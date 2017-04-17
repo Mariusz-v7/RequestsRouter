@@ -31,7 +31,7 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         try {
             return next(request);
         } catch (Exception e) {
-            return new Response(request.getId(), Response.Status.ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
+            return new Response(request.getId(), Response.Status.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
         }
     }
 

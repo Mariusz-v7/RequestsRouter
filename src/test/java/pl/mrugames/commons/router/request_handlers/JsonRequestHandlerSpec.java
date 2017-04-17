@@ -60,8 +60,9 @@ public class JsonRequestHandlerSpec {
         String jsonResponse = mapper.writeValueAsString(response);
 
         doReturn(response).when(objectRequestHandler).handleRequest(any());
-
         String realResponse = handler.handleRequest(jsonRequest);
+        doCallRealMethod().when(objectRequestHandler).handleRequest(any()); // revert
+
         assertThat(realResponse).isEqualTo(jsonResponse);
     }
 
