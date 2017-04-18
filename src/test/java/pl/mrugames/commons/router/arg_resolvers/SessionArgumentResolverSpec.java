@@ -14,12 +14,14 @@ import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.RouterInitializer;
 import pl.mrugames.commons.router.TestConfiguration;
 import pl.mrugames.commons.router.controllers.UserModel;
+import pl.mrugames.commons.router.sessions.Session;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.mock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -33,18 +35,19 @@ public class SessionArgumentResolverSpec {
     private RouterInitializer initializer;
 
     private Map<String, RouteInfo> routes;
-    private Map<Class<?>, Object> session;
+    private Session session;
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
     @Before
+    @SuppressWarnings("unchecked")
     public void before() {
         routes = initializer.getRoutes();
 
-        session = new HashMap<>();
-        session.put(UserModel.class, new UserModel("Mruczek", 123));
-        session.put(String.class, "bla bla");
+        session = new Session("", mock(Consumer.class));
+        session.add(new UserModel("Mruczek", 123));
+        session.add("bla bla");
     }
 
     @Test

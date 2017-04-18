@@ -14,7 +14,7 @@ public class Session {
 
     private volatile Instant lastAccessed;
 
-    Session(String id, Consumer<Session> onDestroyMethod) {
+    public Session(String id, Consumer<Session> onDestroyMethod) {
         this.id = id;
         this.onDestroyMethod = onDestroyMethod;
         this.map = new ConcurrentHashMap<>();
