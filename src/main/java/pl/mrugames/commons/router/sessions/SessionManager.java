@@ -35,6 +35,10 @@ public class SessionManager {
         return sessions.containsKey(sessionId);
     }
 
+    void remove(Session session) {
+        sessions.remove(session.getId());
+    }
+
     @Scheduled(fixedDelayString = "${" + RouterProperties.SESSION_EXPIRE_TIME + "}")
     private void cleaner() {
         Instant expireTime = Instant.now().minus(sessionExpireTimeMillis, ChronoUnit.MILLIS);
@@ -46,7 +50,7 @@ public class SessionManager {
 
     private Session compute(String sessionId, Session current) {
         if (current == null) {
-            return new Session();
+            return new Session(sessionId);
         } else {
             current.updateLastAccessed(Instant.now());
             return current;

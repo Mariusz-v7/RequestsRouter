@@ -69,4 +69,11 @@ public class SessionManagerSpec {
 
         assertThat(sessionManager.contains("12")).isFalse();
     }
+
+    @Test
+    public void givenSessionIsAdded_whenItIsRemoved_thenRemoveFromCollection() {
+        Session session = sessionManager.getSession("13");
+        sessionManager.remove(session);
+        assertThat(sessionManager.contains("13")).isFalse();
+    }
 }
