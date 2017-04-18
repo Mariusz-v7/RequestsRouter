@@ -50,7 +50,7 @@ public class SessionManager {
 
     private Session compute(String sessionId, Session current) {
         if (current == null) {
-            return new Session(sessionId);
+            return new Session(sessionId, this::remove);
         } else {
             current.updateLastAccessed(Instant.now());
             return current;

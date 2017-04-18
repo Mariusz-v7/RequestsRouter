@@ -76,4 +76,11 @@ public class SessionManagerSpec {
         sessionManager.remove(session);
         assertThat(sessionManager.contains("13")).isFalse();
     }
+
+    @Test
+    public void givenSessionIsAdded_whenDestroy_thenItIsRemoved() {
+        Session session = sessionManager.getSession("13");
+        session.destroy();
+        assertThat(sessionManager.contains("13")).isFalse();
+    }
 }
