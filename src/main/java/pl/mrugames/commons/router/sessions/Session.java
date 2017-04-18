@@ -22,8 +22,9 @@ public class Session {
         lastAccessed = Instant.now();
     }
 
-    public <T> void add(T object) {
-        map.put(object.getClass(), object);
+    @SuppressWarnings("unchecked")
+    public <T> T add(T object) {
+        return (T) map.put(object.getClass(), object);
     }
 
     @SuppressWarnings("unchecked")
@@ -31,8 +32,9 @@ public class Session {
         return Optional.ofNullable((T) map.get(type));
     }
 
-    public <T> void remove(Class<T> type) {
-        map.remove(type);
+    @SuppressWarnings("unchecked")
+    public <T> T remove(Class<T> type) {
+        return (T) map.remove(type);
     }
 
     @SuppressWarnings("unchecked")
