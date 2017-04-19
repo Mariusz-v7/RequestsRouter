@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Map<String, Object>> {
+public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Map<String, Object>> {
 
     private RequestPayloadArgumentResolver() {
     }

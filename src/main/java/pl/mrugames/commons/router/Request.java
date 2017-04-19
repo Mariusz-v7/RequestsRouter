@@ -7,12 +7,14 @@ public class Request implements Serializable {
     private final long id;
     private final String session;
     private final String route;
+    private final RequestMethod requestMethod;
     private final Map<String, Object> payload;
 
-    public Request(long id, String session, String route, Map<String, Object> payload) {
+    public Request(long id, String session, String route, RequestMethod requestMethod, Map<String, Object> payload) {
         this.id = id;
         this.session = session;
         this.route = route;
+        this.requestMethod = requestMethod;
         this.payload = payload;
     }
 
@@ -26,6 +28,10 @@ public class Request implements Serializable {
 
     public String getRoute() {
         return route;
+    }
+
+    public RequestMethod getRequestMethod() {
+        return requestMethod;
     }
 
     public Map<String, Object> getPayload() {
@@ -42,6 +48,7 @@ public class Request implements Serializable {
         if (id != request.id) return false;
         if (!session.equals(request.session)) return false;
         if (!route.equals(request.route)) return false;
+        if (requestMethod != request.requestMethod) return false;
         return payload.equals(request.payload);
 
     }
@@ -51,6 +58,7 @@ public class Request implements Serializable {
         int result = (int) (id ^ (id >>> 32));
         result = 31 * result + session.hashCode();
         result = 31 * result + route.hashCode();
+        result = 31 * result + requestMethod.hashCode();
         result = 31 * result + payload.hashCode();
         return result;
     }
@@ -61,6 +69,7 @@ public class Request implements Serializable {
                 "id=" + id +
                 ", session='" + session + '\'' +
                 ", route='" + route + '\'' +
+                ", requestMethod=" + requestMethod +
                 ", payload=" + payload +
                 '}';
     }

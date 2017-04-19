@@ -11,8 +11,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-class SessionArgumentResolver {
-    Map<Class<?>, Optional<Object>> resolve(Session session, List<RouteInfo.Parameter> parameters) {
+public class SessionArgumentResolver {
+    private SessionArgumentResolver() {
+    }
+
+    public Map<Class<?>, Optional<Object>> resolve(Session session, List<RouteInfo.Parameter> parameters) {
         return parameters.stream()
                 .filter(p -> RouteInfo.ParameterType.NONE == p.getParameterType())
                 .map(p -> map(p, session))

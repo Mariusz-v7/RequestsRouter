@@ -9,6 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.Request;
+import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.TestConfiguration;
 
@@ -42,8 +43,8 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenHandleRequestIsCalled_thenDelegateToNext() throws Exception {
-        Request request1 = new Request(1, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", Collections.emptyMap());
-        Request request2 = new Request(2, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", Collections.emptyMap());
+        Request request1 = new Request(1, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.GET, Collections.emptyMap());
+        Request request2 = new Request(2, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.POST, Collections.emptyMap());
         Response response1 = new Response(1, Response.Status.OK, "something");
         Response response2 = new Response(2, Response.Status.OK, "something");
 
@@ -62,7 +63,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenNextMethodThrowsException_whenHandleRequest_thenReturnErrorResponse() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", Collections.emptyMap());
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.GET, Collections.emptyMap());
         doThrow(new Exception("test msg")).when(handler).next(request);
 
         Response response = handler.handleRequest(request);
@@ -76,7 +77,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void whenRequest_thenResponseWithSameId() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", Collections.emptyMap());
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         Response response = handler.next(request);
 
         assertThat(response.getId()).isEqualTo(request.getId());
@@ -84,10 +85,10 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenRequestWithSessionIdLessThan64chars_thenException() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH - 1), "", Collections.emptyMap());
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH - 1), "", RequestMethod.GET, Collections.emptyMap());
 
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Session id must at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
+        expectedException.expectMessage("Session id must be at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
 
         handler.next(request);
     }

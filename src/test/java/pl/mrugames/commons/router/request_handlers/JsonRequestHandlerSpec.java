@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.Request;
+import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.TestConfiguration;
 import pl.mrugames.commons.router.controllers.UserModel;
@@ -44,7 +45,7 @@ public class JsonRequestHandlerSpec {
         Map<String, Object> payload = new HashMap<>();
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
-        request = new Request(2, "asdfgh", "some/route", payload);
+        request = new Request(2, "asdfgh", "some/route", RequestMethod.GET, payload);
         jsonRequest = mapper.writeValueAsString(request);
     }
 
