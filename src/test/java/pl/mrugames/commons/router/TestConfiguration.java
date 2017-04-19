@@ -31,8 +31,8 @@ public class TestConfiguration {
 
     @Bean
     @Primary
-    public ObjectRequestHandler objectRequestHandler() {
-        return spy(new ObjectRequestHandler());
+    public ObjectRequestHandler objectRequestHandlerSpy(ObjectRequestHandler objectRequestHandler) {
+        return spy(objectRequestHandler);
     }
 
     @Bean

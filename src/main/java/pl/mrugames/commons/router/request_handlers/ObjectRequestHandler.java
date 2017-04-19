@@ -3,21 +3,20 @@ package pl.mrugames.commons.router.request_handlers;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.Response;
+import pl.mrugames.commons.router.sessions.SessionManager;
 
 @Component
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
+    public final static int SESSION_ID_MIN_LENGTH = 64;
+
+    private final SessionManager sessionManager;
+
+    ObjectRequestHandler(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
 
     @Override
     public Response handleRequest(Request request) {
-
-
-        /*
-        todo:
-        1. response id same as request id
-        2. check whether session has valid length and whether it exists
-        3. if session is invalid, then session parameters = emptyMap()
-         */
-
         try {
             return next(request);
         } catch (Exception e) {
@@ -26,7 +25,10 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     }
 
     Response next(Request request) throws Exception {
+        if (request.getSession().length() < SESSION_ID_MIN_LENGTH) {
+            throw new IllegalArgumentException("Session id must at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
+        }
 
-        return null;
+        return new Response(request.getId(), null, null);
     }
 }

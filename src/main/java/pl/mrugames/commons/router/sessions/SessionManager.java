@@ -18,7 +18,7 @@ public class SessionManager {
     private final Map<String, Session> sessions;
     private final long sessionExpireTimeMillis;
 
-    public SessionManager(@Value("${" + RouterProperties.SESSION_EXPIRE_TIME + "}") long sessionExpireTimeMillis) {
+    SessionManager(@Value("${" + RouterProperties.SESSION_EXPIRE_TIME + "}") long sessionExpireTimeMillis) {
         this.sessionExpireTimeMillis = sessionExpireTimeMillis;
         sessions = new ConcurrentHashMap<>();
     }
