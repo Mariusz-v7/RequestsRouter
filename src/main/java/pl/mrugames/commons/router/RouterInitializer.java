@@ -78,7 +78,7 @@ public class RouterInitializer {
 
                 String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());
 
-                RouteInfo routeInfo = new RouteInfo(controller, method, parameters);
+                RouteInfo routeInfo = new RouteInfo(controller, method, parameters, path);
 
                 if (routes.containsKey(path)) {
                     RouteInfo colliding = routes.get(path);

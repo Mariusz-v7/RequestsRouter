@@ -41,11 +41,13 @@ public class RouteInfo {
     private final Object controllerInstance;
     private final Method method;
     private final List<Parameter> parameters;
+    private final String routePattern;
 
-    RouteInfo(Object controllerInstance, Method method, List<Parameter> parameters) {
+    RouteInfo(Object controllerInstance, Method method, List<Parameter> parameters, String routePattern) {
         this.controllerInstance = controllerInstance;
         this.method = method;
         this.parameters = parameters;
+        this.routePattern = routePattern;
     }
 
     Object getControllerInstance() {
@@ -58,5 +60,9 @@ public class RouteInfo {
 
     public List<Parameter> getParameters() {
         return parameters;
+    }
+
+    public String getRoutePattern() {
+        return routePattern;
     }
 }

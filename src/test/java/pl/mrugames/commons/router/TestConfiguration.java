@@ -8,6 +8,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.util.AntPathMatcher;
+import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
+import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
+import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
 
 import static org.mockito.Mockito.spy;
@@ -39,5 +42,29 @@ public class TestConfiguration {
     @Primary
     public ObjectMapper mapper(ObjectMapper mapper) {
         return spy(mapper);
+    }
+
+    @Bean
+    @Primary
+    public Router routerSpy(Router router) {
+        return spy(router);
+    }
+
+    @Bean
+    @Primary
+    public PathArgumentResolver pathArgumentResolverSpy(PathArgumentResolver pathArgumentResolver) {
+        return spy(pathArgumentResolver);
+    }
+
+    @Bean
+    @Primary
+    public RequestPayloadArgumentResolver requestPayloadArgumentResolverSpy(RequestPayloadArgumentResolver requestPayloadArgumentResolver) {
+        return spy(requestPayloadArgumentResolver);
+    }
+
+    @Bean
+    @Primary
+    public SessionArgumentResolver sessionArgumentResolverSpy(SessionArgumentResolver sessionArgumentResolver) {
+        return spy(sessionArgumentResolver);
     }
 }

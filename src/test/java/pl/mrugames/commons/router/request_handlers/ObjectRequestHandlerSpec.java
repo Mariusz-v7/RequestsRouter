@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.request_handlers;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -8,13 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import pl.mrugames.commons.router.Request;
-import pl.mrugames.commons.router.RequestMethod;
-import pl.mrugames.commons.router.Response;
-import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.*;
+import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
+import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
+import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
 
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -27,8 +27,25 @@ public class ObjectRequestHandlerSpec {
     @Autowired
     private ObjectRequestHandler handler;
 
+    @Autowired
+    private Router router;
+
+    @Autowired
+    private PathArgumentResolver pathArgumentResolver;
+
+    @Autowired
+    private RequestPayloadArgumentResolver requestPayloadArgumentResolver;
+
+    @Autowired
+    private SessionArgumentResolver sessionArgumentResolver;
+
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
+
+    @After
+    public void after() {
+        reset(router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver);
+    }
 
     private String generateString(int len) {
         String allowed = "abcdefgh";
@@ -77,7 +94,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void whenRequest_thenResponseWithSameId() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/route1", RequestMethod.GET, Collections.emptyMap());
         Response response = handler.next(request);
 
         assertThat(response.getId()).isEqualTo(request.getId());
@@ -91,5 +108,44 @@ public class ObjectRequestHandlerSpec {
         expectedException.expectMessage("Session id must be at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
 
         handler.next(request);
+    }
+
+    @Test
+    public void whenNextIsCalled_thenRouterIsRequestedToSearchForRoute() {
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        handler.handleRequest(request);
+
+        verify(router).findRoute("app/test/concat", RequestMethod.GET);
+    }
+
+    @Test
+    public void givenArgumentResolversReturnDifferentInstances_whenRequest_thenNavigateWithThatInstances() {
+        Map<String, Object> pathArg = new HashMap<>();
+        pathArg.put("1", "1");
+        Map<String, Object> payloadArg = new HashMap<>();
+        payloadArg.put("1", "1");
+        Map<Class<?>, Optional<Object>> sessionArg = new HashMap<>();
+        sessionArg.put(String.class, Optional.of("1"));
+
+        doReturn(pathArg).when(pathArgumentResolver).resolve(any(), anyString(), any());
+        doReturn(payloadArg).when(requestPayloadArgumentResolver).resolve(any(), any());
+        doReturn(sessionArg).when(sessionArgumentResolver).resolve(any(), any());
+
+        RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
+
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        handler.handleRequest(request);
+
+        verify(router).navigate(routeInfo, pathArg, payloadArg, sessionArg);
+    }
+
+    @Test
+    public void whenRequest_thenPathResolverIsCalledWithProperPath() {
+        RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
+
+        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        handler.handleRequest(request);
+
+        verify(pathArgumentResolver).resolve("GET:app/test/concat", routeInfo.getRoutePattern(), routeInfo.getParameters());
     }
 }

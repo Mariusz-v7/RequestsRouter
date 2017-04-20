@@ -14,14 +14,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-class PathArgumentResolver {
+public class PathArgumentResolver {
     private final AntPathMatcher pathMatcher;
 
     private PathArgumentResolver(AntPathMatcher pathMatcher) {
         this.pathMatcher = pathMatcher;
     }
 
-    Map<String, Object> resolve(String path, String pattern, List<RouteInfo.Parameter> parameters) {
+    public Map<String, Object> resolve(String path, String pattern, List<RouteInfo.Parameter> parameters) {
 
         Map<String, String> mappedValues;
         try {
