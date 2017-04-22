@@ -48,15 +48,6 @@ public class SessionSpec {
     }
 
     @Test
-    public void givenEntityIsAdded_whenDestroy_andGet_thenOptionalEmpty() {
-        UserModel userModel = new UserModel("Session user", 908);
-        session.add(userModel);
-        session.destroy();
-
-        assertThat(session.get(UserModel.class)).isEmpty();
-    }
-
-    @Test
     public void whenAddNull_thenNullPointerException() {
         expectedException.expect(NullPointerException.class);
         session.add(null);
