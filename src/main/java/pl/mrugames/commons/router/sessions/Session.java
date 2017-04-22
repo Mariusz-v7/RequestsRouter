@@ -122,6 +122,13 @@ public class Session {
         return id;
     }
 
+    synchronized void unregisterEmitter(String id) {
+        Subject<Response> subject = emitters.remove(id);
+        if (subject != null) {
+            subject.onComplete();
+        }
+    }
+
     synchronized boolean isDestroyed() {
         return isDestroyed;
     }
@@ -136,5 +143,9 @@ public class Session {
 
     synchronized String getId() {
         return id;
+    }
+
+    synchronized int getEmittersAmount() {
+        return emitters.size();
     }
 }

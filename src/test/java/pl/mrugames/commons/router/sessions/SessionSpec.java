@@ -196,4 +196,21 @@ public class SessionSpec {
         observer1.assertComplete();
         observer2.assertComplete();
     }
+
+    @Test
+    public void givenEmitterIsRegistered_whenUnregister_thenObserversComplete() {
+        TestObserver<Response> observer = TestObserver.create();
+        PublishSubject<Response> subject = PublishSubject.create();
+
+        String id = session.registerEmitter(subject);
+        assertThat(session.getEmittersAmount()).isEqualTo(1);
+
+        subject.subscribe(observer);
+
+        observer.assertNotComplete();
+        session.unregisterEmitter(id);
+        observer.assertComplete();
+
+        assertThat(session.getEmittersAmount()).isEqualTo(0);
+    }
 }
