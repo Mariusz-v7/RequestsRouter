@@ -213,4 +213,15 @@ public class SessionSpec {
 
         assertThat(session.getEmittersAmount()).isEqualTo(0);
     }
+
+    @Test
+    public void givenEmitterIsRegistered_whenComplete_thenItIsRemovedFromSession() {
+        PublishSubject<Response> subject = PublishSubject.create();
+
+        session.registerEmitter(subject);
+        assertThat(session.getEmittersAmount()).isEqualTo(1);
+
+        subject.onComplete();
+        assertThat(session.getEmittersAmount()).isEqualTo(0);
+    }
 }

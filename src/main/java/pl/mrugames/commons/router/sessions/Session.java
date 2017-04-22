@@ -119,6 +119,10 @@ public class Session {
 
         emitters.put(id, emitter);
 
+        emitter.subscribe(next -> {
+        }, err -> {
+        }, () -> this.unregisterEmitter(id));
+
         return id;
     }
 
