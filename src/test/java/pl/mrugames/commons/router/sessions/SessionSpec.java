@@ -1,11 +1,14 @@
 package pl.mrugames.commons.router.sessions;
 
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.controllers.Interface;
 import pl.mrugames.commons.router.controllers.UserModel;
 import pl.mrugames.commons.router.permissions.RoleHolder;
@@ -163,4 +166,34 @@ public class SessionSpec {
         assertThat(session.isDestroyed()).isFalse();
     }
 
+    @Test
+    public void whenRegisterEmitter_thenReturnUniqueId() {
+        String id1 = session.registerEmitter(PublishSubject.create());
+        String id2 = session.registerEmitter(PublishSubject.create());
+
+        assertThat(id1).isNotEqualTo(id2);
+    }
+
+    @Test
+    public void givenSessionRegistersEmitter_whenDestroy_thenAllObserversAreUnsubscribed() {
+        TestObserver<Response> observer1 = TestObserver.create();
+        TestObserver<Response> observer2 = TestObserver.create();
+
+        PublishSubject<Response> subject1 = PublishSubject.create();
+        PublishSubject<Response> subject2 = PublishSubject.create();
+
+        session.registerEmitter(subject1);
+        session.registerEmitter(subject2);
+
+        subject1.subscribe(observer1);
+        subject2.subscribe(observer2);
+
+        observer1.assertNotComplete();
+        observer2.assertNotComplete();
+
+        session.destroy();
+
+        observer1.assertComplete();
+        observer2.assertComplete();
+    }
 }

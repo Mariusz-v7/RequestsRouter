@@ -1,12 +1,13 @@
 package pl.mrugames.commons.router.sessions;
 
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.permissions.RoleHolder;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -15,7 +16,7 @@ public class Session {
     private final String id;
     private final Consumer<Session> onDestroyMethod;
     private final Map<Class<?>, Object> map;
-    private final Map<String, PublishSubject<Response>> emitters;
+    private final Map<String, Subject<Response>> emitters;
 
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
@@ -93,11 +94,32 @@ public class Session {
     }
 
     public synchronized void destroy() {
-        if (!isDestroyed) {
-            isDestroyed = true;
-            onDestroyMethod.accept(this);
-            map.clear();
+        if (isDestroyed) {
+            return;
         }
+
+        isDestroyed = true;
+        onDestroyMethod.accept(this);
+
+        emitters.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .forEach(Subject::onComplete);
+
+        map.clear();
+        emitters.clear();
+    }
+
+    synchronized String registerEmitter(Subject<Response> emitter) {
+        if (isDestroyed) {
+            throw new SessionExpiredException();
+        }
+
+        UUID uuid = UUID.randomUUID();
+        String id = uuid.toString();
+
+        emitters.put(id, emitter);
+
+        return id;
     }
 
     synchronized boolean isDestroyed() {

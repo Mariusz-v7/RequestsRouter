@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.sessions;
 
+import io.reactivex.subjects.PublishSubject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,5 +58,10 @@ public class SessionDestroySpec {
     @Test
     public void remove() {
         session.remove(String.class);
+    }
+
+    @Test
+    public void registerEmitter() {
+        session.registerEmitter(PublishSubject.create());
     }
 }
