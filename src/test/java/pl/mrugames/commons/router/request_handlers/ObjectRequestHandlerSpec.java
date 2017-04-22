@@ -65,8 +65,8 @@ public class ObjectRequestHandlerSpec {
     public void givenHandleRequestIsCalled_thenDelegateToNext() throws Exception {
         Request request1 = new Request(1, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.GET, Collections.emptyMap());
         Request request2 = new Request(2, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.POST, Collections.emptyMap());
-        Response response1 = new Response(1, Response.Status.OK, "something");
-        Response response2 = new Response(2, Response.Status.OK, "something");
+        Response response1 = new Response(1, ResponseStatus.OK, "something");
+        Response response2 = new Response(2, ResponseStatus.OK, "something");
 
         doReturn(response1).when(handler).next(request1);
         doReturn(response2).when(handler).next(request2);
@@ -91,7 +91,7 @@ public class ObjectRequestHandlerSpec {
         doCallRealMethod().when(handler).next(any());
 
         assertThat(response.getId()).isEqualTo(request.getId());
-        assertThat(response.getStatus()).isEqualTo(Response.Status.INTERNAL_ERROR);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.INTERNAL_ERROR);
         assertThat((String) response.getPayload()).matches("Error: test msg, [\\S\\s]*");
     }
 
@@ -158,8 +158,8 @@ public class ObjectRequestHandlerSpec {
         Session session = new Session("mock", s -> {
         });
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.NOT_AUTHORIZED);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.NOT_AUTHORIZED);
     }
 
     @Test
@@ -169,8 +169,8 @@ public class ObjectRequestHandlerSpec {
         });
         session.add(RoleHolder.class, mock(RoleHolder.class));
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.OK);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.OK);
     }
 
     @Test
@@ -179,8 +179,8 @@ public class ObjectRequestHandlerSpec {
         Session session = new Session("mock", s -> {
         });
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.OK);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.OK);
     }
 
     @Test
@@ -190,8 +190,8 @@ public class ObjectRequestHandlerSpec {
         });
         session.add(RoleHolder.class, mock(RoleHolder.class));
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.ONLY_FOR_NOT_AUTHORIZED);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED);
     }
 
     @Test
@@ -200,8 +200,8 @@ public class ObjectRequestHandlerSpec {
         Session session = new Session("mock", s -> {
         });
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.PERMISSION_DENIED);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.PERMISSION_DENIED);
     }
 
     @Test
@@ -213,8 +213,8 @@ public class ObjectRequestHandlerSpec {
         doReturn(Collections.singletonList("user")).when(roleHolder).getRoles();
         session.add(RoleHolder.class, roleHolder);
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.PERMISSION_DENIED);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.PERMISSION_DENIED);
     }
 
     @Test
@@ -226,8 +226,8 @@ public class ObjectRequestHandlerSpec {
         doReturn(Collections.singletonList("admin")).when(roleHolder).getRoles();
         session.add(RoleHolder.class, roleHolder);
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.OK);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.OK);
     }
 
     @Test
@@ -236,8 +236,8 @@ public class ObjectRequestHandlerSpec {
         Session session = new Session("mock", s -> {
         });
 
-        Response.Status status = handler.checkPermissions(session, routeInfo);
-        assertThat(status).isEqualTo(Response.Status.OK);
+        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
+        assertThat(status).isEqualTo(ResponseStatus.OK);
     }
 
 }

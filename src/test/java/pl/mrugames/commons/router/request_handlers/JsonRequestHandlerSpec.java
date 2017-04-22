@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import pl.mrugames.commons.router.Request;
-import pl.mrugames.commons.router.RequestMethod;
-import pl.mrugames.commons.router.Response;
-import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.controllers.UserModel;
 
 import java.io.IOException;
@@ -57,7 +54,7 @@ public class JsonRequestHandlerSpec {
 
     @Test
     public void givenObjectHandlerReturnsSomeResponse_thenJsonHandlerReturnsThatResponseAsJsonString() throws Exception {
-        Response response = new Response(123, Response.Status.CLOSE, new UserModel("Mariusz", 0));
+        Response response = new Response(123, ResponseStatus.CLOSE, new UserModel("Mariusz", 0));
         String jsonResponse = mapper.writeValueAsString(response);
 
         doReturn(response).when(objectRequestHandler).handleRequest(any());

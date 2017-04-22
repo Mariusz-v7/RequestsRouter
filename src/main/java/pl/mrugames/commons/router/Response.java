@@ -3,16 +3,12 @@ package pl.mrugames.commons.router;
 import java.io.Serializable;
 
 public class Response implements Serializable {
-    public enum Status {
-        OK, INTERNAL_ERROR, ERROR, STREAM, CLOSE,
-        NOT_AUTHORIZED, ONLY_FOR_NOT_AUTHORIZED, PERMISSION_DENIED
-    }
 
     private final long id;
-    private final Status status;
+    private final ResponseStatus status;
     private final Object payload;
 
-    public Response(long id, Status status, Object payload) {
+    public Response(long id, ResponseStatus status, Object payload) {
         this.id = id;
         this.status = status;
         this.payload = payload;
@@ -22,7 +18,7 @@ public class Response implements Serializable {
         return id;
     }
 
-    public Status getStatus() {
+    public ResponseStatus getStatus() {
         return status;
     }
 

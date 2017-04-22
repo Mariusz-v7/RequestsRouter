@@ -1,10 +1,7 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.Request;
-import pl.mrugames.commons.router.Response;
-import pl.mrugames.commons.router.RouteInfo;
-import pl.mrugames.commons.router.Router;
+import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
@@ -42,7 +39,7 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         try {
             return next(request);
         } catch (Exception e) {
-            return new Response(request.getId(), Response.Status.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
+            return new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
         }
     }
 
@@ -66,27 +63,27 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         return new Response(request.getId(), null, null);
     }
 
-    Response.Status checkPermissions(Session session, RouteInfo routeInfo) {
+    Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
         switch (routeInfo.getAccessType()) {
             case ONLY_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? Response.Status.OK : Response.Status.NOT_AUTHORIZED;
+                return session.get(RoleHolder.class).isPresent() ? Mono.OK : new Mono<>(ResponseStatus.NOT_AUTHORIZED);
             case ONLY_NOT_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? Response.Status.ONLY_FOR_NOT_AUTHORIZED : Response.Status.OK;
+                return session.get(RoleHolder.class).isPresent() ? new Mono<>(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED) : Mono.OK;
             case ONLY_WITH_SPECIFIC_ROLES:
                 Optional<RoleHolder> roleHolder = session.get(RoleHolder.class);
                 if (roleHolder.isPresent()) {
                     List<String> roles = roleHolder.get().getRoles();
                     for (String role : roles) {
                         if (routeInfo.getAllowedRoles().contains(role)) {
-                            return Response.Status.OK;
+                            return Mono.OK;
                         }
                     }
                 }
-                return Response.Status.PERMISSION_DENIED;
+                return new Mono<>(ResponseStatus.PERMISSION_DENIED);
             case ALL_ALLOWED:
-                return Response.Status.OK;
+                return Mono.OK;
             default:
-                return Response.Status.INTERNAL_ERROR;
+                return new Mono(ResponseStatus.INTERNAL_ERROR);
         }
     }
 }
