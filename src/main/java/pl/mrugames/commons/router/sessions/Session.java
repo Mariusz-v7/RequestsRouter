@@ -15,7 +15,7 @@ public class Session {
     private final String id;
     private final Consumer<Session> onDestroyMethod;
     private final Map<Class<?>, Object> map;
-    private final Map<Long, Subject<Response>> emitters;
+    private final Map<Long, Subject<?>> emitters;
 
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
@@ -125,7 +125,7 @@ public class Session {
     }
 
     synchronized void unregisterEmitter(long requestId) {
-        Subject<Response> subject = emitters.remove(requestId);
+        Subject<?> subject = emitters.remove(requestId);
         if (subject != null) {
             subject.onComplete();
         }

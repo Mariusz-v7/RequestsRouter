@@ -13,7 +13,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -81,9 +80,11 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionIsAdded_whenItIsRemoved_thenCallDestroyMethod() {
-        Session session = spy(sessionManager.getSession("13"));
+        Session session = sessionManager.getSession("13");
+        assertThat(session.isDestroyed()).isFalse();
+
         sessionManager.remove(session);
-        verify(session, times(2)).destroy();  // two times because it's circular
+        assertThat(session.isDestroyed()).isTrue();
     }
 
     @Test

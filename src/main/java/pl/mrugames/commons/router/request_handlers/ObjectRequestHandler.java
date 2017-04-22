@@ -1,6 +1,8 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
@@ -69,10 +71,9 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
             return Observable.just(new Response(request.getId(), mono.getResponseStatus(), mono.getPayload()));
         }
 
-//        if (returnValue instanceof Subject) {
-//            Observable<?> subject = (Subject) returnValue;
-//
-//        }
+        if (returnValue instanceof Subject) {
+            return onSubject((Subject) returnValue, PublishSubject.create(), request.getId());
+        }
 
         return Observable.just(new Response(request.getId(), ResponseStatus.OK, returnValue));
     }
@@ -95,6 +96,22 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
             default:
                 return Mono.of(ResponseStatus.INTERNAL_ERROR);
         }
+    }
+
+    Observable<Response> onSubject(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
+        sourceSubject.subscribe(
+                next -> responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, next)),
+                error -> {
+                    responseSubject.onNext(new Response(requestId, ResponseStatus.CLOSE, error));
+                    responseSubject.onComplete();
+                },
+                () -> {
+                    responseSubject.onNext(new Response(requestId, ResponseStatus.CLOSE, null));
+                    responseSubject.onComplete();
+                }
+        );
+
+        return responseSubject.hide();
     }
 
     private Mono<?> checkRoles(RoleHolder roleHolder, List<String> allowedRoles) {

@@ -1,7 +1,10 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,12 +49,23 @@ public class ObjectRequestHandlerSpec {
     @Autowired
     private SessionArgumentResolver sessionArgumentResolver;
 
+    private PublishSubject<String> sourceSubject;
+    private PublishSubject<Response> responseSubject;
+
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
+
+    @Before
+    public void before() {
+        sourceSubject = PublishSubject.create();
+        responseSubject = PublishSubject.create();
+    }
 
     @After
     public void after() {
         reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver);
+        sourceSubject.onComplete();
+        responseSubject.onComplete();
     }
 
     private String generateString(int len) {
@@ -285,6 +299,73 @@ public class ObjectRequestHandlerSpec {
             assertThat(response.getStatus()).isEqualTo(status);
             assertThat(response.getPayload()).isEqualTo("asdf");
         });
+    }
+
+    @Test
+    public void givenRouterReturnsSubject_whenItEmitsNextFrames_thenResponseHasStatusOfSTREAM() {
+        doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+
+        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+
+        TestObserver<Response> testObserver = TestObserver.create();
+
+        handler.handleRequest(request).subscribe(testObserver);
+
+        sourceSubject.onNext("first");
+        sourceSubject.onNext("second");
+        sourceSubject.onNext("last");
+        sourceSubject.onComplete();
+
+        testObserver.awaitTerminalEvent();
+
+        testObserver.assertValues(
+                new Response(92, ResponseStatus.STREAM, "first"),
+                new Response(92, ResponseStatus.STREAM, "second"),
+                new Response(92, ResponseStatus.STREAM, "last"),
+                new Response(92, ResponseStatus.CLOSE, null)
+        );
+    }
+
+    @Test
+    public void givenOnSubjectIsCalled_whenSourceSubjectIsClosed_thenResponseSubjectEmitsCloseFrameAndCloseItself() {
+        TestObserver<Response> responseObserver = TestObserver.create();
+        TestObserver<Response> subjectObserver = TestObserver.create();
+
+        Observable<Response> observable = handler.onSubject(sourceSubject, responseSubject, 99);
+
+        observable.subscribe(responseObserver);
+        responseSubject.subscribe(subjectObserver);
+
+        sourceSubject.onComplete();
+
+        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
+        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
+
+        responseObserver.assertComplete();
+        subjectObserver.assertComplete();
+    }
+
+    @Test
+    public void givenSourceSubjectEmitsError_thenResponseSubjectEmitsClose() {
+        TestObserver<Response> responseObserver = TestObserver.create();
+        TestObserver<Response> subjectObserver = TestObserver.create();
+        TestObserver<String> sourceSubjectObserver = TestObserver.create();
+
+        Observable<Response> observable = handler.onSubject(sourceSubject, responseSubject, 99);
+
+        sourceSubject.subscribe(sourceSubjectObserver);
+        observable.subscribe(responseObserver);
+        responseSubject.subscribe(subjectObserver);
+
+        RuntimeException rte = new RuntimeException("bla");
+        sourceSubject.onError(rte);
+
+        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
+        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
+
+        responseObserver.assertComplete();
+        subjectObserver.assertComplete();
+        sourceSubjectObserver.assertTerminated();
     }
 
 }

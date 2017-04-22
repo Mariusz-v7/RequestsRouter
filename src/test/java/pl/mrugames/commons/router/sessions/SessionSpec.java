@@ -2,6 +2,7 @@ package pl.mrugames.commons.router.sessions;
 
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,6 +25,8 @@ import static org.mockito.Mockito.verify;
 public class SessionSpec {
     private Consumer<Session> destroyMethod;
     private Session session;
+    private PublishSubject<Response> subject1;
+    private PublishSubject<Response> subject2;
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
@@ -34,6 +37,15 @@ public class SessionSpec {
         destroyMethod = mock(Consumer.class);
 
         session = new Session("asdf", destroyMethod);
+
+        subject1 = PublishSubject.create();
+        subject2 = PublishSubject.create();
+    }
+
+    @After
+    public void after() {
+        subject1.onComplete();
+        subject2.onComplete();
     }
 
     @Test
@@ -171,9 +183,6 @@ public class SessionSpec {
         TestObserver<Response> observer1 = TestObserver.create();
         TestObserver<Response> observer2 = TestObserver.create();
 
-        PublishSubject<Response> subject1 = PublishSubject.create();
-        PublishSubject<Response> subject2 = PublishSubject.create();
-
         session.registerEmitter(1, subject1);
         session.registerEmitter(2, subject2);
 
@@ -192,12 +201,11 @@ public class SessionSpec {
     @Test
     public void givenEmitterIsRegistered_whenUnregister_thenObserversComplete() {
         TestObserver<Response> observer = TestObserver.create();
-        PublishSubject<Response> subject = PublishSubject.create();
 
-        session.registerEmitter(1, subject);
+        session.registerEmitter(1, subject1);
         assertThat(session.getEmittersAmount()).isEqualTo(1);
 
-        subject.subscribe(observer);
+        subject1.subscribe(observer);
 
         observer.assertNotComplete();
         session.unregisterEmitter(1);
@@ -208,20 +216,16 @@ public class SessionSpec {
 
     @Test
     public void givenEmitterIsRegistered_whenComplete_thenItIsRemovedFromSession() {
-        PublishSubject<Response> subject = PublishSubject.create();
 
-        session.registerEmitter(1, subject);
+        session.registerEmitter(1, subject1);
         assertThat(session.getEmittersAmount()).isEqualTo(1);
 
-        subject.onComplete();
+        subject1.onComplete();
         assertThat(session.getEmittersAmount()).isEqualTo(0);
     }
 
     @Test
     public void givenEmitterIsRegistered_whenSecondIsBeingRegisteredWithSameId_thenException() {
-        PublishSubject<Response> subject1 = PublishSubject.create();
-        PublishSubject<Response> subject2 = PublishSubject.create();
-
         session.registerEmitter(10, subject1);
 
         expectedException.expect(IllegalArgumentException.class);

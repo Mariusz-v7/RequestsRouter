@@ -34,4 +34,25 @@ public class Response implements Serializable {
                 ", payload=" + payload +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Response)) return false;
+
+        Response response = (Response) o;
+
+        if (id != response.id) return false;
+        if (status != response.status) return false;
+        return payload != null ? payload.equals(response.payload) : response.payload == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + status.hashCode();
+        result = 31 * result + (payload != null ? payload.hashCode() : 0);
+        return result;
+    }
 }

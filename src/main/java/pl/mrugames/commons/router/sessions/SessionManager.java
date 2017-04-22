@@ -36,8 +36,10 @@ public class SessionManager {
     }
 
     void remove(Session session) {
-        sessions.remove(session.getId());
-        session.destroy();
+        Session s = sessions.remove(session.getId());
+        if (s != null) {
+            s.destroy();
+        }
     }
 
     @Scheduled(fixedDelayString = "${" + RouterProperties.SESSION_EXPIRE_TIME + "}")

@@ -1,6 +1,7 @@
 package pl.mrugames.commons.router.sessions;
 
 import io.reactivex.subjects.PublishSubject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import pl.mrugames.commons.router.controllers.UserModel;
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionDestroySpec {
     private Session session;
+    private PublishSubject subject;
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
@@ -23,6 +25,13 @@ public class SessionDestroySpec {
         session.destroy();
 
         expectedException.expect(SessionExpiredException.class);
+
+        subject = PublishSubject.create();
+    }
+
+    @After
+    public void after() {
+        subject.onComplete();
     }
 
     @Test
@@ -62,6 +71,6 @@ public class SessionDestroySpec {
 
     @Test
     public void registerEmitter() {
-        session.registerEmitter(1, PublishSubject.create());
+        session.registerEmitter(1, subject);
     }
 }
