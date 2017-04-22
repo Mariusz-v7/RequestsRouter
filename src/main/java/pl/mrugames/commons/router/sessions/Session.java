@@ -7,7 +7,6 @@ import pl.mrugames.commons.router.permissions.RoleHolder;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -16,7 +15,7 @@ public class Session {
     private final String id;
     private final Consumer<Session> onDestroyMethod;
     private final Map<Class<?>, Object> map;
-    private final Map<String, Subject<Response>> emitters;
+    private final Map<Long, Subject<Response>> emitters;
 
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
@@ -109,25 +108,24 @@ public class Session {
         emitters.clear();
     }
 
-    synchronized String registerEmitter(Subject<Response> emitter) {
+    synchronized void registerEmitter(long requestId, Subject<Response> emitter) {
         if (isDestroyed) {
             throw new SessionExpiredException();
         }
 
-        UUID uuid = UUID.randomUUID();
-        String id = uuid.toString();
+        if (emitters.containsKey(requestId)) {
+            throw new IllegalArgumentException("Emitter with id " + requestId + " is already registered");
+        }
 
-        emitters.put(id, emitter);
+        emitters.put(requestId, emitter);
 
         emitter.subscribe(next -> {
         }, err -> {
-        }, () -> this.unregisterEmitter(id));
-
-        return id;
+        }, () -> this.unregisterEmitter(requestId));
     }
 
-    synchronized void unregisterEmitter(String id) {
-        Subject<Response> subject = emitters.remove(id);
+    synchronized void unregisterEmitter(long requestId) {
+        Subject<Response> subject = emitters.remove(requestId);
         if (subject != null) {
             subject.onComplete();
         }

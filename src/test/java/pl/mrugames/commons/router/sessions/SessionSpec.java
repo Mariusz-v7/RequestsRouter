@@ -167,14 +167,6 @@ public class SessionSpec {
     }
 
     @Test
-    public void whenRegisterEmitter_thenReturnUniqueId() {
-        String id1 = session.registerEmitter(PublishSubject.create());
-        String id2 = session.registerEmitter(PublishSubject.create());
-
-        assertThat(id1).isNotEqualTo(id2);
-    }
-
-    @Test
     public void givenSessionRegistersEmitter_whenDestroy_thenAllObserversAreUnsubscribed() {
         TestObserver<Response> observer1 = TestObserver.create();
         TestObserver<Response> observer2 = TestObserver.create();
@@ -182,8 +174,8 @@ public class SessionSpec {
         PublishSubject<Response> subject1 = PublishSubject.create();
         PublishSubject<Response> subject2 = PublishSubject.create();
 
-        session.registerEmitter(subject1);
-        session.registerEmitter(subject2);
+        session.registerEmitter(1, subject1);
+        session.registerEmitter(2, subject2);
 
         subject1.subscribe(observer1);
         subject2.subscribe(observer2);
@@ -202,13 +194,13 @@ public class SessionSpec {
         TestObserver<Response> observer = TestObserver.create();
         PublishSubject<Response> subject = PublishSubject.create();
 
-        String id = session.registerEmitter(subject);
+        session.registerEmitter(1, subject);
         assertThat(session.getEmittersAmount()).isEqualTo(1);
 
         subject.subscribe(observer);
 
         observer.assertNotComplete();
-        session.unregisterEmitter(id);
+        session.unregisterEmitter(1);
         observer.assertComplete();
 
         assertThat(session.getEmittersAmount()).isEqualTo(0);
@@ -218,10 +210,23 @@ public class SessionSpec {
     public void givenEmitterIsRegistered_whenComplete_thenItIsRemovedFromSession() {
         PublishSubject<Response> subject = PublishSubject.create();
 
-        session.registerEmitter(subject);
+        session.registerEmitter(1, subject);
         assertThat(session.getEmittersAmount()).isEqualTo(1);
 
         subject.onComplete();
         assertThat(session.getEmittersAmount()).isEqualTo(0);
+    }
+
+    @Test
+    public void givenEmitterIsRegistered_whenSecondIsBeingRegisteredWithSameId_thenException() {
+        PublishSubject<Response> subject1 = PublishSubject.create();
+        PublishSubject<Response> subject2 = PublishSubject.create();
+
+        session.registerEmitter(10, subject1);
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Emitter with id 10 is already registered");
+
+        session.registerEmitter(10, subject2);
     }
 }

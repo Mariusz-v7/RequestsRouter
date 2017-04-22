@@ -62,6 +62,6 @@ public class SessionDestroySpec {
 
     @Test
     public void registerEmitter() {
-        session.registerEmitter(PublishSubject.create());
+        session.registerEmitter(1, PublishSubject.create());
     }
 }
