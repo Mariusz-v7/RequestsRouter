@@ -47,7 +47,7 @@ public class ObjectRequestHandlerSpec {
 
     @After
     public void after() {
-        reset(router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver);
+        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver);
     }
 
     private String generateString(int len) {
@@ -238,6 +238,18 @@ public class ObjectRequestHandlerSpec {
 
         ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
         assertThat(status).isEqualTo(ResponseStatus.OK);
+    }
+
+    @Test
+    public void givenCheckPermissionsReturnStatusOtherThanOk_whenRequest_thenResponseWithReturnedStatus() {
+        doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(handler).checkPermissions(any(), any());
+        Request request = new Request(90, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+
+        Response response = handler.handleRequest(request);
+
+        assertThat(response.getId()).isEqualTo(90);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
+        assertThat(response.getPayload()).isEqualTo("xxx");
     }
 
 }

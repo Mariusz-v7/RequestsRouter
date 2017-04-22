@@ -52,6 +52,11 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
         RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
 
+        Mono<?> permissionStatus = checkPermissions(session, routeInfo);
+        if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
+            return new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload());
+        }
+
         Object returnValue = router.navigate(routeInfo,
                 pathArgumentResolver.resolve(request.getRequestMethod() + ":" + request.getRoute(), routeInfo.getRoutePattern(), routeInfo.getParameters()),
                 requestPayloadArgumentResolver.resolve(request.getPayload(), routeInfo.getParameters()),
@@ -66,20 +71,20 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
         switch (routeInfo.getAccessType()) {
             case ONLY_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? Mono.OK : new Mono<>(ResponseStatus.NOT_AUTHORIZED);
+                return session.get(RoleHolder.class).isPresent() ? Mono.OK : Mono.of(ResponseStatus.NOT_AUTHORIZED);
             case ONLY_NOT_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? new Mono<>(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED) : Mono.OK;
+                return session.get(RoleHolder.class).isPresent() ? Mono.of(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED) : Mono.OK;
             case ONLY_WITH_SPECIFIC_ROLES:
                 Optional<RoleHolder> roleHolder = session.get(RoleHolder.class);
                 if (roleHolder.isPresent()) {
                     return checkRoles(roleHolder.get(), routeInfo.getAllowedRoles());
                 }
 
-                return new Mono<>(ResponseStatus.PERMISSION_DENIED);
+                return Mono.of(ResponseStatus.PERMISSION_DENIED);
             case ALL_ALLOWED:
                 return Mono.OK;
             default:
-                return new Mono(ResponseStatus.INTERNAL_ERROR);
+                return Mono.of(ResponseStatus.INTERNAL_ERROR);
         }
     }
 
@@ -91,6 +96,6 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
             }
         }
 
-        return new Mono<>(ResponseStatus.PERMISSION_DENIED);
+        return Mono.of(ResponseStatus.PERMISSION_DENIED);
     }
 }
