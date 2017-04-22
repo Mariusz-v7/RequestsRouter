@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import pl.mrugames.commons.router.controllers.Interface;
 import pl.mrugames.commons.router.controllers.UserModel;
+import pl.mrugames.commons.router.permissions.RoleHolder;
 
 import java.util.function.Consumer;
 
@@ -146,5 +147,12 @@ public class SessionSpec {
 
         assertThat(session.get(UserModel.class).get()).isEqualTo(userModel1);
         assertThat(session.get(Interface.class).get()).isEqualTo(userModel1);
+    }
+
+    @Test
+    public void whenRegisterAuthenticatedUser_thenRoleOwnerIsAddedToSession() {
+        UserModel userModel = new UserModel("Role Holder", 1239);
+        session.addAuthenticatedUser(userModel);
+        assertThat(session.get(RoleHolder.class).get()).isSameAs(userModel);
     }
 }

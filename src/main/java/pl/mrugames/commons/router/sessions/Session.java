@@ -1,5 +1,7 @@
 package pl.mrugames.commons.router.sessions;
 
+import pl.mrugames.commons.router.permissions.RoleHolder;
+
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +52,10 @@ public class Session {
     @SuppressWarnings("unchecked")
     public <T> T compute(Class<T> type, BiFunction<Class<T>, T, T> remappingFunction) {
         return (T) map.compute(type, (BiFunction) remappingFunction);
+    }
+
+    public void addAuthenticatedUser(RoleHolder roleHolder) {
+        map.put(RoleHolder.class, roleHolder);
     }
 
     public void destroy() {
