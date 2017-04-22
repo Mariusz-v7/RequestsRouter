@@ -72,18 +72,25 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
             case ONLY_WITH_SPECIFIC_ROLES:
                 Optional<RoleHolder> roleHolder = session.get(RoleHolder.class);
                 if (roleHolder.isPresent()) {
-                    List<String> roles = roleHolder.get().getRoles();
-                    for (String role : roles) {
-                        if (routeInfo.getAllowedRoles().contains(role)) {
-                            return Mono.OK;
-                        }
-                    }
+                    return checkRoles(roleHolder.get(), routeInfo.getAllowedRoles());
                 }
+
                 return new Mono<>(ResponseStatus.PERMISSION_DENIED);
             case ALL_ALLOWED:
                 return Mono.OK;
             default:
                 return new Mono(ResponseStatus.INTERNAL_ERROR);
         }
+    }
+
+    private Mono<?> checkRoles(RoleHolder roleHolder, List<String> allowedRoles) {
+        List<String> roles = roleHolder.getRoles();
+        for (String role : roles) {
+            if (allowedRoles.contains(role)) {
+                return Mono.OK;
+            }
+        }
+
+        return new Mono<>(ResponseStatus.PERMISSION_DENIED);
     }
 }
