@@ -1,6 +1,7 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -23,17 +24,20 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     }
 
     @Override
-    public String handleRequest(String json) {
+    public Observable<String> handleRequest(String json) {
         Request request;
         try {
             request = mapper.readValue(json, JsonRequest.class);
         } catch (Exception e) {
             logger.error("Failed to read JSON: {}", json, e);
-            return ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1);
+            return Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1));
         }
 
-        Response response = requestHandler.handleRequest(request);
+        return requestHandler.handleRequest(request)
+                .map(r -> responseToString(r, json, request));
+    }
 
+    private String responseToString(Response response, String json, Request request) {
         try {
             return mapper.writeValueAsString(response);
         } catch (Exception e) {

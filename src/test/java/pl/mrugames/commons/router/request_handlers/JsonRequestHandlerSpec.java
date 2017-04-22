@@ -2,6 +2,8 @@ package pl.mrugames.commons.router.request_handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reactivex.Observable;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +48,11 @@ public class JsonRequestHandlerSpec {
         jsonRequest = mapper.writeValueAsString(request);
     }
 
+    @After
+    public void after() {
+        reset(mapper, objectRequestHandler);
+    }
+
     @Test
     public void givenStringRequest_thenParseIntoRequestAndCallObjectHandler() throws Exception {
         handler.handleRequest(jsonRequest);
@@ -57,9 +64,8 @@ public class JsonRequestHandlerSpec {
         Response response = new Response(123, ResponseStatus.CLOSE, new UserModel("Mariusz", 0));
         String jsonResponse = mapper.writeValueAsString(response);
 
-        doReturn(response).when(objectRequestHandler).handleRequest(any());
-        String realResponse = handler.handleRequest(jsonRequest);
-        doCallRealMethod().when(objectRequestHandler).handleRequest(any()); // revert
+        doReturn(Observable.just(response)).when(objectRequestHandler).handleRequest(any());
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).isEqualTo(jsonResponse);
     }
@@ -67,8 +73,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenObjectMapperThrowsError_thenReturnReadyErrorResponse() throws JsonProcessingException {
         doThrow(new RuntimeException("mapping exception")).when(mapper).writeValueAsString(any());
-        String realResponse = handler.handleRequest(jsonRequest);
-        doCallRealMethod().when(mapper).writeValueAsString(any());  // revert
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).matches(
                 String.format("\\" + JsonRequestHandler.JSON_MAPPING_ERROR_RESPONSE, request.getId(), "mapping exception", "[\\s\\S]*")
@@ -78,8 +83,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenObjectMapperThrowExceptionOnReadingRequest_thenSendBackErrorMessage() throws IOException {
         doThrow(new RuntimeException("failed to read")).when(mapper).readValue(anyString(), any(Class.class));
-        String realResponse = handler.handleRequest(jsonRequest);
-        doCallRealMethod().when(mapper).writeValueAsString(any());  // revert
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).matches(
                 String.format("\\" + JsonRequestHandler.JSON_READ_ERROR_RESPONSE, -1, "failed to read", "[\\s\\S]*")

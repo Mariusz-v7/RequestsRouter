@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.request_handlers;
 
+import io.reactivex.Observable;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
@@ -35,15 +36,15 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     }
 
     @Override
-    public Response handleRequest(Request request) {
+    public Observable<Response> handleRequest(Request request) {
         try {
             return next(request);
         } catch (Exception e) {
-            return new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
+            return Observable.just(new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
         }
     }
 
-    Response next(Request request) throws Exception {
+    Observable<Response> next(Request request) throws Exception {
         if (request.getSession().length() < SESSION_ID_MIN_LENGTH) {
             throw new IllegalArgumentException("Session id must be at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
         }
@@ -54,7 +55,7 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
         Mono<?> permissionStatus = checkPermissions(session, routeInfo);
         if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
-            return new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload());
+            return Observable.just(new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
         }
 
         Object returnValue = router.navigate(routeInfo,
@@ -65,10 +66,15 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
         if (returnValue instanceof Mono) {
             Mono<?> mono = (Mono) returnValue;
-            return new Response(request.getId(), mono.getResponseStatus(), mono.getPayload());
+            return Observable.just(new Response(request.getId(), mono.getResponseStatus(), mono.getPayload()));
         }
 
-        return new Response(request.getId(), ResponseStatus.OK, returnValue);
+//        if (returnValue instanceof Subject) {
+//            Observable<?> subject = (Subject) returnValue;
+//
+//        }
+
+        return Observable.just(new Response(request.getId(), ResponseStatus.OK, returnValue));
     }
 
     Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
