@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 public class Response implements Serializable {
     public enum Status {
-        OK, INTERNAL_ERROR, ERROR, STREAM, CLOSE
+        OK, INTERNAL_ERROR, ERROR, STREAM, CLOSE,
+        NOT_AUTHORIZED, ONLY_FOR_NOT_AUTHORIZED, PERMISSION_DENIED
     }
 
     private final long id;

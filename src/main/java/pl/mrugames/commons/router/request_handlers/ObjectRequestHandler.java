@@ -8,8 +8,12 @@ import pl.mrugames.commons.router.Router;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
+import pl.mrugames.commons.router.permissions.RoleHolder;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
@@ -60,5 +64,29 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         //todo: check instanceof and act appropriately
 
         return new Response(request.getId(), null, null);
+    }
+
+    Response.Status checkPermissions(Session session, RouteInfo routeInfo) {
+        switch (routeInfo.getAccessType()) {
+            case ONLY_LOGGED_IN:
+                return session.get(RoleHolder.class).isPresent() ? Response.Status.OK : Response.Status.NOT_AUTHORIZED;
+            case ONLY_NOT_LOGGED_IN:
+                return session.get(RoleHolder.class).isPresent() ? Response.Status.ONLY_FOR_NOT_AUTHORIZED : Response.Status.OK;
+            case ONLY_WITH_SPECIFIC_ROLES:
+                Optional<RoleHolder> roleHolder = session.get(RoleHolder.class);
+                if (roleHolder.isPresent()) {
+                    List<String> roles = roleHolder.get().getRoles();
+                    for (String role : roles) {
+                        if (routeInfo.getAllowedRoles().contains(role)) {
+                            return Response.Status.OK;
+                        }
+                    }
+                }
+                return Response.Status.PERMISSION_DENIED;
+            case ALL_ALLOWED:
+                return Response.Status.OK;
+            default:
+                return Response.Status.INTERNAL_ERROR;
+        }
     }
 }

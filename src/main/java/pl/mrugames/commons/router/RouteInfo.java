@@ -48,7 +48,7 @@ public class RouteInfo {
     private final AccessType accessType;
     private final List<String> allowedRoles;
 
-    RouteInfo(Object controllerInstance, Method method, List<Parameter> parameters, String routePattern, AccessType accessType, List<String> allowedRoles) {
+    public RouteInfo(Object controllerInstance, Method method, List<Parameter> parameters, String routePattern, AccessType accessType, List<String> allowedRoles) {
         this.controllerInstance = controllerInstance;
         this.method = method;
         this.parameters = parameters;

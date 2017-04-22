@@ -13,6 +13,9 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
+import pl.mrugames.commons.router.permissions.AccessType;
+import pl.mrugames.commons.router.permissions.RoleHolder;
+import pl.mrugames.commons.router.sessions.Session;
 
 import java.util.*;
 
@@ -148,4 +151,93 @@ public class ObjectRequestHandlerSpec {
 
         verify(pathArgumentResolver).resolve("GET:app/test/concat", routeInfo.getRoutePattern(), routeInfo.getParameters());
     }
+
+    @Test
+    public void givenSessionHasNoUserLogged_andRouteRequiresLoggedUsers_whenCheckPermissions_thenDeny() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_LOGGED_IN, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.NOT_AUTHORIZED);
+    }
+
+    @Test
+    public void givenSessionHasUserLogged_andRouteRequiresIt_whenCheckPermissions_thenOk() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_LOGGED_IN, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+        session.add(RoleHolder.class, mock(RoleHolder.class));
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.OK);
+    }
+
+    @Test
+    public void givenSessionHasNoUserLogged_andRouteRequiresNoLogged_whenCheckPermissions_thenOk() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_NOT_LOGGED_IN, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.OK);
+    }
+
+    @Test
+    public void givenSessionHasUserLogged_andRouteRequiresNoLogged_thenDeny() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_NOT_LOGGED_IN, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+        session.add(RoleHolder.class, mock(RoleHolder.class));
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.ONLY_FOR_NOT_AUTHORIZED);
+    }
+
+    @Test
+    public void givenSessionHasNoUserLogged_andRouteRequiresRoles_thenDeny() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.PERMISSION_DENIED);
+    }
+
+    @Test
+    public void givenSessionHasUserWithoutPermissions_thenDeny() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.singletonList("admin"));
+        Session session = new Session("mock", s -> {
+        });
+        RoleHolder roleHolder = mock(RoleHolder.class);
+        doReturn(Collections.singletonList("user")).when(roleHolder).getRoles();
+        session.add(RoleHolder.class, roleHolder);
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.PERMISSION_DENIED);
+    }
+
+    @Test
+    public void givenSessionHasUserWithPermissions_thenOk() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.singletonList("admin"));
+        Session session = new Session("mock", s -> {
+        });
+        RoleHolder roleHolder = mock(RoleHolder.class);
+        doReturn(Collections.singletonList("admin")).when(roleHolder).getRoles();
+        session.add(RoleHolder.class, roleHolder);
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.OK);
+    }
+
+    @Test
+    public void givenSessionHasNoUser_andRouteHasAllAllowed_thenOk() {
+        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ALL_ALLOWED, Collections.emptyList());
+        Session session = new Session("mock", s -> {
+        });
+
+        Response.Status status = handler.checkPermissions(session, routeInfo);
+        assertThat(status).isEqualTo(Response.Status.OK);
+    }
+
 }
