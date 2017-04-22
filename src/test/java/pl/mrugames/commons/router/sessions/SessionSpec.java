@@ -163,4 +163,13 @@ public class SessionSpec {
         assertThat(session.get(Session.class)).isPresent();
         assertThat(session.get(Session.class).get()).isSameAs(session);
     }
+
+    @Test
+    public void whenSessionIsCreated_thenItIsNotDestroyed() {
+        Session session = new Session("", s -> {
+        });
+
+        assertThat(session.isDestroyed()).isFalse();
+    }
+
 }

@@ -37,6 +37,7 @@ public class SessionManager {
 
     void remove(Session session) {
         sessions.remove(session.getId());
+        session.destroy();
     }
 
     @Scheduled(fixedDelayString = "${" + RouterProperties.SESSION_EXPIRE_TIME + "}")
@@ -45,7 +46,8 @@ public class SessionManager {
 
         sessions.entrySet().stream()
                 .filter(e -> e.getValue().getLastAccessed().isBefore(expireTime))
-                .forEach(e -> sessions.remove(e.getKey()));
+                .map(Map.Entry::getValue)
+                .forEach(this::remove);
     }
 
     private Session compute(String sessionId, Session current) {
