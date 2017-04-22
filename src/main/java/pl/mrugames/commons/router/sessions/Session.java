@@ -22,6 +22,7 @@ public class Session {
         this.map = new ConcurrentHashMap<>();
 
         lastAccessed = Instant.now();
+        map.put(Session.class, this);
     }
 
     @SuppressWarnings("unchecked")

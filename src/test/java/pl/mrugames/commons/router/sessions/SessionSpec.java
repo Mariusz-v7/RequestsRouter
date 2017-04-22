@@ -155,4 +155,12 @@ public class SessionSpec {
         session.addAuthenticatedUser(userModel);
         assertThat(session.get(RoleHolder.class).get()).isSameAs(userModel);
     }
+
+    @Test
+    public void whenSessionIsCreated_thenItContainsReferenceToItself() {
+        Session session = new Session("ASDF", s -> {
+        });
+        assertThat(session.get(Session.class)).isPresent();
+        assertThat(session.get(Session.class).get()).isSameAs(session);
+    }
 }
