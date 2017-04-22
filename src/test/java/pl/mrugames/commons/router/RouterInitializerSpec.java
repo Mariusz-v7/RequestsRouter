@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.controllers.TestController;
+import pl.mrugames.commons.router.permissions.AccessType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -128,5 +129,40 @@ public class RouterInitializerSpec {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/player/{playerId}");
         List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.PATH_VAR);
+    }
+
+    @Test
+    public void givenNoPermissionRelatedAnnotation_thenRouteHasAccessTypeOfOnlyLogged() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/only-logged");
+        assertThat(routeInfo.getAccessType()).isEqualTo(AccessType.ONLY_LOGGED_IN);
+        assertThat(routeInfo.getAllowedRoles()).isEmpty();
+    }
+
+    @Test
+    public void givenOnlyNotLoggedAnnotation_thenRouteHasAccessTypeOfOnlyNotLogged() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/only-not-logged");
+        assertThat(routeInfo.getAccessType()).isEqualTo(AccessType.ONLY_NOT_LOGGED_IN);
+        assertThat(routeInfo.getAllowedRoles()).isEmpty();
+    }
+
+    @Test
+    public void givenAllAllowedAnnotation_thenRouteHasAccessTypeOfAllAllowed() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/all-allowed");
+        assertThat(routeInfo.getAccessType()).isEqualTo(AccessType.ALL_ALLOWED);
+        assertThat(routeInfo.getAllowedRoles()).isEmpty();
+    }
+
+    @Test
+    public void givenAllowedRolesAnnotation_thenRouteHasAccessOfTypeSpecificRoles_andContainsListOfRoles() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/admin");
+        assertThat(routeInfo.getAccessType()).isEqualTo(AccessType.ONLY_WITH_SPECIFIC_ROLES);
+        assertThat(routeInfo.getAllowedRoles()).contains("admin", "superuser");
+    }
+
+    @Test
+    public void givenMixedPermissionAnnotations_thenAllowedRolesHasBiggestPriority() {
+        RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/bad-perms");
+        assertThat(routeInfo.getAccessType()).isEqualTo(AccessType.ONLY_WITH_SPECIFIC_ROLES);
+        assertThat(routeInfo.getAllowedRoles()).contains("admin");
     }
 }

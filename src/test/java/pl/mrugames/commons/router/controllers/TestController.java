@@ -1,10 +1,7 @@
 package pl.mrugames.commons.router.controllers;
 
 import pl.mrugames.commons.router.RequestMethod;
-import pl.mrugames.commons.router.annotations.Arg;
-import pl.mrugames.commons.router.annotations.Controller;
-import pl.mrugames.commons.router.annotations.PathVar;
-import pl.mrugames.commons.router.annotations.Route;
+import pl.mrugames.commons.router.annotations.*;
 
 @Controller("app/test")
 public class TestController {
@@ -59,6 +56,37 @@ public class TestController {
 
     @Route(value = "session/defaults")
     public void sessionPrimitives(long l, double d, float f, int i, short s, byte b, boolean y, Object o) {
+
+    }
+
+    @Route("only-logged")
+    public void onlyLogged() {
+
+    }
+
+    @Route("only-not-logged")
+    @OnlyNotLoggedAllowed
+    public void onlyNotLogged() {
+
+    }
+
+    @Route("all-allowed")
+    @AllAllowed
+    public void allAllowed() {
+
+    }
+
+    @Route("admin")
+    @AllowedRoles({"admin", "superuser"})
+    public void admin() {
+
+    }
+
+    @Route("bad-perms")
+    @AllowedRoles("admin")
+    @AllAllowed
+    @OnlyNotLoggedAllowed
+    public void badPerms() {
 
     }
 }
