@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import pl.mrugames.commons.router.controllers.Interface;
 import pl.mrugames.commons.router.controllers.UserModel;
 
 import java.util.function.Consumer;
@@ -134,5 +135,16 @@ public class SessionSpec {
         });
 
         assertThat(result).isEqualTo(userModel2);
+    }
+
+    @Test
+    public void givenUserModelIsAdded_whenAddInterface_thenBothKeysAreAssociatedWithOneValue() {
+        UserModel userModel1 = new UserModel("Session user 1", 908);
+
+        session.add(userModel1);
+        session.add(Interface.class, userModel1);
+
+        assertThat(session.get(UserModel.class).get()).isEqualTo(userModel1);
+        assertThat(session.get(Interface.class).get()).isEqualTo(userModel1);
     }
 }

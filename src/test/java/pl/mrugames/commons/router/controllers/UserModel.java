@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-public class UserModel implements Serializable {
+public class UserModel implements Serializable, Interface {
     private final int id;
     private final String name;
 

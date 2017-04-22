@@ -28,6 +28,11 @@ public class Session {
     }
 
     @SuppressWarnings("unchecked")
+    public <T> T add(Class<T> type, T object) {
+        return (T) map.put(type, object);
+    }
+
+    @SuppressWarnings("unchecked")
     public <T> Optional<T> get(Class<T> type) {
         return Optional.ofNullable((T) map.get(type));
     }
