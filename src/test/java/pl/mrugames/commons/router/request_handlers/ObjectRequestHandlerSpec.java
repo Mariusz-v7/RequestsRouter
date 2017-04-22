@@ -18,6 +18,7 @@ import pl.mrugames.commons.router.permissions.RoleHolder;
 import pl.mrugames.commons.router.sessions.Session;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.*;
         TestConfiguration.class
 })
 public class ObjectRequestHandlerSpec {
+    private String sessionId = generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH);
+
     @Autowired
     private ObjectRequestHandler handler;
 
@@ -250,6 +253,37 @@ public class ObjectRequestHandlerSpec {
         assertThat(response.getId()).isEqualTo(90);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
         assertThat(response.getPayload()).isEqualTo("xxx");
+    }
+
+    @Test
+    public void givenRouterReturnsSomeObject_whenRequest_thenReturnResponseOk() {
+        Object someObject = new Object();
+        doReturn(someObject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+
+        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+
+        Response response = handler.handleRequest(request);
+
+        assertThat(response.getId()).isEqualTo(92);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.OK);
+        assertThat(response.getPayload()).isEqualTo(someObject);
+    }
+
+    @Test
+    public void givenRouterReturnsMono_whenRequest_thenCopyMonoDataIntoResponse() {
+        Stream.of(ResponseStatus.values()).forEach(status -> {
+            Mono<String> returnedVal = Mono.of(status, "asdf");
+
+            doReturn(returnedVal).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+
+            Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+
+            Response response = handler.handleRequest(request);
+
+            assertThat(response.getId()).isEqualTo(92);
+            assertThat(response.getStatus()).isEqualTo(status);
+            assertThat(response.getPayload()).isEqualTo("asdf");
+        });
     }
 
 }

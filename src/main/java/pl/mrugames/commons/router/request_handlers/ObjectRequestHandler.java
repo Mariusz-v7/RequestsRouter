@@ -63,9 +63,12 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
                 sessionArgumentResolver.resolve(session, routeInfo.getParameters())
         );
 
-        //todo: check instanceof and act appropriately
+        if (returnValue instanceof Mono) {
+            Mono<?> mono = (Mono) returnValue;
+            return new Response(request.getId(), mono.getResponseStatus(), mono.getPayload());
+        }
 
-        return new Response(request.getId(), null, null);
+        return new Response(request.getId(), ResponseStatus.OK, returnValue);
     }
 
     Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
