@@ -29,6 +29,33 @@ public class Request implements Serializable {
         this.requestType = requestType;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Request)) return false;
+
+        Request request = (Request) o;
+
+        if (id != request.id) return false;
+        if (!session.equals(request.session)) return false;
+        if (route != null ? !route.equals(request.route) : request.route != null) return false;
+        if (requestMethod != request.requestMethod) return false;
+        if (payload != null ? !payload.equals(request.payload) : request.payload != null) return false;
+        return requestType == request.requestType;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + session.hashCode();
+        result = 31 * result + (route != null ? route.hashCode() : 0);
+        result = 31 * result + (requestMethod != null ? requestMethod.hashCode() : 0);
+        result = 31 * result + (payload != null ? payload.hashCode() : 0);
+        result = 31 * result + requestType.hashCode();
+        return result;
+    }
+
     public long getId() {
         return id;
     }
@@ -51,33 +78,6 @@ public class Request implements Serializable {
 
     public RequestType getRequestType() {
         return requestType;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Request)) return false;
-
-        Request request = (Request) o;
-
-        if (id != request.id) return false;
-        if (!session.equals(request.session)) return false;
-        if (!route.equals(request.route)) return false;
-        if (requestMethod != request.requestMethod) return false;
-        if (payload != null ? !payload.equals(request.payload) : request.payload != null) return false;
-        return requestType == request.requestType;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + session.hashCode();
-        result = 31 * result + route.hashCode();
-        result = 31 * result + requestMethod.hashCode();
-        result = 31 * result + (payload != null ? payload.hashCode() : 0);
-        result = 31 * result + requestType.hashCode();
-        return result;
     }
 
     @Override

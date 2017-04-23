@@ -1,7 +1,6 @@
 package pl.mrugames.commons.router.sessions;
 
 import io.reactivex.subjects.Subject;
-import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.permissions.RoleHolder;
 
 import java.time.Instant;
@@ -108,7 +107,11 @@ public class Session {
         emitters.clear();
     }
 
-    synchronized void registerEmitter(long requestId, Subject<Response> emitter) {
+    public synchronized int getEmittersAmount() {
+        return emitters.size();
+    }
+
+    public synchronized void registerEmitter(long requestId, Subject<?> emitter) {
         if (isDestroyed) {
             throw new SessionExpiredException();
         }
@@ -124,7 +127,7 @@ public class Session {
         }, () -> this.unregisterEmitter(requestId));
     }
 
-    synchronized void unregisterEmitter(long requestId) {
+    public synchronized void unregisterEmitter(long requestId) {
         Subject<?> subject = emitters.remove(requestId);
         if (subject != null) {
             subject.onComplete();
@@ -145,9 +148,5 @@ public class Session {
 
     synchronized String getId() {
         return id;
-    }
-
-    synchronized int getEmittersAmount() {
-        return emitters.size();
     }
 }

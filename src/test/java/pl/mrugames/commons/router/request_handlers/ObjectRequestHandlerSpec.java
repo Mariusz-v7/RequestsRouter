@@ -20,6 +20,7 @@ import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
 import pl.mrugames.commons.router.permissions.AccessType;
 import pl.mrugames.commons.router.permissions.RoleHolder;
 import pl.mrugames.commons.router.sessions.Session;
+import pl.mrugames.commons.router.sessions.SessionManager;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -49,6 +50,9 @@ public class ObjectRequestHandlerSpec {
     @Autowired
     private SessionArgumentResolver sessionArgumentResolver;
 
+    @Autowired
+    private SessionManager sessionManager;
+
     private PublishSubject<String> sourceSubject;
     private PublishSubject<Response> responseSubject;
 
@@ -63,7 +67,7 @@ public class ObjectRequestHandlerSpec {
 
     @After
     public void after() {
-        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver);
+        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver, sessionManager);
         sourceSubject.onComplete();
         responseSubject.onComplete();
     }
@@ -366,6 +370,40 @@ public class ObjectRequestHandlerSpec {
         responseObserver.assertComplete();
         subjectObserver.assertComplete();
         sourceSubjectObserver.assertTerminated();
+    }
+
+    @Test
+    public void givenRouterReturnsSubject_whenRequest_thenRegisterEmitter() {
+        Session session = spy(new Session("", s -> {
+        }));
+
+        doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+        doReturn(session).when(sessionManager).getSession(anyString());
+
+        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+
+        handler.handleRequest(request);
+        verify(session).registerEmitter(92, sourceSubject);
+    }
+
+    @Test
+    public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() {
+        TestObserver<Response> testObserver = TestObserver.create();
+        doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+
+        Request request = new Request(904, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        handler.handleRequest(request).subscribe(testObserver);
+
+        Request closeRequest = new Request(904, sessionId, null, null, null, RequestType.CLOSE_STREAM);
+
+        TestObserver<Response> closeObserver = TestObserver.create();
+        handler.handleRequest(closeRequest).subscribe(closeObserver);
+
+        testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
+        testObserver.assertComplete();
+
+        closeObserver.assertValue(new Response(904, ResponseStatus.CLOSE, null));
+        closeObserver.assertComplete();
     }
 
 }

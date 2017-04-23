@@ -12,6 +12,7 @@ import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
+import pl.mrugames.commons.router.sessions.SessionManager;
 
 import static org.mockito.Mockito.spy;
 
@@ -66,5 +67,11 @@ public class TestConfiguration {
     @Primary
     public SessionArgumentResolver sessionArgumentResolverSpy(SessionArgumentResolver sessionArgumentResolver) {
         return spy(sessionArgumentResolver);
+    }
+
+    @Bean
+    @Primary
+    public SessionManager sessionManagerSpy(SessionManager sessionManager) {
+        return spy(sessionManager);
     }
 }

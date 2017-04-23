@@ -42,4 +42,13 @@ public class JsonRequestSpec {
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
         assertThat(result.getRequestType()).isEqualTo(RequestType.CLOSE_STREAM);
     }
+
+    @Test
+    public void testNotRequiredFields() throws IOException {
+        Request request = new Request(2, "asdfgh", null, null, null, RequestType.CLOSE_STREAM);
+        String jsonRequest = "{\"id\":2,\"session\":\"asdfgh\",\"requestType\":\"CLOSE_STREAM\"}";
+
+        Request result = mapper.readValue(jsonRequest, JsonRequest.class);
+        assertThat(result).isEqualTo(request);
+    }
 }

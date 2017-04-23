@@ -53,29 +53,38 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
 
         Session session = sessionManager.getSession(request.getSession());
 
-        RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
+        switch (request.getRequestType()) {
+            case STANDARD:
+                RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
 
-        Mono<?> permissionStatus = checkPermissions(session, routeInfo);
-        if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
-            return Observable.just(new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
+                Mono<?> permissionStatus = checkPermissions(session, routeInfo);
+                if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
+                    return Observable.just(new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
+                }
+
+                Object returnValue = router.navigate(routeInfo,
+                        pathArgumentResolver.resolve(request.getRequestMethod() + ":" + request.getRoute(), routeInfo.getRoutePattern(), routeInfo.getParameters()),
+                        requestPayloadArgumentResolver.resolve(request.getPayload(), routeInfo.getParameters()),
+                        sessionArgumentResolver.resolve(session, routeInfo.getParameters())
+                );
+
+                if (returnValue instanceof Mono) {
+                    Mono<?> mono = (Mono) returnValue;
+                    return Observable.just(new Response(request.getId(), mono.getResponseStatus(), mono.getPayload()));
+                }
+
+                if (returnValue instanceof Subject) {
+                    session.registerEmitter(request.getId(), (Subject) returnValue);
+                    return onSubject((Subject) returnValue, PublishSubject.create(), request.getId());
+                }
+
+                return Observable.just(new Response(request.getId(), ResponseStatus.OK, returnValue));
+            case CLOSE_STREAM:
+                session.unregisterEmitter(request.getId());
+                return Observable.just(new Response(request.getId(), ResponseStatus.CLOSE, null));
+            default:
+                throw new IllegalStateException("Unknown request type: " + request.getRequestType());
         }
-
-        Object returnValue = router.navigate(routeInfo,
-                pathArgumentResolver.resolve(request.getRequestMethod() + ":" + request.getRoute(), routeInfo.getRoutePattern(), routeInfo.getParameters()),
-                requestPayloadArgumentResolver.resolve(request.getPayload(), routeInfo.getParameters()),
-                sessionArgumentResolver.resolve(session, routeInfo.getParameters())
-        );
-
-        if (returnValue instanceof Mono) {
-            Mono<?> mono = (Mono) returnValue;
-            return Observable.just(new Response(request.getId(), mono.getResponseStatus(), mono.getPayload()));
-        }
-
-        if (returnValue instanceof Subject) {
-            return onSubject((Subject) returnValue, PublishSubject.create(), request.getId());
-        }
-
-        return Observable.just(new Response(request.getId(), ResponseStatus.OK, returnValue));
     }
 
     Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
