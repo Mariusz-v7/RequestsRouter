@@ -99,4 +99,19 @@ public class TestController {
     public void badPerms() {
 
     }
+
+    @Route("re-return-obj")
+    public UserModel reReturnObj(UserModel userModel) {
+        return userModel;
+    }
+
+    @Route("re-return-int")
+    public int reReturnPrimitive(int i) {
+        return i;
+    }
+
+    @Route("re-return-bool")
+    public boolean reReturnPrimitiveBool(boolean i) {
+        return i;
+    }
 }

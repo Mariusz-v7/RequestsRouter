@@ -8,6 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.controllers.UserModel;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -35,5 +42,104 @@ public class RouterSpec {
         expectedException.expectMessage("Route not found: DELETE:xxx");
 
         router.findRoute("xxx", RequestMethod.DELETE);
+    }
+
+    @Test
+    public void givenRouteWithoutArguments_whenNavigate_thenReturnValueFromController() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/route1", RequestMethod.GET);
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+        assertThat(result).isEqualTo("route1");
+    }
+
+    @Test
+    public void givenRouteWithPathArgs_whenNavigate_thenExtractParameters() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/player/10", RequestMethod.GET);
+
+        Object result = router.navigate(routeInfo, Collections.singletonMap("playerId", 10), Collections.emptyMap(), Collections.emptyMap());
+        assertThat(result).isEqualTo(11);
+    }
+
+    @Test
+    public void givenRouteWithPathArg_whenNavigateWithMissingParameter_thenException() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/player/10", RequestMethod.GET);
+
+        expectedException.expect(IllegalArgumentException.class);
+        router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    @Test
+    public void givenRouteWithArgs_whenRequest_thenResolveArgs() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("a", 6);
+        payload.put("b", "a string");
+        payload.put("c", 0.2);
+        payload.put("d", "end");
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), payload, Collections.emptyMap());
+
+        assertThat(result).isEqualTo("6a string0.2end");
+    }
+
+    @Test
+    public void givenRouteWithArgsAndDefaultValue_whenRequestWithoutDefaultArguments_thenResolveDefaults() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("a", 6);
+        payload.put("b", "a string");
+        payload.put("c", 0.2);
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), payload, Collections.emptyMap());
+
+        assertThat(result).isEqualTo("6a string0.2last");
+    }
+
+    @Test
+    public void givenRouteWithArgs_whenRequestWithoutArgs_thenException() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Missing argument: a");
+
+        router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    @Test
+    public void givenRouteWithSessionArgs_whenRequest_thenArgumentsAreResolved() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/account/username", RequestMethod.GET);
+        Map<Class<?>, Optional<Object>> session = new HashMap<>();
+        session.put(UserModel.class, Optional.of(new UserModel("Mariusz", 1)));
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
+
+        assertThat(result).isEqualTo("Mariusz");
+    }
+
+    @Test
+    public void givenRouteWithSessionArgs_whenSessionDoesNotHaveObject_thenResolveWithNull() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/re-return-obj", RequestMethod.GET);
+        Map<Class<?>, Optional<Object>> session = new HashMap<>();
+        session.put(UserModel.class, Optional.empty());
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    public void givenRouteWithSessionArgs_whenSessionDoesNotHavePrimitive_thenResolveWithDefault() throws InvocationTargetException, IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/re-return-int", RequestMethod.GET);
+        Map<Class<?>, Optional<Object>> session = new HashMap<>();
+        session.put(int.class, Optional.empty());
+        session.put(boolean.class, Optional.empty());
+
+        Object result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
+
+        assertThat(result).isEqualTo(0);
+
+        routeInfo = router.findRoute("app/test/re-return-bool", RequestMethod.GET);
+        result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
+        assertThat(result).isEqualTo(false);
     }
 }

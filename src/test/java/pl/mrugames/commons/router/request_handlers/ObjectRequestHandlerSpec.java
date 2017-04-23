@@ -22,9 +22,11 @@ import pl.mrugames.commons.router.permissions.RoleHolder;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static junit.framework.TestCase.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -144,7 +146,7 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenArgumentResolversReturnDifferentInstances_whenRequest_thenNavigateWithThatInstances() {
+    public void givenArgumentResolversReturnDifferentInstances_whenRequest_thenNavigateWithThatInstances() throws InvocationTargetException, IllegalAccessException {
         Map<String, Object> pathArg = new HashMap<>();
         pathArg.put("1", "1");
         Map<String, Object> payloadArg = new HashMap<>();
@@ -275,7 +277,7 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenRouterReturnsSomeObject_whenRequest_thenReturnResponseOk() {
+    public void givenRouterReturnsSomeObject_whenRequest_thenReturnResponseOk() throws InvocationTargetException, IllegalAccessException {
         Object someObject = new Object();
         doReturn(someObject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
@@ -293,7 +295,12 @@ public class ObjectRequestHandlerSpec {
         Stream.of(ResponseStatus.values()).forEach(status -> {
             Mono<String> returnedVal = Mono.of(status, "asdf");
 
-            doReturn(returnedVal).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+            try {
+                doReturn(returnedVal).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                e.printStackTrace();
+                fail();
+            }
 
             Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
@@ -306,7 +313,7 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenRouterReturnsSubject_whenItEmitsNextFrames_thenResponseHasStatusOfSTREAM() {
+    public void givenRouterReturnsSubject_whenItEmitsNextFrames_thenResponseHasStatusOfSTREAM() throws InvocationTargetException, IllegalAccessException {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
         Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
@@ -373,7 +380,7 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenRouterReturnsSubject_whenRequest_thenRegisterEmitter() {
+    public void givenRouterReturnsSubject_whenRequest_thenRegisterEmitter() throws InvocationTargetException, IllegalAccessException {
         Session session = spy(new Session("", s -> {
         }));
 
@@ -387,7 +394,7 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() {
+    public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
         TestObserver<Response> testObserver = TestObserver.create();
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
