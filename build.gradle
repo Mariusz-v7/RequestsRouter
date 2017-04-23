@@ -19,6 +19,8 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0.pr2'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.0.pr2'
     compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.0.8'
+    compile group: 'org.hibernate', name: 'hibernate-validator', version: '5.4.1.Final'
+    compile group: 'org.glassfish', name: 'javax.el', version: '3.0.1-b08'
 
 
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'

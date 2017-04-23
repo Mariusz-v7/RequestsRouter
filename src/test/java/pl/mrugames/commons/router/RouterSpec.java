@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.controllers.UserModel;
 
+import javax.validation.ConstraintViolationException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -141,5 +142,18 @@ public class RouterSpec {
         routeInfo = router.findRoute("app/test/re-return-bool", RequestMethod.GET);
         result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
         assertThat(result).isEqualTo(false);
+    }
+
+    @Test
+    public void validationTest() throws InvocationTargetException, IllegalAccessException {
+        Map<String, Object> pathParams = new HashMap<>();
+        pathParams.put("a", -1);
+        pathParams.put("b", 3);
+
+        RouteInfo routeInfo = router.findRoute("app/test/validation/-1/3", RequestMethod.GET);
+
+        expectedException.expect(ConstraintViolationException.class);
+
+        router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
     }
 }

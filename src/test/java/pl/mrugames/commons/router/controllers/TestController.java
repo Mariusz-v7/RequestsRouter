@@ -3,6 +3,9 @@ package pl.mrugames.commons.router.controllers;
 import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.annotations.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @Controller("app/test")
 public class TestController {
 
@@ -113,5 +116,12 @@ public class TestController {
     @Route("re-return-bool")
     public boolean reReturnPrimitiveBool(boolean i) {
         return i;
+    }
+
+    @AllAllowed
+    @Route("validation/{a}/{b}")
+    public void validation(@Min(0) @PathVar("a") int a,
+                           @Max(2) @PathVar("b") int b) {
+
     }
 }

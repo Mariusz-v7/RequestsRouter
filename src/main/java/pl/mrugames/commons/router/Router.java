@@ -6,22 +6,24 @@ import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 
 import javax.annotation.PostConstruct;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.executable.ExecutableValidator;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class Router {
     private final Map<String, RouteInfo> routes;
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
+    private final ExecutableValidator validator;
 
-    private Router(RouterInitializer initializer, AntPathMatcher antPathMatcher) {
+    private Router(RouterInitializer initializer, AntPathMatcher antPathMatcher, ExecutableValidator executableValidator) {
         this.initializer = initializer;
         this.routes = new HashMap<>();
         this.pathMatcher = antPathMatcher;
+        this.validator = executableValidator;
     }
 
     @PostConstruct
@@ -75,6 +77,11 @@ public class Router {
             }
 
             ++i;
+        }
+
+        Set<ConstraintViolation<Object>> constraints = validator.validateParameters(routeInfo.getControllerInstance(), routeInfo.getMethod(), args);
+        if (!constraints.isEmpty()) {
+            throw new ConstraintViolationException(constraints);
         }
 
         return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
