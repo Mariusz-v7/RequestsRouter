@@ -1,11 +1,13 @@
 group 'pl.mrugames.commons'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -42,5 +44,16 @@ task fatJar(type: Jar) {
         }
     }
     with jar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
 
