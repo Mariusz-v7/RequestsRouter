@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
@@ -26,11 +25,6 @@ public class TestConfiguration {
         configurer.setLocations(context.getResource("config.properties"));
 
         return configurer;
-    }
-
-    @Bean
-    public AntPathMatcher antPathMatcher() {
-        return new AntPathMatcher();
     }
 
     @Bean
