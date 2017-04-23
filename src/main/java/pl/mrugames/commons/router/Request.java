@@ -9,6 +9,7 @@ public class Request implements Serializable {
     private final String route;
     private final RequestMethod requestMethod;
     private final Map<String, Object> payload;
+    private final RequestType requestType;
 
     public Request(long id, String session, String route, RequestMethod requestMethod, Map<String, Object> payload) {
         this.id = id;
@@ -16,6 +17,16 @@ public class Request implements Serializable {
         this.route = route;
         this.requestMethod = requestMethod;
         this.payload = payload;
+        this.requestType = RequestType.STANDARD;
+    }
+
+    public Request(long id, String session, String route, RequestMethod requestMethod, Map<String, Object> payload, RequestType requestType) {
+        this.id = id;
+        this.session = session;
+        this.route = route;
+        this.requestMethod = requestMethod;
+        this.payload = payload;
+        this.requestType = requestType;
     }
 
     public long getId() {
@@ -38,6 +49,10 @@ public class Request implements Serializable {
         return payload;
     }
 
+    public RequestType getRequestType() {
+        return requestType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,7 +64,8 @@ public class Request implements Serializable {
         if (!session.equals(request.session)) return false;
         if (!route.equals(request.route)) return false;
         if (requestMethod != request.requestMethod) return false;
-        return payload.equals(request.payload);
+        if (payload != null ? !payload.equals(request.payload) : request.payload != null) return false;
+        return requestType == request.requestType;
 
     }
 
@@ -59,7 +75,8 @@ public class Request implements Serializable {
         result = 31 * result + session.hashCode();
         result = 31 * result + route.hashCode();
         result = 31 * result + requestMethod.hashCode();
-        result = 31 * result + payload.hashCode();
+        result = 31 * result + (payload != null ? payload.hashCode() : 0);
+        result = 31 * result + requestType.hashCode();
         return result;
     }
 
@@ -71,6 +88,7 @@ public class Request implements Serializable {
                 ", route='" + route + '\'' +
                 ", requestMethod=" + requestMethod +
                 ", payload=" + payload +
+                ", requestType=" + requestType +
                 '}';
     }
 }

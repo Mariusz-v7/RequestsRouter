@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.RequestMethod;
+import pl.mrugames.commons.router.RequestType;
 
 import java.util.Map;
 
@@ -13,7 +14,8 @@ class JsonRequest extends Request {
                 @JsonProperty("session") String session,
                 @JsonProperty("route") String route,
                 @JsonProperty("requestMethod") RequestMethod requestMethod,
-                @JsonProperty("payload") Map<String, Object> payload) {
-        super(id, session, route, requestMethod, payload);
+                @JsonProperty("payload") Map<String, Object> payload,
+                @JsonProperty(value = "requestType", defaultValue = "STANDARD") RequestType requestType) {
+        super(id, session, route, requestMethod, payload, requestType);
     }
 }
