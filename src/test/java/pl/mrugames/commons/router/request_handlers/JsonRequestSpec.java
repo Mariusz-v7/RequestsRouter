@@ -51,4 +51,13 @@ public class JsonRequestSpec {
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
         assertThat(result).isEqualTo(request);
     }
+
+    @Test
+    public void testDefaultRequestType() throws IOException {
+        Request request = new Request(2, "asdfgh", null, null, null, RequestType.CLOSE_STREAM);
+        String jsonRequest = "{\"id\":2,\"session\":\"asdfgh\"}";
+
+        Request result = mapper.readValue(jsonRequest, JsonRequest.class);
+        assertThat(result.getRequestType()).isEqualTo(RequestType.STANDARD);
+    }
 }

@@ -15,7 +15,7 @@ class JsonRequest extends Request {
                 @JsonProperty("route") String route,
                 @JsonProperty("requestMethod") RequestMethod requestMethod,
                 @JsonProperty("payload") Map<String, Object> payload,
-                @JsonProperty(value = "requestType", defaultValue = "STANDARD") RequestType requestType) {
-        super(id, session, route, requestMethod, payload, requestType);
+                @JsonProperty(value = "requestType") RequestType requestType) {
+        super(id, session, route, requestMethod, payload, requestType == null ? RequestType.STANDARD : requestType);
     }
 }
