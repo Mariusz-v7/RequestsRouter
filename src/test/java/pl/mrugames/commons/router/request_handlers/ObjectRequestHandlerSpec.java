@@ -23,7 +23,11 @@ import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static junit.framework.TestCase.fail;
@@ -35,8 +39,6 @@ import static org.mockito.Mockito.*;
         TestConfiguration.class
 })
 public class ObjectRequestHandlerSpec {
-    private String sessionId = generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH);
-
     @Autowired
     private ObjectRequestHandler handler;
 
@@ -65,6 +67,8 @@ public class ObjectRequestHandlerSpec {
     public void before() {
         sourceSubject = PublishSubject.create();
         responseSubject = PublishSubject.create();
+
+        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString());
     }
 
     @After
@@ -74,21 +78,10 @@ public class ObjectRequestHandlerSpec {
         responseSubject.onComplete();
     }
 
-    private String generateString(int len) {
-        String allowed = "abcdefgh";
-        Random random = new Random();
-        StringBuilder stringBuilder = new StringBuilder();
-        while (len-- > 0) {
-            stringBuilder.append(allowed.charAt(random.nextInt(allowed.length())));
-        }
-
-        return stringBuilder.toString();
-    }
-
     @Test
     public void givenHandleRequestIsCalled_thenDelegateToNext() throws Exception {
-        Request request1 = new Request(1, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.GET, Collections.emptyMap());
-        Request request2 = new Request(2, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.POST, Collections.emptyMap());
+        Request request1 = new Request(1, "", "", RequestMethod.GET, Collections.emptyMap());
+        Request request2 = new Request(2, "", "", RequestMethod.POST, Collections.emptyMap());
         Response response1 = new Response(1, ResponseStatus.OK, "something");
         Response response2 = new Response(2, ResponseStatus.OK, "something");
 
@@ -107,7 +100,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenNextMethodThrowsException_whenHandleRequest_thenReturnErrorResponse() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", RequestMethod.GET, Collections.emptyMap());
         doThrow(new Exception("test msg")).when(handler).next(request);
 
         Response response = handler.handleRequest(request).blockingFirst();
@@ -121,25 +114,15 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void whenRequest_thenResponseWithSameId() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
         Response response = handler.next(request).blockingFirst();
 
         assertThat(response.getId()).isEqualTo(request.getId());
     }
 
     @Test
-    public void givenRequestWithSessionIdLessThan64chars_thenException() throws Exception {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH - 1), "", RequestMethod.GET, Collections.emptyMap());
-
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Session id must be at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
-
-        handler.next(request);
-    }
-
-    @Test
     public void whenNextIsCalled_thenRouterIsRequestedToSearchForRoute() {
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(router).findRoute("app/test/concat", RequestMethod.GET);
@@ -160,7 +143,7 @@ public class ObjectRequestHandlerSpec {
 
         RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
 
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(router).navigate(routeInfo, pathArg, payloadArg, sessionArg);
@@ -170,7 +153,7 @@ public class ObjectRequestHandlerSpec {
     public void whenRequest_thenPathResolverIsCalledWithProperPath() {
         RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
 
-        Request request = new Request(100, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(pathArgumentResolver).resolve("GET:app/test/concat", routeInfo.getRoutePattern(), routeInfo.getParameters());
@@ -267,7 +250,7 @@ public class ObjectRequestHandlerSpec {
     @Test
     public void givenCheckPermissionsReturnStatusOtherThanOk_whenRequest_thenResponseWithReturnedStatus() {
         doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(handler).checkPermissions(any(), any());
-        Request request = new Request(90, generateString(ObjectRequestHandler.SESSION_ID_MIN_LENGTH), "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(90, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         Response response = handler.handleRequest(request).blockingFirst();
 
@@ -281,7 +264,7 @@ public class ObjectRequestHandlerSpec {
         Object someObject = new Object();
         doReturn(someObject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         Response response = handler.handleRequest(request).blockingFirst();
 
@@ -302,7 +285,7 @@ public class ObjectRequestHandlerSpec {
                 fail();
             }
 
-            Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+            Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
             Response response = handler.handleRequest(request).blockingFirst();
 
@@ -316,7 +299,7 @@ public class ObjectRequestHandlerSpec {
     public void givenRouterReturnsSubject_whenItEmitsNextFrames_thenResponseHasStatusOfSTREAM() throws InvocationTargetException, IllegalAccessException {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         TestObserver<Response> testObserver = TestObserver.create();
 
@@ -387,21 +370,24 @@ public class ObjectRequestHandlerSpec {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
         doReturn(session).when(sessionManager).getSession(anyString());
 
-        Request request = new Request(92, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         handler.handleRequest(request);
         verify(session).registerEmitter(92, sourceSubject);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
+        doReturn(new Session("", mock(Consumer.class))).when(sessionManager).getSession(anyString());
+
         TestObserver<Response> testObserver = TestObserver.create();
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(904, sessionId, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request).subscribe(testObserver);
 
-        Request closeRequest = new Request(904, sessionId, null, null, null, RequestType.CLOSE_STREAM);
+        Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
 
         TestObserver<Response> closeObserver = TestObserver.create();
         handler.handleRequest(closeRequest).subscribe(closeObserver);

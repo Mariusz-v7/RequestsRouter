@@ -17,8 +17,6 @@ import java.util.Optional;
 
 @Component
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
-    public final static int SESSION_ID_MIN_LENGTH = 64;
-
     private final SessionManager sessionManager;
     private final Router router;
     private final PathArgumentResolver pathArgumentResolver;
@@ -47,10 +45,6 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     }
 
     Observable<Response> next(Request request) throws Exception {
-        if (request.getSession().length() < SESSION_ID_MIN_LENGTH) {
-            throw new IllegalArgumentException("Session id must be at least " + ObjectRequestHandler.SESSION_ID_MIN_LENGTH + " characters long");
-        }
-
         Session session = sessionManager.getSession(request.getSession());
 
         switch (request.getRequestType()) {

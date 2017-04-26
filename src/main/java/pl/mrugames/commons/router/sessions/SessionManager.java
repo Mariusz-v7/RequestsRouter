@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @EnableScheduling
 public class SessionManager {
+    public final static int SESSION_ID_MIN_LENGTH = 64;
+
     private final Map<String, Session> sessions;
     private final long sessionExpireTimeMillis;
 
@@ -24,6 +26,10 @@ public class SessionManager {
     }
 
     public Session getSession(String sessionId) {
+        if (sessionId.length() < SESSION_ID_MIN_LENGTH) {
+            throw new IllegalArgumentException("Session id must be at least " + SESSION_ID_MIN_LENGTH + " characters long");
+        }
+
         return sessions.compute(sessionId, this::compute);
     }
 
