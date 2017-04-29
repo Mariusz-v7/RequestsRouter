@@ -234,48 +234,6 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenOnSubjectIsCalled_whenSourceSubjectIsClosed_thenResponseSubjectEmitsCloseFrameAndCloseItself() {
-        TestObserver<Response> responseObserver = TestObserver.create();
-        TestObserver<Response> subjectObserver = TestObserver.create();
-
-        Observable<Response> observable = handler.onSubject(sourceSubject, responseSubject, 99);
-
-        observable.subscribe(responseObserver);
-        responseSubject.subscribe(subjectObserver);
-
-        sourceSubject.onComplete();
-
-        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
-        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
-
-        responseObserver.assertComplete();
-        subjectObserver.assertComplete();
-    }
-
-    @Test
-    public void givenSourceSubjectEmitsError_thenResponseSubjectEmitsClose() {
-        TestObserver<Response> responseObserver = TestObserver.create();
-        TestObserver<Response> subjectObserver = TestObserver.create();
-        TestObserver<String> sourceSubjectObserver = TestObserver.create();
-
-        Observable<Response> observable = handler.onSubject(sourceSubject, responseSubject, 99);
-
-        sourceSubject.subscribe(sourceSubjectObserver);
-        observable.subscribe(responseObserver);
-        responseSubject.subscribe(subjectObserver);
-
-        RuntimeException rte = new RuntimeException("bla");
-        sourceSubject.onError(rte);
-
-        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
-        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
-
-        responseObserver.assertComplete();
-        subjectObserver.assertComplete();
-        sourceSubjectObserver.assertTerminated();
-    }
-
-    @Test
     public void givenRouterReturnsSubject_whenRequest_thenRegisterEmitter() throws InvocationTargetException, IllegalAccessException {
         Session session = spy(new Session("", s -> {
         }));

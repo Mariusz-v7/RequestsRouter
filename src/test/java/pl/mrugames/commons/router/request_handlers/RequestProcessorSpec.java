@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.request_handlers;
 
+import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import org.junit.Before;
@@ -25,10 +26,10 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
         TestConfiguration.class
 })
-public class HandlerSpec {
+public class RequestProcessorSpec {
 
     @Autowired
-    private Handler handler;
+    private RequestProcessor requestProcessor;
 
     @Autowired
     private SessionManager sessionManager;
@@ -56,12 +57,12 @@ public class HandlerSpec {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
         Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        handler.standardRequest(request.getSession()).subscribe(testObserver);
+        requestProcessor.standardRequest(request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload()).subscribe(testObserver);
 
         Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
 
         TestObserver<Response> closeObserver = TestObserver.create();
-        handler.closeStreamRequest(closeRequest.getId(), closeRequest.getSession()).subscribe(closeObserver);
+        requestProcessor.closeStreamRequest(closeRequest.getId(), closeRequest.getSession()).subscribe(closeObserver);
 
         testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
         testObserver.assertComplete();
@@ -69,4 +70,47 @@ public class HandlerSpec {
         closeObserver.assertValue(new Response(904, ResponseStatus.CLOSE, null));
         closeObserver.assertComplete();
     }
+
+    @Test
+    public void givenOnSubjectIsCalled_whenSourceSubjectIsClosed_thenResponseSubjectEmitsCloseFrameAndCloseItself() {
+        TestObserver<Response> responseObserver = TestObserver.create();
+        TestObserver<Response> subjectObserver = TestObserver.create();
+
+        Observable<Response> observable = requestProcessor.onSubject(sourceSubject, responseSubject, 99);
+
+        observable.subscribe(responseObserver);
+        responseSubject.subscribe(subjectObserver);
+
+        sourceSubject.onComplete();
+
+        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
+        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, null));
+
+        responseObserver.assertComplete();
+        subjectObserver.assertComplete();
+    }
+
+    @Test
+    public void givenSourceSubjectEmitsError_thenResponseSubjectEmitsClose() {
+        TestObserver<Response> responseObserver = TestObserver.create();
+        TestObserver<Response> subjectObserver = TestObserver.create();
+        TestObserver<String> sourceSubjectObserver = TestObserver.create();
+
+        Observable<Response> observable = requestProcessor.onSubject(sourceSubject, responseSubject, 99);
+
+        sourceSubject.subscribe(sourceSubjectObserver);
+        observable.subscribe(responseObserver);
+        responseSubject.subscribe(subjectObserver);
+
+        RuntimeException rte = new RuntimeException("bla");
+        sourceSubject.onError(rte);
+
+        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
+        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
+
+        responseObserver.assertComplete();
+        subjectObserver.assertComplete();
+        sourceSubjectObserver.assertTerminated();
+    }
+
 }
