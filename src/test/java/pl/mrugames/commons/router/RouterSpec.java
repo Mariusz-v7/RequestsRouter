@@ -9,8 +9,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.controllers.UserModel;
+import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 
-import javax.validation.ConstraintViolationException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -152,7 +152,7 @@ public class RouterSpec {
 
         RouteInfo routeInfo = router.findRoute("app/test/validation/-1/3", RequestMethod.GET);
 
-        expectedException.expect(ConstraintViolationException.class);
+        expectedException.expect(RouteConstraintViolationException.class);
 
         router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
     }

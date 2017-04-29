@@ -1,16 +1,19 @@
 package pl.mrugames.commons.router;
 
 import com.google.common.base.Defaults;
+import org.hibernate.validator.internal.engine.path.NodeImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
+import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
 import javax.validation.executable.ExecutableValidator;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class Router {
@@ -81,10 +84,44 @@ public class Router {
 
         Set<ConstraintViolation<Object>> constraints = validator.validateParameters(routeInfo.getControllerInstance(), routeInfo.getMethod(), args);
         if (!constraints.isEmpty()) {
-            throw new ConstraintViolationException(constraints);
+            List<String> messages = constraints.stream()
+                    .map(c -> getConstraintMessage(c, routeInfo.getParameters()))
+                    .collect(Collectors.toList());
+
+            throw new RouteConstraintViolationException(messages);
         }
 
         return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
+    }
+
+    private String getConstraintMessage(ConstraintViolation<?> constraintViolation, List<RouteParameter> parameters) {
+        Iterator<Path.Node> iterator = constraintViolation.getPropertyPath().iterator();
+        Path.Node parameter = null;
+        while (iterator.hasNext()) {
+            parameter = iterator.next();
+        }
+
+        if (parameter == null) {
+            throw new IllegalStateException("Shouldn't be null");
+        }
+
+        if (!(parameter instanceof NodeImpl)) {
+            throw new IllegalStateException("Should be hibernate implementation");
+        }
+
+        int index = ((NodeImpl) parameter).getParameterIndex();
+
+        if (index < 0) {
+            throw new IllegalStateException("Parameter index should be greater or equal to 0");
+        }
+
+        if (parameters.size() < index) {
+            throw new IllegalStateException("List should contain the parameter");
+        }
+
+        String paramName = parameters.get(index).getName();
+
+        return paramName + " " + constraintViolation.getMessage();
     }
 
 }

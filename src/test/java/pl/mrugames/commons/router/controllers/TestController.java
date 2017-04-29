@@ -125,6 +125,13 @@ public class TestController {
 
     }
 
+    @AllAllowed
+    @Route("validation2")
+    public void validation2(@Min(0) @Arg("a") int a,
+                            @Max(2) @Arg("b") int b) {
+
+    }
+
     @Route("json")
     public void json(@Arg("arg1") String a, @Arg("arg2") String b) {
 

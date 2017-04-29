@@ -17,6 +17,7 @@ import pl.mrugames.commons.router.controllers.UserModel;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -154,5 +155,19 @@ public class JsonRequestHandlerSpec {
         assertThat(response.getId()).isEqualTo(99);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat((String) response.getPayload()).contains("Can not deserialize value of type pl.mrugames.commons.router.RequestMethod from String \"GE\": value not one of declared Enum instance names: [POST, DELETE, GET, PUT, PATCH]");
+    }
+
+    @Test
+    public void givenRequestViolatingConstraints_thenErrorResponse() throws IOException {
+        String req = prepareJsonRequest("app/test/validation2", "\"a\":-1,\"b\":10");
+        String realResponse = handler.handleRequest(req).blockingFirst();
+        Response response = mapper.readValue(realResponse, JsonResponse.class);
+
+        assertThat(response.getId()).isEqualTo(2);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
+        assertThat((List<String>) response.getPayload()).contains(
+                "b must be less than or equal to 2",
+                "a must be greater than or equal to 0"
+        );
     }
 }
