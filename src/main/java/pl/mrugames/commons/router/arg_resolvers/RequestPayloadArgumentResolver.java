@@ -2,7 +2,7 @@ package pl.mrugames.commons.router.arg_resolvers;
 
 import com.google.common.primitives.Primitives;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.RouteParameter;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
@@ -19,14 +19,14 @@ public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<M
     }
 
     @Override
-    public Map<String, Object> resolve(Map<String, Object> payload, List<RouteInfo.Parameter> parameters) {
+    public Map<String, Object> resolve(Map<String, Object> payload, List<RouteParameter> parameters) {
         return parameters.stream()
-                .filter(p -> RouteInfo.ParameterType.ARG == p.getParameterType())
+                .filter(p -> RouteParameter.ParameterType.ARG == p.getParameterType())
                 .map(p -> map(p, payload))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map.Entry<String, Object> map(RouteInfo.Parameter parameter, Map<String, Object> payload) {
+    private Map.Entry<String, Object> map(RouteParameter parameter, Map<String, Object> payload) {
         Object result = payload.get(parameter.getName());
         if (result == null) {
             if (ArgDefaultValue.ARG_NULL_DEFAULT_VALUE.equals(parameter.getDefaultValue())) {

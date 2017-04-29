@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.RouteParameter;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
@@ -26,12 +26,12 @@ class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
     }
 
     @Override
-    public Map<String, Object> resolve(String input, List<RouteInfo.Parameter> parameters) {
+    public Map<String, Object> resolve(String input, List<RouteParameter> parameters) {
         try {
             JsonNode rootNode = mapper.readTree(input);
 
             return parameters.stream()
-                    .filter(p -> p.getParameterType() == RouteInfo.ParameterType.ARG)
+                    .filter(p -> p.getParameterType() == RouteParameter.ParameterType.ARG)
                     .map(p -> map(p, rootNode))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         } catch (JsonParseException e) {
@@ -41,7 +41,7 @@ class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
         }
     }
 
-    private Map.Entry<String, Object> map(RouteInfo.Parameter parameter, JsonNode root) {
+    private Map.Entry<String, Object> map(RouteParameter parameter, JsonNode root) {
         JsonNode node = root.get(parameter.getName());
 
         String strNode;

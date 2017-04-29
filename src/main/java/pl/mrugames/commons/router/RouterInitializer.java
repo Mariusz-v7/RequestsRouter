@@ -57,11 +57,11 @@ public class RouterInitializer {
                     accessType = AccessType.ALL_ALLOWED;
                 }
 
-                List<RouteInfo.Parameter> parameters = new ArrayList<>(method.getParameterCount());
+                List<RouteParameter> parameters = new ArrayList<>(method.getParameterCount());
                 for (Parameter parameter : method.getParameters()) {
                     String name = null;
                     String defaultValue = null;
-                    RouteInfo.ParameterType parameterType = RouteInfo.ParameterType.NONE;
+                    RouteParameter.ParameterType parameterType = RouteParameter.ParameterType.NONE;
 
                     Arg arg = parameter.getAnnotation(Arg.class);
                     PathVar pathVar = parameter.getAnnotation(PathVar.class);
@@ -75,13 +75,13 @@ public class RouterInitializer {
                     if (arg != null) {
                         name = arg.value();
                         defaultValue = arg.defaultValue();
-                        parameterType = RouteInfo.ParameterType.ARG;
+                        parameterType = RouteParameter.ParameterType.ARG;
                     } else if (pathVar != null) {
                         name = pathVar.value();
-                        parameterType = RouteInfo.ParameterType.PATH_VAR;
+                        parameterType = RouteParameter.ParameterType.PATH_VAR;
                     }
 
-                    parameters.add(new RouteInfo.Parameter(name, parameter.getType(), defaultValue, parameterType));
+                    parameters.add(new RouteParameter(name, parameter.getType(), defaultValue, parameterType));
                 }
 
                 String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());

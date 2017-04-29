@@ -3,7 +3,7 @@ package pl.mrugames.commons.router.arg_resolvers;
 import com.google.common.primitives.Primitives;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.RouteParameter;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.PathParameterNotFoundException;
 
@@ -21,7 +21,7 @@ public class PathArgumentResolver {
         this.pathMatcher = pathMatcher;
     }
 
-    public Map<String, Object> resolve(String path, String pattern, List<RouteInfo.Parameter> parameters) {
+    public Map<String, Object> resolve(String path, String pattern, List<RouteParameter> parameters) {
 
         Map<String, String> mappedValues;
         try {
@@ -31,12 +31,12 @@ public class PathArgumentResolver {
         }
 
         return parameters.stream()
-                .filter(p -> p.getParameterType() == RouteInfo.ParameterType.PATH_VAR)
+                .filter(p -> p.getParameterType() == RouteParameter.ParameterType.PATH_VAR)
                 .map(p -> map(mappedValues, p))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map.Entry<String, Object> map(Map<String, String> mappedValues, RouteInfo.Parameter parameter) {
+    private Map.Entry<String, Object> map(Map<String, String> mappedValues, RouteParameter parameter) {
         try {
             String strValue = mappedValues.get(parameter.getName());
 

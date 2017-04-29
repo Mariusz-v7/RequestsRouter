@@ -60,75 +60,75 @@ public class RouterInitializerSpec {
     @Test
     public void givenMethodHasArgumentsWithoutAnnotations_thenAllOfThemShouldBeInserted() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/sum");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters).hasSize(2);
     }
 
     @Test
     public void givenMethodHasArgumentsWithoutAnnotations_thenParameterNameShouldBeNull() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/sum");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
 
-        for (RouteInfo.Parameter parameter : parameters) {
+        for (RouteParameter parameter : parameters) {
             assertThat(parameter.getType().getName()).isEqualTo("int");
             assertThat(parameter.getName()).isNull();
             assertThat(parameter.getDefaultValue()).isNull();
-            assertThat(parameter.getParameterType()).isEqualTo(RouteInfo.ParameterType.NONE);
+            assertThat(parameter.getParameterType()).isEqualTo(RouteParameter.ParameterType.NONE);
         }
     }
 
     @Test
     public void givenAnnotatedParameters_thenAllOfThemAreInserted() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/concat");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters).hasSize(4);
     }
 
     @Test
     public void givenParameterHasAnnotationWithName_thenFirstParamIsRecognized() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/concat");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(0).getType().getSimpleName()).isEqualTo("int");
         assertThat(parameters.get(0).getName()).isEqualTo("a");
         assertThat(parameters.get(0).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
-        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
+        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteParameter.ParameterType.ARG);
     }
 
     @Test
     public void givenParameterHasAnnotationWithName_thenSecondParamIsRecognized() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/concat");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(1).getType().getSimpleName()).isEqualTo("String");
         assertThat(parameters.get(1).getName()).isEqualTo("b");
         assertThat(parameters.get(1).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
-        assertThat(parameters.get(1).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
+        assertThat(parameters.get(1).getParameterType()).isEqualTo(RouteParameter.ParameterType.ARG);
     }
 
     @Test
     public void givenParameterHasAnnotationWithName_thenThirdParamIsRecognized() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/concat");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(2).getType().getSimpleName()).isEqualTo("Double");
         assertThat(parameters.get(2).getName()).isEqualTo("c");
         assertThat(parameters.get(2).getDefaultValue()).isEqualTo(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE);
-        assertThat(parameters.get(2).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
+        assertThat(parameters.get(2).getParameterType()).isEqualTo(RouteParameter.ParameterType.ARG);
     }
 
     @Test
     public void givenParameterHasAnnotationWithName_thenFourthParamIsRecognized() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/concat");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         assertThat(parameters.get(3).getType().getSimpleName()).isEqualTo("String");
         assertThat(parameters.get(3).getName()).isEqualTo("d");
         assertThat(parameters.get(3).getDefaultValue()).isEqualTo("last");
-        assertThat(parameters.get(3).getParameterType()).isEqualTo(RouteInfo.ParameterType.ARG);
+        assertThat(parameters.get(3).getParameterType()).isEqualTo(RouteParameter.ParameterType.ARG);
     }
 
     @Test
     public void givenParameterHasAnnotationWithPathVar_thenParamTypeIsSet() {
         RouteInfo routeInfo = initializer.getRoutes().get("GET:app/test/player/{playerId}");
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
-        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteInfo.ParameterType.PATH_VAR);
+        List<RouteParameter> parameters = routeInfo.getParameters();
+        assertThat(parameters.get(0).getParameterType()).isEqualTo(RouteParameter.ParameterType.PATH_VAR);
     }
 
     @Test

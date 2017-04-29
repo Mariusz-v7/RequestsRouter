@@ -48,11 +48,11 @@ public class Router {
                            Map<String, Object> payloadParameters,
                            Map<Class<?>, Optional<Object>> sessionParameters) throws InvocationTargetException, IllegalAccessException {
 
-        List<RouteInfo.Parameter> parameters = routeInfo.getParameters();
+        List<RouteParameter> parameters = routeInfo.getParameters();
         Object[] args = new Object[parameters.size()];
 
         int i = 0;
-        for (RouteInfo.Parameter parameter : parameters) {
+        for (RouteParameter parameter : parameters) {
             switch (parameter.getParameterType()) {
                 case PATH_VAR:
                     args[i] = pathParameters.get(parameter.getName());
