@@ -10,12 +10,17 @@ import java.util.Map;
 
 class JsonRequest extends Request {
     @JsonCreator
-    JsonRequest(@JsonProperty("id") long id,
+    JsonRequest(@JsonProperty("id") Long id,
                 @JsonProperty("session") String session,
                 @JsonProperty("route") String route,
                 @JsonProperty("requestMethod") RequestMethod requestMethod,
                 @JsonProperty(value = "requestType") RequestType requestType) {
-        super(id, session, route, requestMethod, null, requestType == null ? RequestType.STANDARD : requestType);
+        super(id == null ? -1 : id,
+                session == null ? "" : session,
+                route == null ? "" : route,
+                requestMethod == null ? RequestMethod.GET : requestMethod,
+                null,
+                requestType == null ? RequestType.STANDARD : requestType);
     }
 
     @Override

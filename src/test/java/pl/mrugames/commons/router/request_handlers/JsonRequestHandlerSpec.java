@@ -119,4 +119,21 @@ public class JsonRequestHandlerSpec {
         assertThat(response.getPayload()).isEqualTo("Could not find 'arg1' parameter in the request");
     }
 
+    @Test
+    public void givenRequestWithoutId_thenResponseErrorWithIdMinusOne() throws IOException {
+        String req = String.format(
+                "{\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
+                        "\"route\":\"%s\"," +
+                        "\"requestMethod\":\"GET\"," +
+                        "\"payload\":{}," +
+                        "\"requestType\":\"STANDARD\"}",
+                "some/route");
+
+        String realResponse = handler.handleRequest(req).blockingFirst();
+        Response response = mapper.readValue(realResponse, JsonResponse.class);
+
+        assertThat(response.getId()).isEqualTo(-1);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat(response.getPayload()).isEqualTo("'id' is missing n the request");
+    }
 }

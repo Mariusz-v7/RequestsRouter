@@ -45,7 +45,7 @@ public class JsonRequestSpec {
 
     @Test
     public void testNotRequiredFields() throws IOException {
-        Request request = new Request(2, "asdfgh", null, null, null, RequestType.CLOSE_STREAM);
+        Request request = new Request(2, "asdfgh", "", RequestMethod.GET, null, RequestType.CLOSE_STREAM);
         String jsonRequest = "{\"id\":2,\"session\":\"asdfgh\",\"requestType\":\"CLOSE_STREAM\"}";
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
@@ -54,10 +54,25 @@ public class JsonRequestSpec {
 
     @Test
     public void testDefaultRequestType() throws IOException {
-        Request request = new Request(2, "asdfgh", null, null, null, RequestType.CLOSE_STREAM);
         String jsonRequest = "{\"id\":2,\"session\":\"asdfgh\"}";
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
         assertThat(result.getRequestType()).isEqualTo(RequestType.STANDARD);
+    }
+
+    @Test
+    public void missingSessionIdTest() throws IOException {
+        String jsonRequest = "{\"id\":2}";
+
+        Request result = mapper.readValue(jsonRequest, JsonRequest.class);
+        assertThat(result.getSession()).isEqualTo("");
+    }
+
+    @Test
+    public void whenNoRequestMethod_thenDefaultToGET() throws IOException {
+        String jsonRequest = "{\"id\":2}";
+
+        Request result = mapper.readValue(jsonRequest, JsonRequest.class);
+        assertThat(result.getRequestMethod()).isEqualTo(RequestMethod.GET);
     }
 }

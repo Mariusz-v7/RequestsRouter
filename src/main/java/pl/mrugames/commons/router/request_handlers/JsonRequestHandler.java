@@ -50,6 +50,10 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
 
         Observable<Response> response;
         try {
+            if (request.getId() == -1) {
+                throw new IllegalArgumentException("'id' is missing n the request");
+            }
+
             switch (request.getRequestType()) {
                 case STANDARD:
                     RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
