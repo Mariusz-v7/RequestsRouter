@@ -1,14 +1,12 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.Request;
-import pl.mrugames.commons.router.Response;
-import pl.mrugames.commons.router.RouteInfo;
-import pl.mrugames.commons.router.Router;
+import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.JsonPayloadArgumentResolver;
 
 import java.util.Map;
@@ -42,7 +40,13 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     public Observable<String> handleRequest(String json) {
         Request request;
         try {
-            request = mapper.readValue(json, JsonRequest.class);
+            try {
+                request = mapper.readValue(json, JsonRequest.class);
+            } catch (InvalidFormatException e) {
+                long requestId = mapper.readTree(json).get("id").asLong();
+                return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage()))
+                        .map(r -> responseToString(r, json, requestId));
+            }
         } catch (Exception e) {
             logger.error("Failed to read JSON: {}", json, e);
             return Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1));
@@ -73,15 +77,15 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
             response = exceptionHandler.handle(request.getId(), e);
         }
 
-        return response.map(r -> responseToString(r, json, request));
+        return response.map(r -> responseToString(r, json, request.getId()));
     }
 
-    private String responseToString(Response response, String json, Request request) {
+    private String responseToString(Response response, String json, long requestId) {
         try {
             return mapper.writeValueAsString(response);
         } catch (Exception e) {
             logger.error("Failed to write to JSON: {}, {}", json, response, e);
-            return ErrorUtil.getErrorResponse(JSON_MAPPING_ERROR_RESPONSE, e, request.getId());
+            return ErrorUtil.getErrorResponse(JSON_MAPPING_ERROR_RESPONSE, e, requestId);
         }
     }
 }

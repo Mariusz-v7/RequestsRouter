@@ -136,4 +136,23 @@ public class JsonRequestHandlerSpec {
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("'id' is missing n the request");
     }
+
+    @Test
+    public void givenRequestWithDamagedRequestMethod_thenResponseError() throws IOException {
+        String req = String.format(
+                "{\"id\":99," +
+                        "\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
+                        "\"route\":\"%s\"," +
+                        "\"requestMethod\":\"GE\"," +
+                        "\"payload\":{}," +
+                        "\"requestType\":\"STANDARD\"}",
+                "some/route");
+
+        String realResponse = handler.handleRequest(req).blockingFirst();
+        Response response = mapper.readValue(realResponse, JsonResponse.class);
+
+        assertThat(response.getId()).isEqualTo(99);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat((String) response.getPayload()).contains("Can not deserialize value of type pl.mrugames.commons.router.RequestMethod from String \"GE\": value not one of declared Enum instance names: [POST, DELETE, GET, PUT, PATCH]");
+    }
 }
