@@ -17,8 +17,7 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
-import pl.mrugames.commons.router.permissions.AccessType;
-import pl.mrugames.commons.router.permissions.RoleHolder;
+import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static junit.framework.TestCase.fail;
@@ -57,6 +55,9 @@ public class ObjectRequestHandlerSpec {
     @Autowired
     private SessionManager sessionManager;
 
+    @Autowired
+    private PermissionChecker permissionChecker;
+
     private PublishSubject<String> sourceSubject;
     private PublishSubject<Response> responseSubject;
 
@@ -73,7 +74,7 @@ public class ObjectRequestHandlerSpec {
 
     @After
     public void after() {
-        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver, sessionManager);
+        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver, sessionManager, permissionChecker);
         sourceSubject.onComplete();
         responseSubject.onComplete();
     }
@@ -160,96 +161,8 @@ public class ObjectRequestHandlerSpec {
     }
 
     @Test
-    public void givenSessionHasNoUserLogged_andRouteRequiresLoggedUsers_whenCheckPermissions_thenDeny() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_LOGGED_IN, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.NOT_AUTHORIZED);
-    }
-
-    @Test
-    public void givenSessionHasUserLogged_andRouteRequiresIt_whenCheckPermissions_thenOk() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_LOGGED_IN, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-        session.add(RoleHolder.class, mock(RoleHolder.class));
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.OK);
-    }
-
-    @Test
-    public void givenSessionHasNoUserLogged_andRouteRequiresNoLogged_whenCheckPermissions_thenOk() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_NOT_LOGGED_IN, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.OK);
-    }
-
-    @Test
-    public void givenSessionHasUserLogged_andRouteRequiresNoLogged_thenDeny() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_NOT_LOGGED_IN, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-        session.add(RoleHolder.class, mock(RoleHolder.class));
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED);
-    }
-
-    @Test
-    public void givenSessionHasNoUserLogged_andRouteRequiresRoles_thenDeny() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.PERMISSION_DENIED);
-    }
-
-    @Test
-    public void givenSessionHasUserWithoutPermissions_thenDeny() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.singletonList("admin"));
-        Session session = new Session("mock", s -> {
-        });
-        RoleHolder roleHolder = mock(RoleHolder.class);
-        doReturn(Collections.singletonList("user")).when(roleHolder).getRoles();
-        session.add(RoleHolder.class, roleHolder);
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.PERMISSION_DENIED);
-    }
-
-    @Test
-    public void givenSessionHasUserWithPermissions_thenOk() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ONLY_WITH_SPECIFIC_ROLES, Collections.singletonList("admin"));
-        Session session = new Session("mock", s -> {
-        });
-        RoleHolder roleHolder = mock(RoleHolder.class);
-        doReturn(Collections.singletonList("admin")).when(roleHolder).getRoles();
-        session.add(RoleHolder.class, roleHolder);
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.OK);
-    }
-
-    @Test
-    public void givenSessionHasNoUser_andRouteHasAllAllowed_thenOk() {
-        RouteInfo routeInfo = new RouteInfo(null, null, null, null, AccessType.ALL_ALLOWED, Collections.emptyList());
-        Session session = new Session("mock", s -> {
-        });
-
-        ResponseStatus status = handler.checkPermissions(session, routeInfo).getResponseStatus();
-        assertThat(status).isEqualTo(ResponseStatus.OK);
-    }
-
-    @Test
     public void givenCheckPermissionsReturnStatusOtherThanOk_whenRequest_thenResponseWithReturnedStatus() {
-        doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(handler).checkPermissions(any(), any());
+        doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(permissionChecker).checkPermissions(any(), any(), any());
         Request request = new Request(90, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         Response response = handler.handleRequest(request).blockingFirst();
@@ -376,27 +289,5 @@ public class ObjectRequestHandlerSpec {
         verify(session).registerEmitter(92, sourceSubject);
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
-        doReturn(new Session("", mock(Consumer.class))).when(sessionManager).getSession(anyString());
-
-        TestObserver<Response> testObserver = TestObserver.create();
-        doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
-
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        handler.handleRequest(request).subscribe(testObserver);
-
-        Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
-
-        TestObserver<Response> closeObserver = TestObserver.create();
-        handler.handleRequest(closeRequest).subscribe(closeObserver);
-
-        testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
-        testObserver.assertComplete();
-
-        closeObserver.assertValue(new Response(904, ResponseStatus.CLOSE, null));
-        closeObserver.assertComplete();
-    }
 
 }

@@ -8,12 +8,9 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
-import pl.mrugames.commons.router.permissions.RoleHolder;
+import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
-
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public class ObjectRequestHandler implements RequestHandler<Request, Response> {
@@ -22,17 +19,20 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     private final PathArgumentResolver pathArgumentResolver;
     private final RequestPayloadArgumentResolver requestPayloadArgumentResolver;
     private final SessionArgumentResolver sessionArgumentResolver;
+    private final PermissionChecker permissionChecker;
 
     ObjectRequestHandler(SessionManager sessionManager,
                          Router router,
                          PathArgumentResolver pathArgumentResolver,
                          RequestPayloadArgumentResolver requestPayloadArgumentResolver,
-                         SessionArgumentResolver sessionArgumentResolver) {
+                         SessionArgumentResolver sessionArgumentResolver,
+                         PermissionChecker permissionChecker) {
         this.sessionManager = sessionManager;
         this.router = router;
         this.pathArgumentResolver = pathArgumentResolver;
         this.requestPayloadArgumentResolver = requestPayloadArgumentResolver;
         this.sessionArgumentResolver = sessionArgumentResolver;
+        this.permissionChecker = permissionChecker;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
             case STANDARD:
                 RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
 
-                Mono<?> permissionStatus = checkPermissions(session, routeInfo);
+                Mono<?> permissionStatus = permissionChecker.checkPermissions(session, routeInfo.getAccessType(), routeInfo.getAllowedRoles());
                 if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
                     return Observable.just(new Response(request.getId(), permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
                 }
@@ -73,31 +73,8 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
                 }
 
                 return Observable.just(new Response(request.getId(), ResponseStatus.OK, returnValue));
-            case CLOSE_STREAM:
-                session.unregisterEmitter(request.getId());
-                return Observable.just(new Response(request.getId(), ResponseStatus.CLOSE, null));
             default:
                 throw new IllegalStateException("Unknown request type: " + request.getRequestType());
-        }
-    }
-
-    Mono<?> checkPermissions(Session session, RouteInfo routeInfo) {
-        switch (routeInfo.getAccessType()) {
-            case ONLY_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? Mono.OK : Mono.of(ResponseStatus.NOT_AUTHORIZED);
-            case ONLY_NOT_LOGGED_IN:
-                return session.get(RoleHolder.class).isPresent() ? Mono.of(ResponseStatus.ONLY_FOR_NOT_AUTHORIZED) : Mono.OK;
-            case ONLY_WITH_SPECIFIC_ROLES:
-                Optional<RoleHolder> roleHolder = session.get(RoleHolder.class);
-                if (roleHolder.isPresent()) {
-                    return checkRoles(roleHolder.get(), routeInfo.getAllowedRoles());
-                }
-
-                return Mono.of(ResponseStatus.PERMISSION_DENIED);
-            case ALL_ALLOWED:
-                return Mono.OK;
-            default:
-                return Mono.of(ResponseStatus.INTERNAL_ERROR);
         }
     }
 
@@ -117,14 +94,4 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         return responseSubject.hide();
     }
 
-    private Mono<?> checkRoles(RoleHolder roleHolder, List<String> allowedRoles) {
-        List<String> roles = roleHolder.getRoles();
-        for (String role : roles) {
-            if (allowedRoles.contains(role)) {
-                return Mono.OK;
-            }
-        }
-
-        return Mono.of(ResponseStatus.PERMISSION_DENIED);
-    }
 }
