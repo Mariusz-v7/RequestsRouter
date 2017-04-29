@@ -54,6 +54,17 @@ public class JsonRequestHandlerSpec {
         reset(mapper, requestProcessor);
     }
 
+    private String prepareJsonRequest(String route, String payload) {
+        return String.format(
+                "{\"id\":2," +
+                        "\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
+                        "\"route\":\"%s\"," +
+                        "\"requestMethod\":\"GET\"," +
+                        "\"payload\":{%s}," +
+                        "\"requestType\":\"STANDARD\"}",
+                route, payload);
+    }
+
     @Test
     public void givenStringRequest_thenParseIntoRequestAndCallObjectHandler() throws Exception {
         handler.handleRequest(jsonRequest);
@@ -96,4 +107,16 @@ public class JsonRequestHandlerSpec {
         handler.handleRequest(jsonRequest).blockingFirst();
         verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), any(), eq(payload));
     }
+
+    @Test
+    public void givenRequestHasMissingPayloadArguments_thenReturnBadRequestResponse() throws IOException {
+        String req = prepareJsonRequest("app/test/json", "");
+        String realResponse = handler.handleRequest(req).blockingFirst();
+
+        Response response = mapper.readValue(realResponse, JsonResponse.class);
+
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat(response.getPayload()).isEqualTo("Could not find 'arg1' parameter in the request");
+    }
+
 }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.JsonPayloadArgumentResolver;
+import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 
 import java.util.Map;
 
@@ -57,6 +58,8 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
                     throw new IllegalStateException("Unknown request type: " + request.getRequestType());
             }
 
+        } catch (ParameterNotFoundException e) {
+            response = Observable.just(new Response(request.getId(), ResponseStatus.BAD_REQUEST, e.getMessage()));
         } catch (Exception e) {
             response = Observable.just(new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
         }
