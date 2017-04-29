@@ -5,9 +5,11 @@ import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.*;
+import pl.mrugames.commons.router.Request;
+import pl.mrugames.commons.router.Response;
+import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.Router;
 import pl.mrugames.commons.router.arg_resolvers.JsonPayloadArgumentResolver;
-import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 
 import java.util.Map;
 
@@ -22,12 +24,18 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     private final Router router;
     private final RequestProcessor requestProcessor;
     private final JsonPayloadArgumentResolver argResolver;
+    private final ExceptionHandler exceptionHandler;
 
-    JsonRequestHandler(ObjectMapper mapper, Router router, RequestProcessor requestProcessor, JsonPayloadArgumentResolver argResolver) {
+    JsonRequestHandler(ObjectMapper mapper,
+                       Router router,
+                       RequestProcessor requestProcessor,
+                       JsonPayloadArgumentResolver argResolver,
+                       ExceptionHandler exceptionHandler) {
         this.mapper = mapper;
         this.router = router;
         this.requestProcessor = requestProcessor;
         this.argResolver = argResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     @Override
@@ -57,11 +65,8 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
                 default:
                     throw new IllegalStateException("Unknown request type: " + request.getRequestType());
             }
-
-        } catch (ParameterNotFoundException e) {
-            response = Observable.just(new Response(request.getId(), ResponseStatus.BAD_REQUEST, e.getMessage()));
         } catch (Exception e) {
-            response = Observable.just(new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
+            response = exceptionHandler.handle(request.getId(), e);
         }
 
         return response.map(r -> responseToString(r, json, request));
