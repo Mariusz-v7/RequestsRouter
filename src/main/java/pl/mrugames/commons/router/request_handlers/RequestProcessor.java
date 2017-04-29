@@ -16,7 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 @Component
-class RequestProcessor {
+public class RequestProcessor {
     private final SessionManager sessionManager;
     private final PermissionChecker permissionChecker;
     private final Router router;

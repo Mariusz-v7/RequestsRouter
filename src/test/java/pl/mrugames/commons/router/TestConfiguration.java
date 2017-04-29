@@ -12,6 +12,7 @@ import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
 import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
+import pl.mrugames.commons.router.request_handlers.RequestProcessor;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
 import static org.mockito.Mockito.spy;
@@ -74,5 +75,11 @@ public class TestConfiguration {
     @Primary
     public PermissionChecker permissionCheckerSpy(PermissionChecker permissionChecker) {
         return spy(permissionChecker);
+    }
+
+    @Bean
+    @Primary
+    public RequestProcessor requestProcessorSpy(RequestProcessor requestProcessor) {
+        return spy(requestProcessor);
     }
 }

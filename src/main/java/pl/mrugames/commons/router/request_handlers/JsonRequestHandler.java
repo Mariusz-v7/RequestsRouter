@@ -5,8 +5,7 @@ import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.Request;
-import pl.mrugames.commons.router.Response;
+import pl.mrugames.commons.router.*;
 
 @Component
 public class JsonRequestHandler implements RequestHandler<String, String> {
@@ -16,11 +15,13 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ObjectMapper mapper;
-    private final ObjectRequestHandler requestHandler;
+    private final Router router;
+    private final RequestProcessor requestProcessor;
 
-    JsonRequestHandler(ObjectMapper mapper, ObjectRequestHandler requestHandler) {
+    JsonRequestHandler(ObjectMapper mapper, Router router, RequestProcessor requestProcessor) {
         this.mapper = mapper;
-        this.requestHandler = requestHandler;
+        this.router = router;
+        this.requestProcessor = requestProcessor;
     }
 
     @Override
@@ -33,8 +34,25 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
             return Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1));
         }
 
-        return requestHandler.handleRequest(request)
-                .map(r -> responseToString(r, json, request));
+        Observable<Response> response;
+        try {
+            switch (request.getRequestType()) {
+                case STANDARD:
+                    RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
+                    response = requestProcessor.standardRequest(routeInfo, request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+                    break;
+                case CLOSE_STREAM:
+                    response = requestProcessor.closeStreamRequest(request.getId(), request.getSession());
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown request type: " + request.getRequestType());
+            }
+
+        } catch (Exception e) {
+            response = Observable.just(new Response(request.getId(), ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
+        }
+
+        return response.map(r -> responseToString(r, json, request));
     }
 
     private String responseToString(Response response, String json, Request request) {

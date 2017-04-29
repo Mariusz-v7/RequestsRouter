@@ -31,7 +31,7 @@ public class JsonRequestHandlerSpec {
     private JsonRequestHandler handler;
 
     @Autowired
-    private ObjectRequestHandler objectRequestHandler;
+    private RequestProcessor requestProcessor;
 
     @Autowired
     private ObjectMapper mapper;
@@ -44,19 +44,19 @@ public class JsonRequestHandlerSpec {
         Map<String, Object> payload = new HashMap<>();
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
-        request = new Request(2, "asdfgh", "some/route", RequestMethod.GET, payload);
+        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "app/test/route1", RequestMethod.GET, payload);
         jsonRequest = mapper.writeValueAsString(request);
     }
 
     @After
     public void after() {
-        reset(mapper, objectRequestHandler);
+        reset(mapper, requestProcessor);
     }
 
     @Test
     public void givenStringRequest_thenParseIntoRequestAndCallObjectHandler() throws Exception {
         handler.handleRequest(jsonRequest);
-        verify(objectRequestHandler).handleRequest(request);
+        verify(requestProcessor).standardRequest(any(), eq(request.getId()), eq(request.getSession()), eq(request.getRoute()), eq(request.getRequestMethod()), anyMap());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class JsonRequestHandlerSpec {
         Response response = new Response(123, ResponseStatus.CLOSE, new UserModel("Mariusz", 0));
         String jsonResponse = mapper.writeValueAsString(response);
 
-        doReturn(Observable.just(response)).when(objectRequestHandler).handleRequest(any());
+        doReturn(Observable.just(response)).when(requestProcessor).standardRequest(any(), anyLong(), any(), any(), any(), any());
         String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).isEqualTo(jsonResponse);
