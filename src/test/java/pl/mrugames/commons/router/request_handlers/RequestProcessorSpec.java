@@ -64,7 +64,7 @@ public class RequestProcessorSpec {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
         Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        requestProcessor.standardRequest(request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload()).subscribe(testObserver);
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload()).subscribe(testObserver);
 
         Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
 

@@ -45,15 +45,14 @@ class RequestProcessor {
         return Observable.just(new Response(requestId, ResponseStatus.CLOSE, null));
     }
 
-    Observable<Response> standardRequest(long requestId,
+    Observable<Response> standardRequest(RouteInfo routeInfo,
+                                         long requestId,
                                          String sessionId,
                                          String route,
                                          RequestMethod requestMethod,
                                          Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
 
         Session session = sessionManager.getSession(sessionId);
-
-        RouteInfo routeInfo = router.findRoute(route, requestMethod);
 
         Mono<?> permissionStatus = permissionChecker.checkPermissions(session, routeInfo.getAccessType(), routeInfo.getAllowedRoles());
         if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
