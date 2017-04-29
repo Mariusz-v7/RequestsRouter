@@ -3,6 +3,7 @@ package pl.mrugames.commons.router.request_handlers;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,9 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -46,6 +48,11 @@ public class RequestProcessorSpec {
         responseSubject = PublishSubject.create();
 
         doReturn(mock(Session.class)).when(sessionManager).getSession(anyString());
+    }
+
+    @After
+    public void after() {
+        reset(sessionManager, router);
     }
 
     @Test

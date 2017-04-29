@@ -12,6 +12,7 @@ import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 @Component
@@ -44,7 +45,12 @@ class RequestProcessor {
         return Observable.just(new Response(requestId, ResponseStatus.CLOSE, null));
     }
 
-    Observable<Response> standardRequest(long requestId, String sessionId, String route, RequestMethod requestMethod, Map<String, Object> requestPayload) {
+    Observable<Response> standardRequest(long requestId,
+                                         String sessionId,
+                                         String route,
+                                         RequestMethod requestMethod,
+                                         Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
+
         Session session = sessionManager.getSession(sessionId);
 
         RouteInfo routeInfo = router.findRoute(route, requestMethod);
@@ -54,16 +60,11 @@ class RequestProcessor {
             return Observable.just(new Response(requestId, permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
         }
 
-        Object returnValue;
-        try {
-            returnValue = router.navigate(routeInfo,
-                    pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
-                    requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
-                    sessionArgumentResolver.resolve(session, routeInfo.getParameters())
-            );
-        } catch (Exception e) {
-            return Observable.just(new Response(requestId, ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
-        }
+        Object returnValue = router.navigate(routeInfo,
+                pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
+                requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
+                sessionArgumentResolver.resolve(session, routeInfo.getParameters())
+        );
 
         if (returnValue instanceof Mono) {
             Mono<?> mono = (Mono) returnValue;
