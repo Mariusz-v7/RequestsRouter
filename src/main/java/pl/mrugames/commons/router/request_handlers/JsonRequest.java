@@ -14,8 +14,12 @@ class JsonRequest extends Request {
                 @JsonProperty("session") String session,
                 @JsonProperty("route") String route,
                 @JsonProperty("requestMethod") RequestMethod requestMethod,
-                @JsonProperty("payload") Map<String, Object> payload,
                 @JsonProperty(value = "requestType") RequestType requestType) {
-        super(id, session, route, requestMethod, payload, requestType == null ? RequestType.STANDARD : requestType);
+        super(id, session, route, requestMethod, null, requestType == null ? RequestType.STANDARD : requestType);
+    }
+
+    @Override
+    public Map<String, Object> getPayload() {
+        throw new UnsupportedOperationException();
     }
 }

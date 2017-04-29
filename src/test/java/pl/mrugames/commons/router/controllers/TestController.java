@@ -124,4 +124,9 @@ public class TestController {
                            @Max(2) @PathVar("b") int b) {
 
     }
+
+    @Route("json")
+    public void json(@Arg("arg1") String a, @Arg("arg2") String b) {
+
+    }
 }

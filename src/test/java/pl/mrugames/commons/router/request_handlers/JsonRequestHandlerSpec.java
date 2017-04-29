@@ -15,6 +15,7 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.controllers.UserModel;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,13 +39,13 @@ public class JsonRequestHandlerSpec {
 
     private Request request;
     private String jsonRequest;
+    private Map<String, Object> payload = new HashMap<>();
 
     @Before
     public void before() throws JsonProcessingException {
-        Map<String, Object> payload = new HashMap<>();
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
-        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "app/test/route1", RequestMethod.GET, payload);
+        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "app/test/json", RequestMethod.GET, payload);
         jsonRequest = mapper.writeValueAsString(request);
     }
 
@@ -88,5 +89,11 @@ public class JsonRequestHandlerSpec {
         assertThat(realResponse).matches(
                 String.format("\\" + JsonRequestHandler.JSON_READ_ERROR_RESPONSE, -1, "failed to read", "[\\s\\S]*")
         );
+    }
+
+    @Test
+    public void payloadResolverTest() throws InvocationTargetException, IllegalAccessException {
+        handler.handleRequest(jsonRequest).blockingFirst();
+        verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), any(), eq(payload));
     }
 }

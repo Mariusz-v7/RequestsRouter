@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
+public class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
     private final ObjectMapper mapper;
 
     private JsonPayloadArgumentResolver(ObjectMapper mapper) {

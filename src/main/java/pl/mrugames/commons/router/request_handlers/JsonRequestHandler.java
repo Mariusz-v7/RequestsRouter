@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.*;
+import pl.mrugames.commons.router.arg_resolvers.JsonPayloadArgumentResolver;
+
+import java.util.Map;
 
 @Component
 public class JsonRequestHandler implements RequestHandler<String, String> {
@@ -17,11 +20,13 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     private final ObjectMapper mapper;
     private final Router router;
     private final RequestProcessor requestProcessor;
+    private final JsonPayloadArgumentResolver argResolver;
 
-    JsonRequestHandler(ObjectMapper mapper, Router router, RequestProcessor requestProcessor) {
+    JsonRequestHandler(ObjectMapper mapper, Router router, RequestProcessor requestProcessor, JsonPayloadArgumentResolver argResolver) {
         this.mapper = mapper;
         this.router = router;
         this.requestProcessor = requestProcessor;
+        this.argResolver = argResolver;
     }
 
     @Override
@@ -39,7 +44,11 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
             switch (request.getRequestType()) {
                 case STANDARD:
                     RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
-                    response = requestProcessor.standardRequest(routeInfo, request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+
+                    String payloadJson = mapper.readTree(json).get("payload").toString();
+
+                    Map<String, Object> payload = argResolver.resolve(payloadJson, routeInfo.getParameters());
+                    response = requestProcessor.standardRequest(routeInfo, request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), payload);
                     break;
                 case CLOSE_STREAM:
                     response = requestProcessor.closeStreamRequest(request.getId(), request.getSession());
