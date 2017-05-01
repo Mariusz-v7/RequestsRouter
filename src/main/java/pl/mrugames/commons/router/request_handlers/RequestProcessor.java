@@ -42,7 +42,7 @@ public class RequestProcessor {
         Session session = sessionManager.getSession(sessionId);
 
         session.unregisterEmitter(requestId);
-        return Observable.just(new Response(requestId, ResponseStatus.CLOSE, null));
+        return Observable.empty();
     }
 
     Observable<Response> standardRequest(RouteInfo routeInfo,

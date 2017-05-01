@@ -74,7 +74,7 @@ public class RequestProcessorSpec {
         testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
         testObserver.assertComplete();
 
-        closeObserver.assertValue(new Response(904, ResponseStatus.CLOSE, null));
+        closeObserver.assertNoValues();
         closeObserver.assertComplete();
     }
 
