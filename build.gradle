@@ -1,5 +1,5 @@
 group 'pl.mrugames.commons'
-version '1.0.2-SNAPSHOT'
+version '1.0.2'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -30,20 +30,6 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.22'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.6.2'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.7.RELEASE'
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.4'
-}
-
-task fatJar(type: Jar) {
-    baseName = project.name + '-all'
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    with jar
 }
 
 publishing {
