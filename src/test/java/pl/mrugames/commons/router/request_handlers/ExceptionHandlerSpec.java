@@ -9,6 +9,7 @@ import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
 import java.util.Collections;
 
@@ -53,5 +54,14 @@ public class ExceptionHandlerSpec {
 
         Response response = exceptionHandler.handle(1, e).blockingFirst();
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
+    }
+
+    @Test
+    public void sessionExpiredException() {
+        SessionExpiredException e = new SessionExpiredException();
+
+        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat(response.getPayload()).isEqualTo("Session expired");
     }
 }

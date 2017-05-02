@@ -9,6 +9,7 @@ import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
 @Service
 class ExceptionHandler {
@@ -25,6 +26,10 @@ class ExceptionHandler {
 
         if (e instanceof RouteConstraintViolationException) {
             return Observable.just(new Response(requestId, ResponseStatus.BAD_PARAMETERS, ((RouteConstraintViolationException) e).getMessages()));
+        }
+
+        if (e instanceof SessionExpiredException) {
+            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired"));
         }
 
         logger.error("Internal error while processing the request", e);
