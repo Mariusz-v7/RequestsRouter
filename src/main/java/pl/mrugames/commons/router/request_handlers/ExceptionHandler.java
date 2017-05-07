@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
+import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
@@ -30,6 +31,10 @@ class ExceptionHandler {
 
         if (e instanceof SessionExpiredException) {
             return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired"));
+        }
+
+        if (e instanceof ApplicationException) {
+            return Observable.just(new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage()));
         }
 
         logger.error("Internal error while processing the request", e);

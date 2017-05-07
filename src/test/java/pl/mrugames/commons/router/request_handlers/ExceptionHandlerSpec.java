@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
+import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
@@ -63,5 +64,19 @@ public class ExceptionHandlerSpec {
         Response response = exceptionHandler.handle(1, e).blockingFirst();
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("Session expired");
+    }
+
+    @Test
+    public void applicationException() {
+        ApplicationException e1 = new ApplicationException(ResponseStatus.BAD_PARAMETERS, "bla");
+        ApplicationException e2 = new ApplicationException(ResponseStatus.BAD_REQUEST, "alb");
+
+        Response response = exceptionHandler.handle(1, e1).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
+        assertThat(response.getPayload()).isEqualTo("bla");
+
+        response = exceptionHandler.handle(2, e2).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat(response.getPayload()).isEqualTo("alb");
     }
 }
