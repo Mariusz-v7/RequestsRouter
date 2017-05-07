@@ -38,6 +38,14 @@ public class Session {
         return (T) map.put(object.getClass(), object);
     }
 
+    public synchronized Object[] add(Object... objects) {
+        for (int i = 0; i < objects.length - 1; ++i) {
+            objects[i] = add(objects[i]);
+        }
+
+        return objects;
+    }
+
     @SuppressWarnings("unchecked")
     public synchronized <T> T add(Class<T> type, T object) {
         if (isDestroyed) {
