@@ -11,6 +11,10 @@ public class Mono<T> {
         return new Mono<>(status, payload);
     }
 
+    public static <T> Mono<T> ok(T payload) {
+        return new Mono<>(ResponseStatus.OK, payload);
+    }
+
     private final ResponseStatus responseStatus;
     private final T payload;
 
