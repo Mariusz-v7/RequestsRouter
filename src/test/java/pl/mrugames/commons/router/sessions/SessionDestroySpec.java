@@ -73,4 +73,9 @@ public class SessionDestroySpec {
     public void registerEmitter() {
         session.registerEmitter(1, subject);
     }
+
+    @Test
+    public void getAuthenticatedUser() {
+        session.getAuthenticatedUser();
+    }
 }

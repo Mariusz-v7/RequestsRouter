@@ -233,4 +233,17 @@ public class SessionSpec {
 
         session.registerEmitter(10, subject2);
     }
+
+    @Test
+    public void givenNewSessionWithoutAuthenticatedUser_whenGetAuthenticatedUser_thenNull() {
+        assertThat(session.getAuthenticatedUser()).isEmpty();
+    }
+
+    @Test
+    public void givenSessionHasAuthenticatedUser_whenGetAuthenticatedUser_thenReturnIt() {
+        RoleHolder roleHolder = mock(RoleHolder.class);
+        session.addAuthenticatedUser(roleHolder);
+
+        assertThat(session.getAuthenticatedUser().get()).isSameAs(roleHolder);
+    }
 }

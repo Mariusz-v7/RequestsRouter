@@ -91,6 +91,15 @@ public class Session {
         map.put(RoleHolder.class, roleHolder);
     }
 
+    @SuppressWarnings("unchecked")
+    public synchronized Optional<RoleHolder> getAuthenticatedUser() {
+        if (isDestroyed) {
+            throw new SessionExpiredException();
+        }
+
+        return Optional.ofNullable((RoleHolder) map.get(RoleHolder.class));
+    }
+
     public synchronized void destroy() {
         if (isDestroyed) {
             return;
