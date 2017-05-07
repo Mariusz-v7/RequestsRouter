@@ -65,7 +65,7 @@ public class SessionSpec {
     @Test
     public void whenAddNull_thenNullPointerException() {
         expectedException.expect(NullPointerException.class);
-        session.add(null);
+        session.add((Object) null);
     }
 
     @Test
@@ -245,5 +245,15 @@ public class SessionSpec {
         session.addAuthenticatedUser(roleHolder);
 
         assertThat(session.getAuthenticatedUser().get()).isSameAs(roleHolder);
+    }
+
+    @Test
+    public void givenVarArgs_whenAdd_thenCallAddMultipleTimes() {
+        UserModel userModel = new UserModel("", 1);
+        String string = "str";
+
+        session.add(userModel, string);
+        assertThat(session.get(UserModel.class).orElse(null)).isSameAs(userModel);
+        assertThat(session.get(String.class).orElse(null)).isSameAs(string);
     }
 }

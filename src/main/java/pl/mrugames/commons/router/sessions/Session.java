@@ -39,7 +39,7 @@ public class Session {
     }
 
     public synchronized Object[] add(Object... objects) {
-        for (int i = 0; i < objects.length - 1; ++i) {
+        for (int i = 0; i < objects.length; ++i) {
             objects[i] = add(objects[i]);
         }
 

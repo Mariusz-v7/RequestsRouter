@@ -78,4 +78,9 @@ public class SessionDestroySpec {
     public void getAuthenticatedUser() {
         session.getAuthenticatedUser();
     }
+
+    @Test
+    public void addVarArgs() {
+        session.add("asdf", 123);
+    }
 }
