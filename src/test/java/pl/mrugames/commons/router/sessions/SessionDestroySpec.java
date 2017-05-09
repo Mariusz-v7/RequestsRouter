@@ -83,4 +83,14 @@ public class SessionDestroySpec {
     public void addVarArgs() {
         session.add("asdf", 123);
     }
+
+    @Test
+    public void setSecurityCode() {
+        session.setSecurityCode("124");
+    }
+
+    @Test
+    public void getSecurityCode() {
+        session.getSecurityCode();
+    }
 }

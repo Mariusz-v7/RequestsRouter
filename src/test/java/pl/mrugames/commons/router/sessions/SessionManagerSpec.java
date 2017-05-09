@@ -108,4 +108,15 @@ public class SessionManagerSpec {
 
         sessionManager.getSession("123", "");
     }
+
+    @Test
+    public void givenSessionHasSecurityCodeSet_whenGetWithWrongCode_thenException() {
+        Session session = sessionManager.getSession(sessionId + "withSecurityCode", "");
+        session.setSecurityCode("1234");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Wrong security code");
+
+        sessionManager.getSession(sessionId + "withSecurityCode", "");
+    }
 }

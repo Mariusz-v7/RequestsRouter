@@ -31,7 +31,12 @@ public class SessionManager {
             throw new IllegalArgumentException("Session id must be at least " + SESSION_ID_MIN_LENGTH + " characters long");
         }
 
-        return sessions.compute(sessionId, this::compute);
+        Session session = sessions.compute(sessionId, this::compute);
+        if (session.getSecurityCode() != null && !session.getSecurityCode().equals(securityCode)) {
+            throw new IllegalArgumentException("Wrong security code");
+        }
+
+        return session;
     }
 
     Collection<Session> getAllSessions() {
