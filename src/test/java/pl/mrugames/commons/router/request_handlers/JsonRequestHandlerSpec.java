@@ -46,7 +46,7 @@ public class JsonRequestHandlerSpec {
     public void before() throws JsonProcessingException {
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
-        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "app/test/json", RequestMethod.GET, payload);
+        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "", "app/test/json", RequestMethod.GET, payload);
         jsonRequest = mapper.writeValueAsString(request);
     }
 
@@ -69,7 +69,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenStringRequest_thenParseIntoRequestAndCallObjectHandler() throws Exception {
         handler.handleRequest(jsonRequest);
-        verify(requestProcessor).standardRequest(any(), eq(request.getId()), eq(request.getSession()), eq(request.getRoute()), eq(request.getRequestMethod()), anyMap());
+        verify(requestProcessor).standardRequest(any(), eq(request.getId()), eq(request.getSession()), eq(""), eq(request.getRoute()), eq(request.getRequestMethod()), anyMap());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class JsonRequestHandlerSpec {
 
         doReturn(new RouterResult<>(null, Observable.just(response)))
                 .when(requestProcessor)
-                .standardRequest(any(), anyLong(), any(), any(), any(), any());
+                .standardRequest(any(), anyLong(), any(), any(), any(), any(), any());
         String realResponse = handler.handleRequest(jsonRequest).getResponse().blockingFirst();
 
         assertThat(realResponse).isEqualTo(jsonResponse);
@@ -108,7 +108,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void payloadResolverTest() throws InvocationTargetException, IllegalAccessException {
         handler.handleRequest(jsonRequest).getResponse().blockingFirst();
-        verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), any(), eq(payload));
+        verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), anyString(), any(), eq(payload));
     }
 
     @Test

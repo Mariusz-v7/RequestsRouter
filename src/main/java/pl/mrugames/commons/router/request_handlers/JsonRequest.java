@@ -12,11 +12,13 @@ class JsonRequest extends Request {
     @JsonCreator
     JsonRequest(@JsonProperty("id") Long id,
                 @JsonProperty("session") String session,
+                @JsonProperty("securityCode") String securityCode,
                 @JsonProperty("route") String route,
                 @JsonProperty("requestMethod") RequestMethod requestMethod,
                 @JsonProperty(value = "requestType") RequestType requestType) {
         super(id == null ? -1 : id,
                 session == null ? "" : session,
+                securityCode == null ? "" : securityCode,
                 route == null ? "" : route,
                 requestMethod == null ? RequestMethod.GET : requestMethod,
                 null,

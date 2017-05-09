@@ -47,7 +47,7 @@ public class RequestProcessorSpec {
         sourceSubject = PublishSubject.create();
         responseSubject = PublishSubject.create();
 
-        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString());
+        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString(), anyString());
     }
 
     @After
@@ -58,19 +58,19 @@ public class RequestProcessorSpec {
     @Test
     @SuppressWarnings("unchecked")
     public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
-        doReturn(new Session("", mock(Consumer.class))).when(sessionManager).getSession(anyString());
+        doReturn(new Session("", mock(Consumer.class))).when(sessionManager).getSession(anyString(), anyString());
 
         TestObserver<Response> testObserver = TestObserver.create();
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload())
+        Request request = new Request(904, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSession(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload())
                 .getResponse().subscribe(testObserver);
 
-        Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
+        Request closeRequest = new Request(904, "", "", null, null, null, RequestType.CLOSE_STREAM);
 
         TestObserver<Response> closeObserver = TestObserver.create();
-        requestProcessor.closeStreamRequest(closeRequest.getId(), closeRequest.getSession())
+        requestProcessor.closeStreamRequest(closeRequest.getId(), closeRequest.getSession(), "")
                 .getResponse().subscribe(closeObserver);
 
         testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));

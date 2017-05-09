@@ -69,7 +69,7 @@ public class ObjectRequestHandlerSpec {
         sourceSubject = PublishSubject.create();
         responseSubject = PublishSubject.create();
 
-        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString());
+        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString(), anyString());
     }
 
     @After
@@ -81,8 +81,8 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenHandleRequestIsCalled_thenDelegateToNext() throws Exception {
-        Request request1 = new Request(1, "", "", RequestMethod.GET, Collections.emptyMap());
-        Request request2 = new Request(2, "", "", RequestMethod.POST, Collections.emptyMap());
+        Request request1 = new Request(1, "", "", "", RequestMethod.GET, Collections.emptyMap());
+        Request request2 = new Request(2, "", "", "", RequestMethod.POST, Collections.emptyMap());
         Response response1 = new Response(1, ResponseStatus.OK, "something");
         Response response2 = new Response(2, ResponseStatus.OK, "something");
 
@@ -103,7 +103,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenNextMethodThrowsException_whenHandleRequest_thenReturnErrorResponse() throws Exception {
-        Request request = new Request(100, "", "", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", "", RequestMethod.GET, Collections.emptyMap());
         doThrow(new Exception("test msg")).when(handler).next(request);
 
         Response response = handler.handleRequest(request).getResponse().blockingFirst();
@@ -117,7 +117,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void whenRequest_thenResponseWithSameId() throws Exception {
-        Request request = new Request(100, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
         Response response = handler.next(request).getResponse().blockingFirst();
 
         assertThat(response.getId()).isEqualTo(request.getId());
@@ -125,7 +125,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void whenNextIsCalled_thenRouterIsRequestedToSearchForRoute() {
-        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(router).findRoute("app/test/concat", RequestMethod.GET);
@@ -146,7 +146,7 @@ public class ObjectRequestHandlerSpec {
 
         RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
 
-        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(router).navigate(routeInfo, pathArg, payloadArg, sessionArg);
@@ -156,7 +156,7 @@ public class ObjectRequestHandlerSpec {
     public void whenRequest_thenPathResolverIsCalledWithProperPath() {
         RouteInfo routeInfo = router.findRoute("app/test/concat", RequestMethod.GET);
 
-        Request request = new Request(100, "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(100, "", "", "app/test/concat", RequestMethod.GET, Collections.emptyMap());
         handler.handleRequest(request);
 
         verify(pathArgumentResolver).resolve("GET:app/test/concat", routeInfo.getRoutePattern(), routeInfo.getParameters());
@@ -165,7 +165,7 @@ public class ObjectRequestHandlerSpec {
     @Test
     public void givenCheckPermissionsReturnStatusOtherThanOk_whenRequest_thenResponseWithReturnedStatus() {
         doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(permissionChecker).checkPermissions(any(), any(), any());
-        Request request = new Request(90, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(90, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         Response response = handler.handleRequest(request).getResponse().blockingFirst();
 
@@ -179,7 +179,7 @@ public class ObjectRequestHandlerSpec {
         Object someObject = new Object();
         doReturn(someObject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         Response response = handler.handleRequest(request).getResponse().blockingFirst();
 
@@ -200,7 +200,7 @@ public class ObjectRequestHandlerSpec {
                 fail();
             }
 
-            Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+            Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
             Response response = handler.handleRequest(request).getResponse().blockingFirst();
 
@@ -214,7 +214,7 @@ public class ObjectRequestHandlerSpec {
     public void givenRouterReturnsSubject_whenItEmitsNextFrames_thenResponseHasStatusOfSTREAM() throws InvocationTargetException, IllegalAccessException {
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         TestObserver<Response> testObserver = TestObserver.create();
 
@@ -241,9 +241,9 @@ public class ObjectRequestHandlerSpec {
         }));
 
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
-        doReturn(session).when(sessionManager).getSession(anyString());
+        doReturn(session).when(sessionManager).getSession(anyString(), anyString());
 
-        Request request = new Request(92, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         handler.handleRequest(request);
         verify(session).registerEmitter(92, sourceSubject);

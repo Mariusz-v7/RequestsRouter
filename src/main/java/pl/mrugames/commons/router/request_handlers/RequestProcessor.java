@@ -39,8 +39,8 @@ public class RequestProcessor {
         this.sessionArgumentResolver = sessionArgumentResolver;
     }
 
-    RouterResult<Response> closeStreamRequest(long requestId, String sessionId) {
-        Session session = sessionManager.getSession(sessionId);
+    RouterResult<Response> closeStreamRequest(long requestId, String sessionId, String securityCode) {
+        Session session = sessionManager.getSession(sessionId, securityCode);
 
         session.unregisterEmitter(requestId);
         return new RouterResult<>(session, Observable.empty());
@@ -49,11 +49,12 @@ public class RequestProcessor {
     RouterResult<Response> standardRequest(RouteInfo routeInfo,
                                            long requestId,
                                            String sessionId,
+                                           String securityCode,
                                            String route,
                                            RequestMethod requestMethod,
                                            Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
 
-        Session session = sessionManager.getSession(sessionId);
+        Session session = sessionManager.getSession(sessionId, securityCode);
 
         Mono<?> permissionStatus = permissionChecker.checkPermissions(session, routeInfo.getAccessType(), routeInfo.getAllowedRoles());
         if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {

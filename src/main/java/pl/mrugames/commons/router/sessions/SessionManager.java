@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.RouterProperties;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class SessionManager {
         sessions = new ConcurrentHashMap<>();
     }
 
-    public Session getSession(String sessionId) {
+    public Session getSession(String sessionId, @Nullable String securityCode) {
         if (sessionId.length() < SESSION_ID_MIN_LENGTH) {
             throw new IllegalArgumentException("Session id must be at least " + SESSION_ID_MIN_LENGTH + " characters long");
         }

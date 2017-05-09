@@ -31,9 +31,15 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         switch (request.getRequestType()) {
             case STANDARD:
                 RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
-                return requestProcessor.standardRequest(routeInfo, request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+                return requestProcessor.standardRequest(routeInfo,
+                        request.getId(),
+                        request.getSession(),
+                        request.getSecurityCode(),
+                        request.getRoute(),
+                        request.getRequestMethod(),
+                        request.getPayload());
             case CLOSE_STREAM:
-                return requestProcessor.closeStreamRequest(request.getId(), request.getSession());
+                return requestProcessor.closeStreamRequest(request.getId(), request.getSession(), request.getSecurityCode());
             default:
                 throw new IllegalStateException("Unknown request type: " + request.getRequestType());
         }

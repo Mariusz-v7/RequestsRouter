@@ -71,10 +71,16 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
                     String payloadJson = mapper.readTree(json).get("payload").toString();
 
                     Map<String, Object> payload = argResolver.resolve(payloadJson, routeInfo.getParameters());
-                    response = requestProcessor.standardRequest(routeInfo, request.getId(), request.getSession(), request.getRoute(), request.getRequestMethod(), payload);
+                    response = requestProcessor.standardRequest(routeInfo,
+                            request.getId(),
+                            request.getSession(),
+                            request.getSecurityCode(),
+                            request.getRoute(),
+                            request.getRequestMethod(),
+                            payload);
                     break;
                 case CLOSE_STREAM:
-                    response = requestProcessor.closeStreamRequest(request.getId(), request.getSession());
+                    response = requestProcessor.closeStreamRequest(request.getId(), request.getSession(), request.getSecurityCode());
                     break;
                 default:
                     throw new IllegalStateException("Unknown request type: " + request.getRequestType());
