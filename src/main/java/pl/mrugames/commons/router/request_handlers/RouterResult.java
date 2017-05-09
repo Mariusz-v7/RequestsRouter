@@ -1,14 +1,13 @@
 package pl.mrugames.commons.router.request_handlers;
 
-import com.sun.istack.internal.Nullable;
 import io.reactivex.Observable;
 import pl.mrugames.commons.router.sessions.Session;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class RouterResult<T extends Serializable> {
-    @Nullable
     private final Session session;
 
     @NotNull
@@ -19,6 +18,7 @@ public class RouterResult<T extends Serializable> {
         this.response = response;
     }
 
+    @Nullable
     public Session getSession() {
         return session;
     }
