@@ -17,6 +17,7 @@ import java.util.Map;
 
 @Component
 public class RequestProcessor {
+
     private final SessionManager sessionManager;
     private final PermissionChecker permissionChecker;
     private final Router router;
@@ -38,25 +39,28 @@ public class RequestProcessor {
         this.sessionArgumentResolver = sessionArgumentResolver;
     }
 
-    Observable<Response> closeStreamRequest(long requestId, String sessionId) {
+    RouterResult<Response> closeStreamRequest(long requestId, String sessionId) {
         Session session = sessionManager.getSession(sessionId);
 
         session.unregisterEmitter(requestId);
-        return Observable.empty();
+        return new RouterResult<>(session, Observable.empty());
     }
 
-    Observable<Response> standardRequest(RouteInfo routeInfo,
-                                         long requestId,
-                                         String sessionId,
-                                         String route,
-                                         RequestMethod requestMethod,
-                                         Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
+    RouterResult<Response> standardRequest(RouteInfo routeInfo,
+                                           long requestId,
+                                           String sessionId,
+                                           String route,
+                                           RequestMethod requestMethod,
+                                           Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
 
         Session session = sessionManager.getSession(sessionId);
 
         Mono<?> permissionStatus = permissionChecker.checkPermissions(session, routeInfo.getAccessType(), routeInfo.getAllowedRoles());
         if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
-            return Observable.just(new Response(requestId, permissionStatus.getResponseStatus(), permissionStatus.getPayload()));
+            return new RouterResult<>(
+                    session,
+                    Observable.just(new Response(requestId, permissionStatus.getResponseStatus(), permissionStatus.getPayload()))
+            );
         }
 
         Object returnValue = router.navigate(routeInfo,
@@ -67,15 +71,21 @@ public class RequestProcessor {
 
         if (returnValue instanceof Mono) {
             Mono<?> mono = (Mono) returnValue;
-            return Observable.just(new Response(requestId, mono.getResponseStatus(), mono.getPayload()));
+            return new RouterResult<>(
+                    session,
+                    Observable.just(new Response(requestId, mono.getResponseStatus(), mono.getPayload()))
+            );
         }
 
         if (returnValue instanceof Subject) {
             session.registerEmitter(requestId, (Subject) returnValue);
-            return onSubject((Subject) returnValue, PublishSubject.create(), requestId);
+            return new RouterResult<>(session, onSubject((Subject) returnValue, PublishSubject.create(), requestId));
         }
 
-        return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
+        return new RouterResult<>(
+                session,
+                Observable.just(new Response(requestId, ResponseStatus.OK, returnValue))
+        );
     }
 
     Observable<Response> onSubject(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {

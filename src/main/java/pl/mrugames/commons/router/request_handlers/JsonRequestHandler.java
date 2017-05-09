@@ -37,22 +37,28 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     }
 
     @Override
-    public Observable<String> handleRequest(String json) {
+    public RouterResult<String> handleRequest(String json) {
         Request request;
         try {
             try {
                 request = mapper.readValue(json, JsonRequest.class);
             } catch (InvalidFormatException e) {
                 long requestId = mapper.readTree(json).get("id").asLong();
-                return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage()))
-                        .map(r -> responseToString(r, json, requestId));
+                return new RouterResult<>(
+                        null,
+                        Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage()))
+                                .map(r -> responseToString(r, json, requestId))
+                );
             }
         } catch (Exception e) {
             logger.error("Failed to read JSON: {}", json, e);
-            return Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1));
+            return new RouterResult<>(
+                    null,
+                    Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1))
+            );
         }
 
-        Observable<Response> response;
+        RouterResult<Response> response;
         try {
             if (request.getId() == -1) {
                 throw new IllegalArgumentException("'id' is missing n the request");
@@ -74,10 +80,17 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
                     throw new IllegalStateException("Unknown request type: " + request.getRequestType());
             }
         } catch (Exception e) {
-            response = exceptionHandler.handle(request.getId(), e);
+            response = new RouterResult<>(
+                    null,
+                    exceptionHandler.handle(request.getId(), e)
+            );
         }
 
-        return response.map(r -> responseToString(r, json, request.getId()));
+        return new RouterResult<>(
+                response.getSession(),
+                response.getResponse()
+                        .map(r -> responseToString(r, json, request.getId()))
+        );
     }
 
     private String responseToString(Response response, String json, long requestId) {
