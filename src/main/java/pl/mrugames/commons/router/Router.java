@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.commons.router.exceptions.RouterException;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
@@ -49,7 +50,7 @@ public class Router {
     public Object navigate(RouteInfo routeInfo,
                            Map<String, Object> pathParameters,
                            Map<String, Object> payloadParameters,
-                           Map<Class<?>, Optional<Object>> sessionParameters) throws InvocationTargetException, IllegalAccessException {
+                           Map<Class<?>, Optional<Object>> sessionParameters) throws IllegalAccessException {
 
         List<RouteParameter> parameters = routeInfo.getParameters();
         Object[] args = new Object[parameters.size()];
@@ -91,7 +92,18 @@ public class Router {
             throw new RouteConstraintViolationException(messages);
         }
 
-        return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
+        try {
+            return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else if (cause instanceof Exception) {
+                throw new RouterException("Method invocation exception", e);
+            }
+
+            throw (Error) e.getCause();
+        }
     }
 
     private String getConstraintMessage(ConstraintViolation<?> constraintViolation, List<RouteParameter> parameters) {

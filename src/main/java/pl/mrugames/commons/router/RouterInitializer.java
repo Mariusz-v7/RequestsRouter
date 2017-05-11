@@ -38,7 +38,7 @@ public class RouterInitializer {
             Controller annotation = controller.getClass().getAnnotation(Controller.class);
             String baseRoute = annotation.value();
 
-            for (Method method : controller.getClass().getMethods()) {
+            for (Method method : controller.getClass().getSuperclass().getMethods()) {
                 Route route = method.getAnnotation(Route.class);
                 if (route == null) {
                     continue;

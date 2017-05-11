@@ -195,7 +195,7 @@ public class ObjectRequestHandlerSpec {
 
             try {
                 doReturn(returnedVal).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
-            } catch (InvocationTargetException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 fail();
             }

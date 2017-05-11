@@ -23,6 +23,9 @@ dependencies {
 
     compile group: 'org.springframework', name: 'spring-core', version: '4.3.7.RELEASE'
     compile group: 'org.springframework', name: 'spring-context', version: '4.3.7.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.2.2.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-config', version: '4.2.2.RELEASE'
+
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0.pr2'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.0.pr2'
@@ -38,6 +41,8 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.22'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.6.2'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.7.RELEASE'
+    testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '4.2.2.RELEASE'
+
 }
 
 publishing {

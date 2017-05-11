@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.controllers;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.annotations.*;
 
@@ -134,6 +135,12 @@ public class TestController {
 
     @Route("json")
     public void json(@Arg("arg1") String a, @Arg("arg2") String b) {
+
+    }
+
+    @PreAuthorize("denyAll")
+    @Route("deny")
+    public void deny() {
 
     }
 }

@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -155,5 +157,15 @@ public class RouterSpec {
         expectedException.expect(RouteConstraintViolationException.class);
 
         router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    @Test
+    @WithMockUser("admin")
+    public void givenMethodHasDenyAllAnnotation_andUserIsLogged_whenNavigate_thenException() throws IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("app/test/deny", RequestMethod.GET);
+
+        expectedException.expect(AccessDeniedException.class);
+
+        router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
     }
 }
