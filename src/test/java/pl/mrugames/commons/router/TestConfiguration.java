@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Primary;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
-import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
 import pl.mrugames.commons.router.request_handlers.RequestProcessor;
 import pl.mrugames.commons.router.sessions.SessionManager;
@@ -69,12 +68,6 @@ public class TestConfiguration {
     @Primary
     public SessionManager sessionManagerSpy(SessionManager sessionManager) {
         return spy(sessionManager);
-    }
-
-    @Bean
-    @Primary
-    public PermissionChecker permissionCheckerSpy(PermissionChecker permissionChecker) {
-        return spy(permissionChecker);
     }
 
     @Bean

@@ -17,7 +17,6 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
-import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
@@ -55,9 +54,6 @@ public class ObjectRequestHandlerSpec {
     @Autowired
     private SessionManager sessionManager;
 
-    @Autowired
-    private PermissionChecker permissionChecker;
-
     private PublishSubject<String> sourceSubject;
     private PublishSubject<Response> responseSubject;
 
@@ -74,7 +70,7 @@ public class ObjectRequestHandlerSpec {
 
     @After
     public void after() {
-        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver, sessionManager, permissionChecker);
+        reset(handler, router, pathArgumentResolver, sessionArgumentResolver, requestPayloadArgumentResolver, sessionManager);
         sourceSubject.onComplete();
         responseSubject.onComplete();
     }
@@ -160,18 +156,6 @@ public class ObjectRequestHandlerSpec {
         handler.handleRequest(request);
 
         verify(pathArgumentResolver).resolve("GET:app/test/concat", routeInfo.getRoutePattern(), routeInfo.getParameters());
-    }
-
-    @Test
-    public void givenCheckPermissionsReturnStatusOtherThanOk_whenRequest_thenResponseWithReturnedStatus() {
-        doReturn(Mono.of(ResponseStatus.PERMISSION_DENIED, "xxx")).when(permissionChecker).checkPermissions(any(), any(), any());
-        Request request = new Request(90, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-
-        Response response = handler.handleRequest(request).getResponse().blockingFirst();
-
-        assertThat(response.getId()).isEqualTo(90);
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
-        assertThat(response.getPayload()).isEqualTo("xxx");
     }
 
     @Test

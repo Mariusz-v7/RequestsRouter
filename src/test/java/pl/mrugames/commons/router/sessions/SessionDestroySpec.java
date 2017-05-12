@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
-import pl.mrugames.commons.router.controllers.UserModel;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionDestroySpec {
@@ -50,11 +49,6 @@ public class SessionDestroySpec {
     }
 
     @Test
-    public void addAuthenticatedUser() {
-        session.addAuthenticatedUser(new UserModel("", 0));
-    }
-
-    @Test
     public void compute() {
         session.compute(String.class, (a, b) -> "");
     }
@@ -72,11 +66,6 @@ public class SessionDestroySpec {
     @Test
     public void registerEmitter() {
         session.registerEmitter(1, subject);
-    }
-
-    @Test
-    public void getAuthenticatedUser() {
-        session.getAuthenticatedUser();
     }
 
     @Test

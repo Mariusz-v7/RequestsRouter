@@ -1,7 +1,6 @@
 package pl.mrugames.commons.router.sessions;
 
 import io.reactivex.subjects.Subject;
-import pl.mrugames.commons.router.permissions.RoleHolder;
 
 import java.time.Instant;
 import java.util.Map;
@@ -90,23 +89,6 @@ public class Session {
         }
 
         return (T) map.compute(type, (BiFunction) remappingFunction);
-    }
-
-    public synchronized void addAuthenticatedUser(RoleHolder roleHolder) {
-        if (isDestroyed) {
-            throw new SessionExpiredException();
-        }
-
-        map.put(RoleHolder.class, roleHolder);
-    }
-
-    @SuppressWarnings("unchecked")
-    public synchronized Optional<RoleHolder> getAuthenticatedUser() {
-        if (isDestroyed) {
-            throw new SessionExpiredException();
-        }
-
-        return Optional.ofNullable((RoleHolder) map.get(RoleHolder.class));
     }
 
     public synchronized void destroy() {

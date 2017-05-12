@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import pl.mrugames.commons.router.annotations.*;
-import pl.mrugames.commons.router.permissions.AccessType;
+import pl.mrugames.commons.router.annotations.Arg;
+import pl.mrugames.commons.router.annotations.Controller;
+import pl.mrugames.commons.router.annotations.PathVar;
+import pl.mrugames.commons.router.annotations.Route;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -44,18 +46,7 @@ public class RouterInitializer {
                     continue;
                 }
 
-                AccessType accessType = AccessType.ONLY_LOGGED_IN;
-                AllowedRoles allowedRoles = method.getAnnotation(AllowedRoles.class);
                 List<String> allowedRolesList = Collections.emptyList();
-
-                if (allowedRoles != null) {
-                    accessType = AccessType.ONLY_WITH_SPECIFIC_ROLES;
-                    allowedRolesList = Arrays.asList(allowedRoles.value());
-                } else if (method.getAnnotation(OnlyNotLoggedAllowed.class) != null) {
-                    accessType = AccessType.ONLY_NOT_LOGGED_IN;
-                } else if (method.getAnnotation(AllAllowed.class) != null) {
-                    accessType = AccessType.ALL_ALLOWED;
-                }
 
                 List<RouteParameter> parameters = new ArrayList<>(method.getParameterCount());
                 for (Parameter parameter : method.getParameters()) {
@@ -86,7 +77,7 @@ public class RouterInitializer {
 
                 String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());
 
-                RouteInfo routeInfo = new RouteInfo(controller, method, parameters, path, accessType, allowedRolesList);
+                RouteInfo routeInfo = new RouteInfo(controller, method, parameters, path, allowedRolesList);
 
                 if (routes.containsKey(path)) {
                     RouteInfo colliding = routes.get(path);

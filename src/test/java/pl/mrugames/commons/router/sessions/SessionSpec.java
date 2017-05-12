@@ -12,7 +12,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.controllers.Interface;
 import pl.mrugames.commons.router.controllers.UserModel;
-import pl.mrugames.commons.router.permissions.RoleHolder;
 
 import java.util.function.Consumer;
 
@@ -156,13 +155,6 @@ public class SessionSpec {
     }
 
     @Test
-    public void whenRegisterAuthenticatedUser_thenRoleOwnerIsAddedToSession() {
-        UserModel userModel = new UserModel("Role Holder", 1239);
-        session.addAuthenticatedUser(userModel);
-        assertThat(session.get(RoleHolder.class).get()).isSameAs(userModel);
-    }
-
-    @Test
     public void whenSessionIsCreated_thenItContainsReferenceToItself() {
         Session session = new Session("ASDF", s -> {
         });
@@ -232,19 +224,6 @@ public class SessionSpec {
         expectedException.expectMessage("Emitter with id 10 is already registered");
 
         session.registerEmitter(10, subject2);
-    }
-
-    @Test
-    public void givenNewSessionWithoutAuthenticatedUser_whenGetAuthenticatedUser_thenNull() {
-        assertThat(session.getAuthenticatedUser()).isEmpty();
-    }
-
-    @Test
-    public void givenSessionHasAuthenticatedUser_whenGetAuthenticatedUser_thenReturnIt() {
-        RoleHolder roleHolder = mock(RoleHolder.class);
-        session.addAuthenticatedUser(roleHolder);
-
-        assertThat(session.getAuthenticatedUser().get()).isSameAs(roleHolder);
     }
 
     @Test

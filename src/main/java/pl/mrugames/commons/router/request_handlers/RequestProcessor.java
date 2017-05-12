@@ -8,7 +8,6 @@ import pl.mrugames.commons.router.*;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
-import pl.mrugames.commons.router.permissions.PermissionChecker;
 import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
@@ -19,20 +18,17 @@ import java.util.Map;
 public class RequestProcessor {
 
     private final SessionManager sessionManager;
-    private final PermissionChecker permissionChecker;
     private final Router router;
     private final PathArgumentResolver pathArgumentResolver;
     private final RequestPayloadArgumentResolver requestPayloadArgumentResolver;
     private final SessionArgumentResolver sessionArgumentResolver;
 
     private RequestProcessor(SessionManager sessionManager,
-                             PermissionChecker permissionChecker,
                              Router router,
                              PathArgumentResolver pathArgumentResolver,
                              RequestPayloadArgumentResolver requestPayloadArgumentResolver,
                              SessionArgumentResolver sessionArgumentResolver) {
         this.sessionManager = sessionManager;
-        this.permissionChecker = permissionChecker;
         this.router = router;
         this.pathArgumentResolver = pathArgumentResolver;
         this.requestPayloadArgumentResolver = requestPayloadArgumentResolver;
@@ -55,14 +51,6 @@ public class RequestProcessor {
                                            Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
 
         Session session = sessionManager.getSession(sessionId, securityCode);
-
-        Mono<?> permissionStatus = permissionChecker.checkPermissions(session, routeInfo.getAccessType(), routeInfo.getAllowedRoles());
-        if (permissionStatus.getResponseStatus() != ResponseStatus.OK) {
-            return new RouterResult<>(
-                    session,
-                    Observable.just(new Response(requestId, permissionStatus.getResponseStatus(), permissionStatus.getPayload()))
-            );
-        }
 
         Object returnValue = router.navigate(routeInfo,
                 pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
