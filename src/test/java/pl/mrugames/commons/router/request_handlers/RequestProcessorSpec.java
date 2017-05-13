@@ -65,13 +65,13 @@ public class RequestProcessorSpec {
 
         Request request = new Request(904, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
         requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSession(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload())
-                .getResponse().subscribe(testObserver);
+                .subscribe(testObserver);
 
         Request closeRequest = new Request(904, "", "", null, null, null, RequestType.CLOSE_STREAM);
 
         TestObserver<Response> closeObserver = TestObserver.create();
         requestProcessor.closeStreamRequest(closeRequest.getId(), closeRequest.getSession(), "")
-                .getResponse().subscribe(closeObserver);
+                .subscribe(closeObserver);
 
         testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
         testObserver.assertComplete();

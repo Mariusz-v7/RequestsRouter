@@ -1,5 +1,7 @@
 package pl.mrugames.commons.router.request_handlers;
 
+import io.reactivex.Observable;
+
 import java.io.Serializable;
 
 public interface RequestHandler<In, Out extends Serializable> {
@@ -9,5 +11,5 @@ public interface RequestHandler<In, Out extends Serializable> {
      * Returned value should never emit errors!
      * Method should never throw any exceptions!
      */
-    RouterResult<Out> handleRequest(In request);
+    Observable<Out> handleRequest(In request);
 }

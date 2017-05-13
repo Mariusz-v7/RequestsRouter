@@ -82,13 +82,13 @@ public class ObjectRequestHandlerSpec {
         Response response1 = new Response(1, ResponseStatus.OK, "something");
         Response response2 = new Response(2, ResponseStatus.OK, "something");
 
-        doReturn(new RouterResult<>(null, Observable.just(response1)))
+        doReturn(Observable.just(response1))
                 .when(handler).next(request1);
-        doReturn(new RouterResult<>(null, Observable.just(response2)))
+        doReturn(Observable.just(response2))
                 .when(handler).next(request2);
 
-        Response real1 = handler.handleRequest(request1).getResponse().blockingFirst();
-        Response real2 = handler.handleRequest(request2).getResponse().blockingFirst();
+        Response real1 = handler.handleRequest(request1).blockingFirst();
+        Response real2 = handler.handleRequest(request2).blockingFirst();
 
         verify(handler).next(request1);
         verify(handler).next(request2);
@@ -102,7 +102,7 @@ public class ObjectRequestHandlerSpec {
         Request request = new Request(100, "", "", "", RequestMethod.GET, Collections.emptyMap());
         doThrow(new Exception("test msg")).when(handler).next(request);
 
-        Response response = handler.handleRequest(request).getResponse().blockingFirst();
+        Response response = handler.handleRequest(request).blockingFirst();
 
         doCallRealMethod().when(handler).next(any());
 
@@ -114,7 +114,7 @@ public class ObjectRequestHandlerSpec {
     @Test
     public void whenRequest_thenResponseWithSameId() throws Exception {
         Request request = new Request(100, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        Response response = handler.next(request).getResponse().blockingFirst();
+        Response response = handler.next(request).blockingFirst();
 
         assertThat(response.getId()).isEqualTo(request.getId());
     }
@@ -165,7 +165,7 @@ public class ObjectRequestHandlerSpec {
 
         Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
-        Response response = handler.handleRequest(request).getResponse().blockingFirst();
+        Response response = handler.handleRequest(request).blockingFirst();
 
         assertThat(response.getId()).isEqualTo(92);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.OK);
@@ -186,7 +186,7 @@ public class ObjectRequestHandlerSpec {
 
             Request request = new Request(92, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
-            Response response = handler.handleRequest(request).getResponse().blockingFirst();
+            Response response = handler.handleRequest(request).blockingFirst();
 
             assertThat(response.getId()).isEqualTo(92);
             assertThat(response.getStatus()).isEqualTo(status);
@@ -202,7 +202,7 @@ public class ObjectRequestHandlerSpec {
 
         TestObserver<Response> testObserver = TestObserver.create();
 
-        handler.handleRequest(request).getResponse().subscribe(testObserver);
+        handler.handleRequest(request).subscribe(testObserver);
 
         sourceSubject.onNext("first");
         sourceSubject.onNext("second");

@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.request_handlers;
 
+import io.reactivex.Observable;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.Request;
 import pl.mrugames.commons.router.Response;
@@ -19,15 +20,15 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
     }
 
     @Override
-    public RouterResult<Response> handleRequest(Request request) {
+    public Observable<Response> handleRequest(Request request) {
         try {
             return next(request);
         } catch (Exception e) {
-            return new RouterResult<>(null, exceptionHandler.handle(request.getId(), e));
+            return exceptionHandler.handle(request.getId(), e);
         }
     }
 
-    RouterResult<Response> next(Request request) throws Exception {
+    Observable<Response> next(Request request) throws Exception {
         switch (request.getRequestType()) {
             case STANDARD:
                 RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());

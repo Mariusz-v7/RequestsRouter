@@ -35,20 +35,20 @@ public class RequestProcessor {
         this.sessionArgumentResolver = sessionArgumentResolver;
     }
 
-    RouterResult<Response> closeStreamRequest(long requestId, String sessionId, String securityCode) {
+    Observable<Response> closeStreamRequest(long requestId, String sessionId, String securityCode) {
         Session session = sessionManager.getSession(sessionId, securityCode);
 
         session.unregisterEmitter(requestId);
-        return new RouterResult<>(session, Observable.empty());
+        return Observable.empty();
     }
 
-    RouterResult<Response> standardRequest(RouteInfo routeInfo,
-                                           long requestId,
-                                           String sessionId,
-                                           String securityCode,
-                                           String route,
-                                           RequestMethod requestMethod,
-                                           Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
+    Observable<Response> standardRequest(RouteInfo routeInfo,
+                                         long requestId,
+                                         String sessionId,
+                                         String securityCode,
+                                         String route,
+                                         RequestMethod requestMethod,
+                                         Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
 
         Session session = sessionManager.getSession(sessionId, securityCode);
 
@@ -60,21 +60,15 @@ public class RequestProcessor {
 
         if (returnValue instanceof Mono) {
             Mono<?> mono = (Mono) returnValue;
-            return new RouterResult<>(
-                    session,
-                    Observable.just(new Response(requestId, mono.getResponseStatus(), mono.getPayload()))
-            );
+            return Observable.just(new Response(requestId, mono.getResponseStatus(), mono.getPayload()));
         }
 
         if (returnValue instanceof Subject) {
             session.registerEmitter(requestId, (Subject) returnValue);
-            return new RouterResult<>(session, onSubject((Subject) returnValue, PublishSubject.create(), requestId));
+            return onSubject((Subject) returnValue, PublishSubject.create(), requestId);
         }
 
-        return new RouterResult<>(
-                session,
-                Observable.just(new Response(requestId, ResponseStatus.OK, returnValue))
-        );
+        return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
     }
 
     Observable<Response> onSubject(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {

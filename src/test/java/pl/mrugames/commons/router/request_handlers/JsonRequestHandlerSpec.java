@@ -77,10 +77,10 @@ public class JsonRequestHandlerSpec {
         Response response = new Response(123, ResponseStatus.CLOSE, new UserModel("Mariusz", 0));
         String jsonResponse = mapper.writeValueAsString(response);
 
-        doReturn(new RouterResult<>(null, Observable.just(response)))
+        doReturn(Observable.just(response))
                 .when(requestProcessor)
                 .standardRequest(any(), anyLong(), any(), any(), any(), any(), any());
-        String realResponse = handler.handleRequest(jsonRequest).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).isEqualTo(jsonResponse);
     }
@@ -88,7 +88,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenObjectMapperThrowsError_thenReturnReadyErrorResponse() throws JsonProcessingException {
         doThrow(new RuntimeException("mapping exception")).when(mapper).writeValueAsString(any());
-        String realResponse = handler.handleRequest(jsonRequest).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).matches(
                 String.format("\\" + JsonRequestHandler.JSON_MAPPING_ERROR_RESPONSE, request.getId(), "mapping exception", "[\\s\\S]*")
@@ -98,7 +98,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenObjectMapperThrowExceptionOnReadingRequest_thenSendBackErrorMessage() throws IOException {
         doThrow(new RuntimeException("failed to read")).when(mapper).readValue(anyString(), any(Class.class));
-        String realResponse = handler.handleRequest(jsonRequest).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).matches(
                 String.format("\\" + JsonRequestHandler.JSON_READ_ERROR_RESPONSE, -1, "failed to read", "[\\s\\S]*")
@@ -107,14 +107,14 @@ public class JsonRequestHandlerSpec {
 
     @Test
     public void payloadResolverTest() throws InvocationTargetException, IllegalAccessException {
-        handler.handleRequest(jsonRequest).getResponse().blockingFirst();
+        handler.handleRequest(jsonRequest).blockingFirst();
         verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), anyString(), any(), eq(payload));
     }
 
     @Test
     public void givenRequestHasMissingPayloadArguments_thenReturnBadRequestResponse() throws IOException {
         String req = prepareJsonRequest("app/test/json", "");
-        String realResponse = handler.handleRequest(req).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(req).blockingFirst();
 
         Response response = mapper.readValue(realResponse, JsonResponse.class);
 
@@ -132,7 +132,7 @@ public class JsonRequestHandlerSpec {
                         "\"requestType\":\"STANDARD\"}",
                 "some/route");
 
-        String realResponse = handler.handleRequest(req).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(req).blockingFirst();
         Response response = mapper.readValue(realResponse, JsonResponse.class);
 
         assertThat(response.getId()).isEqualTo(-1);
@@ -151,7 +151,7 @@ public class JsonRequestHandlerSpec {
                         "\"requestType\":\"STANDARD\"}",
                 "some/route");
 
-        String realResponse = handler.handleRequest(req).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(req).blockingFirst();
         Response response = mapper.readValue(realResponse, JsonResponse.class);
 
         assertThat(response.getId()).isEqualTo(99);
@@ -160,9 +160,10 @@ public class JsonRequestHandlerSpec {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void givenRequestViolatingConstraints_thenErrorResponse() throws IOException {
         String req = prepareJsonRequest("app/test/validation2", "\"a\":-1,\"b\":10");
-        String realResponse = handler.handleRequest(req).getResponse().blockingFirst();
+        String realResponse = handler.handleRequest(req).blockingFirst();
         Response response = mapper.readValue(realResponse, JsonResponse.class);
 
         assertThat(response.getId()).isEqualTo(2);
