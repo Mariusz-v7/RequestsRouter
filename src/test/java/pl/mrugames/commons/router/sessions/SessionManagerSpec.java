@@ -127,4 +127,14 @@ public class SessionManagerSpec {
 
         assertThat(localSession).isSameAs(session);
     }
+
+    @Test
+    public void givenTwoSessionsExists_whenAccessSecond_thenSecondIsSetAsLocal() {
+        Session session1 = sessionManager.getSession(sessionId + "1", "");
+        Session session2 = sessionManager.getSession(sessionId + "2", "");
+
+        Session localSession = Session.getUserSession().orElse(null);
+
+        assertThat(localSession).isSameAs(session2);
+    }
 }

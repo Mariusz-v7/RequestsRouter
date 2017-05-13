@@ -71,6 +71,7 @@ public class SessionManager {
             return session;
         } else {
             current.updateLastAccessed(Instant.now());
+            Session.setUserSession(current);
             return current;
         }
     }
