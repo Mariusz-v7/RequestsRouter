@@ -67,11 +67,11 @@ public class SessionManager {
     private Session compute(String sessionId, Session current) {
         if (current == null) {
             Session session = new Session(sessionId, this::remove);
-            Session.setUserSession(session);
+            Session.setLocalSession(session);
             return session;
         } else {
             current.updateLastAccessed(Instant.now());
-            Session.setUserSession(current);
+            Session.setLocalSession(current);
             return current;
         }
     }

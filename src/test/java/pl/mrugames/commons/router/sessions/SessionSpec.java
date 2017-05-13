@@ -232,8 +232,8 @@ public class SessionSpec {
         Session session1 = mock(Session.class);
         Session session2 = mock(Session.class);
 
-        Session.setUserSession(session1);
-        Session.setUserSession(session2);
+        Session.setLocalSession(session1);
+        Session.setLocalSession(session2);
 
         verify(session1).destroy();
         verify(session2, never()).destroy();
@@ -242,8 +242,8 @@ public class SessionSpec {
     @Test
     public void givenLocalSessionExists_whenSameInstanceIsSavedAgain_thenDoNotDestroy() {
         Session session1 = mock(Session.class);
-        Session.setUserSession(session1);
-        Session.setUserSession(session1);
+        Session.setLocalSession(session1);
+        Session.setLocalSession(session1);
 
         verify(session1, never()).destroy();
     }

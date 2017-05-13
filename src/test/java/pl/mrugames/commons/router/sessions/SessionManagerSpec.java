@@ -115,7 +115,7 @@ public class SessionManagerSpec {
     @Test
     public void givenSessionIsCreated_whenGetLocalSession_thenReturnSameInstance() {
         Session session = sessionManager.getSession(sessionId, "");
-        Session localSession = Session.getUserSession().orElse(null);
+        Session localSession = Session.getLocalSession().orElse(null);
 
         assertThat(localSession).isSameAs(session);
     }
@@ -125,7 +125,7 @@ public class SessionManagerSpec {
         Session session1 = sessionManager.getSession(sessionId + "1", "");
         Session session2 = sessionManager.getSession(sessionId + "2", "");
 
-        Session localSession = Session.getUserSession().orElse(null);
+        Session localSession = Session.getLocalSession().orElse(null);
 
         assertThat(localSession).isSameAs(session2);
     }

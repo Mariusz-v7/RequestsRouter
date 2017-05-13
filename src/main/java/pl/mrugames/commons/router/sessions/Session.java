@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 public class Session {
     private final static ThreadLocal<Session> localSession = new ThreadLocal<>();
 
-    public static Optional<Session> getUserSession() {
+    public static Optional<Session> getLocalSession() {
         return Optional.of(localSession.get());
     }
 
-    static void setUserSession(Session session) {
+    static void setLocalSession(Session session) {
         Session current = localSession.get();
         if (current != null && current != session) {
             current.destroy();
