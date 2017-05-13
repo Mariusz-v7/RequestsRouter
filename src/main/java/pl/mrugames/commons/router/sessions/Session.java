@@ -17,6 +17,11 @@ public class Session {
     }
 
     static void setUserSession(Session session) {
+        Session current = localSession.get();
+        if (current != null) {
+            current.destroy();
+        }
+
         localSession.set(session);
     }
 

@@ -17,8 +17,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionSpec {
@@ -234,5 +233,17 @@ public class SessionSpec {
         session.add(userModel, string);
         assertThat(session.get(UserModel.class).orElse(null)).isSameAs(userModel);
         assertThat(session.get(String.class).orElse(null)).isSameAs(string);
+    }
+
+    @Test
+    public void givenLocalSessionExists_whenOverwrite_thenDestroyPreviousOne() {
+        Session session1 = mock(Session.class);
+        Session session2 = mock(Session.class);
+
+        Session.setUserSession(session1);
+        Session.setUserSession(session2);
+
+        verify(session1).destroy();
+        verify(session2, never()).destroy();
     }
 }
