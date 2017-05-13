@@ -18,7 +18,7 @@ public class Session {
 
     static void setUserSession(Session session) {
         Session current = localSession.get();
-        if (current != null) {
+        if (current != null && current != session) {
             current.destroy();
         }
 
@@ -41,7 +41,6 @@ public class Session {
         this.emitters = new ConcurrentHashMap<>();
 
         lastAccessed = Instant.now();
-        map.put(Session.class, this);
     }
 
     @SuppressWarnings("unchecked")

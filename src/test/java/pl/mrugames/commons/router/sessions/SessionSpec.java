@@ -154,14 +154,6 @@ public class SessionSpec {
     }
 
     @Test
-    public void whenSessionIsCreated_thenItContainsReferenceToItself() {
-        Session session = new Session("ASDF", s -> {
-        });
-        assertThat(session.get(Session.class)).isPresent();
-        assertThat(session.get(Session.class).get()).isSameAs(session);
-    }
-
-    @Test
     public void whenSessionIsCreated_thenItIsNotDestroyed() {
         Session session = new Session("", s -> {
         });
@@ -245,5 +237,14 @@ public class SessionSpec {
 
         verify(session1).destroy();
         verify(session2, never()).destroy();
+    }
+
+    @Test
+    public void givenLocalSessionExists_whenSameInstanceIsSavedAgain_thenDoNotDestroy() {
+        Session session1 = mock(Session.class);
+        Session.setUserSession(session1);
+        Session.setUserSession(session1);
+
+        verify(session1, never()).destroy();
     }
 }

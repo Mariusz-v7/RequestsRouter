@@ -38,14 +38,6 @@ public class SessionManagerSpec {
     }
 
     @Test
-    public void givenSessionIsAdded_whenGetSession_thenSameIsReturned() {
-        Session session1 = sessionManager.getSession(sessionId, "");
-        Session session2 = sessionManager.getSession(sessionId, "");
-
-        assertThat(session1).isSameAs(session2);
-    }
-
-    @Test
     public void givenNewSessionIsCreated_thenLastAccessTimeIsNotNull_and() {
         Instant now = Instant.now();
 
