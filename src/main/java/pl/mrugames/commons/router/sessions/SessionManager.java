@@ -66,7 +66,9 @@ public class SessionManager {
 
     private Session compute(String sessionId, Session current) {
         if (current == null) {
-            return new Session(sessionId, this::remove);
+            Session session = new Session(sessionId, this::remove);
+            Session.setUserSession(session);
+            return session;
         } else {
             current.updateLastAccessed(Instant.now());
             return current;

@@ -119,4 +119,12 @@ public class SessionManagerSpec {
 
         sessionManager.getSession(sessionId + "withSecurityCode", "");
     }
+
+    @Test
+    public void givenSessionIsCreated_whenGetLocalSession_thenReturnSameInstance() {
+        Session session = sessionManager.getSession(sessionId, "");
+        Session localSession = Session.getUserSession().orElse(null);
+
+        assertThat(localSession).isSameAs(session);
+    }
 }

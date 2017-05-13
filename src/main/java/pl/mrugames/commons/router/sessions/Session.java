@@ -10,6 +10,16 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class Session {
+    private final static ThreadLocal<Session> localSession = new ThreadLocal<>();
+
+    public static Optional<Session> getUserSession() {
+        return Optional.of(localSession.get());
+    }
+
+    static void setUserSession(Session session) {
+        localSession.set(session);
+    }
+
     private final String id;
     private final Consumer<Session> onDestroyMethod;
     private final Map<Class<?>, Object> map;
