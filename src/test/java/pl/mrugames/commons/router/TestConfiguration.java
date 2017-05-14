@@ -7,13 +7,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.AuthenticationManager;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.SessionArgumentResolver;
+import pl.mrugames.commons.router.auth.AnonymousUserFactory;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
 import pl.mrugames.commons.router.request_handlers.RequestProcessor;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 @Configuration
@@ -74,5 +77,15 @@ public class TestConfiguration {
     @Primary
     public RequestProcessor requestProcessorSpy(RequestProcessor requestProcessor) {
         return spy(requestProcessor);
+    }
+
+    @Bean
+    public AnonymousUserFactory<?> anonymousUserFactory() {
+        return mock(AnonymousUserFactory.class);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return mock(AuthenticationManager.class);
     }
 }
