@@ -3,10 +3,12 @@ package pl.mrugames.commons.router.auth;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.RouterProperties;
 import pl.mrugames.commons.router.sessions.Session;
@@ -15,13 +17,16 @@ import pl.mrugames.commons.router.sessions.Session;
 public class LoginLogoutService {
     private final AuthenticationManager authenticationManager;
     private final String anonymousKey;
+    private final String rememberMeKey;
     private final AnonymousUserFactory<?> anonymousUserFactory;
 
     private LoginLogoutService(AuthenticationManager authenticationManager,
                                @Value("${" + RouterProperties.ANONYMOUS_KEY + "}") String anonymousKey,
+                               @Value("${" + RouterProperties.REMEMBER_ME_KEY + "}") String rememberMeKey,
                                AnonymousUserFactory<?> anonymousUserFactory) {
         this.authenticationManager = authenticationManager;
         this.anonymousKey = anonymousKey;
+        this.rememberMeKey = rememberMeKey;
         this.anonymousUserFactory = anonymousUserFactory;
     }
 
@@ -40,6 +45,18 @@ public class LoginLogoutService {
 
     public Authentication login(String username, String password) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return authentication;
+    }
+
+    public Authentication loginRemembered(UserDetails userDetails) {
+        RememberMeAuthenticationToken rememberMeAuthenticationToken = new RememberMeAuthenticationToken(
+                rememberMeKey,
+                userDetails,
+                userDetails.getAuthorities()
+        );
+
+        Authentication authentication = authenticationManager.authenticate(rememberMeAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return authentication;
     }
