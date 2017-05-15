@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.springframework.security.core.AuthenticationException;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.exceptions.ApplicationException;
@@ -15,6 +16,8 @@ import pl.mrugames.commons.router.sessions.SessionExpiredException;
 import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ExceptionHandlerSpec {
@@ -78,5 +81,15 @@ public class ExceptionHandlerSpec {
         response = exceptionHandler.handle(2, e2).blockingFirst();
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("alb");
+    }
+
+    @Test
+    public void authenticationException() {
+        AuthenticationException authenticationException = mock(AuthenticationException.class);
+        doReturn("message").when(authenticationException).getMessage();
+
+        Response response = exceptionHandler.handle(1, authenticationException).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
+        assertThat(response.getPayload()).isEqualTo("message");
     }
 }

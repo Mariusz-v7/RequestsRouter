@@ -3,6 +3,7 @@ package pl.mrugames.commons.router.request_handlers;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
@@ -35,6 +36,10 @@ class ExceptionHandler {
 
         if (e instanceof ApplicationException) {
             return Observable.just(new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage()));
+        }
+
+        if (e instanceof AuthenticationException) {
+            return Observable.just(new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
         }
 
         logger.error("Internal error while processing the request", e);
