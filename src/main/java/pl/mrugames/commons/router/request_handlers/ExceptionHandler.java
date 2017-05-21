@@ -11,6 +11,7 @@ import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
 @Service
@@ -32,6 +33,10 @@ class ExceptionHandler {
 
         if (e instanceof SessionExpiredException) {
             return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired"));
+        }
+
+        if (e instanceof SessionDoesNotExistException) {
+            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session does not exist"));
         }
 
         if (e instanceof ApplicationException) {

@@ -11,6 +11,7 @@ import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
 import java.util.Collections;
@@ -91,5 +92,14 @@ public class ExceptionHandlerSpec {
         Response response = exceptionHandler.handle(1, authenticationException).blockingFirst();
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
         assertThat(response.getPayload()).isEqualTo("message");
+    }
+
+    @Test
+    public void sessionDoesNotExist() {
+        SessionDoesNotExistException e = new SessionDoesNotExistException();
+
+        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
+        assertThat(response.getPayload()).isEqualTo("Session does not exist");
     }
 }

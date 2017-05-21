@@ -16,6 +16,15 @@ public class Session {
         return Optional.of(localSession.get());
     }
 
+    public static Session getExistingLocalSession() {
+        Session session = localSession.get();
+        if (session == null) {
+            throw new SessionDoesNotExistException();
+        }
+
+        return session;
+    }
+
     static void setLocalSession(Session session) {
         Session current = localSession.get();
         if (current != null && current != session) {
