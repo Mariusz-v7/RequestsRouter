@@ -25,6 +25,11 @@ public class Session {
         return session;
     }
 
+    public static void destroyLocalSession() {
+        getLocalSession().ifPresent(Session::destroy);
+        localSession.remove();
+    }
+
     static void setLocalSession(Session session) {
         Session current = localSession.get();
         if (current != null && current != session) {

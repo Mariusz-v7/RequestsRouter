@@ -62,7 +62,7 @@ public class LoginLogoutService {
     }
 
     public void logout() {
-        Session.getLocalSession().ifPresent(Session::destroy);
+        Session.destroyLocalSession();
         initNewContext();
     }
 }
