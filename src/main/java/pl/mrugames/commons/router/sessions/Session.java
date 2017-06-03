@@ -13,7 +13,7 @@ public class Session {
     private final static ThreadLocal<Session> localSession = new ThreadLocal<>();
 
     public static Optional<Session> getLocalSession() {
-        return Optional.of(localSession.get());
+        return Optional.ofNullable(localSession.get());
     }
 
     public static Session getExistingLocalSession() {
