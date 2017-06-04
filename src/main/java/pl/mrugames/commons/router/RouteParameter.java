@@ -1,6 +1,8 @@
 package pl.mrugames.commons.router;
 
-public class RouteParameter {
+import java.io.Serializable;
+
+public class RouteParameter implements Serializable {
     public enum ParameterType {
         PATH_VAR, ARG, NONE
     }
