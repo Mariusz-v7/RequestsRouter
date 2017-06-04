@@ -41,6 +41,11 @@ public class RouterInitializerSpec {
     }
 
     @Test
+    public void givenApplicationStart_thenControllersContainsNotSecuredRoutes() {
+        assertThat(initializer.getRoutes()).containsKeys("GET:app/not-secured/route");
+    }
+
+    @Test
     public void givenApplicationStart_thenMapShouldContainRouteToTestController() {
         assertThat(initializer.getRoutes()).containsKeys("GET:app/test/route1");
     }

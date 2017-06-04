@@ -16,7 +16,7 @@ class RouterController {
     }
 
     @Route("routes")
-    Map<String, RouteInfo> getRoutes() {
+    public Map<String, RouteInfo> getRoutes() {
         return routerInitializer.getRoutes();
     }
 }

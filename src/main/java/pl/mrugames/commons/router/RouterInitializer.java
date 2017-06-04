@@ -40,7 +40,11 @@ public class RouterInitializer {
             Controller annotation = controller.getClass().getAnnotation(Controller.class);
             String baseRoute = annotation.value();
 
-            for (Method method : controller.getClass().getSuperclass().getMethods()) {
+            List<Method> methods = new ArrayList<>();
+            methods.addAll(Arrays.asList(controller.getClass().getMethods()));
+            methods.addAll(Arrays.asList(controller.getClass().getSuperclass().getMethods()));
+
+            for (Method method : methods) {
                 Route route = method.getAnnotation(Route.class);
                 if (route == null) {
                     continue;
