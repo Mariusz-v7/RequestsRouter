@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Component
 public class JsonRequestHandler implements RequestHandler<String, String> {
-    public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON read error: %s, %s\"}";
+    public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON read error: %s, %s\"}"; //todo: build json using json mapper
     public static final String JSON_MAPPING_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON mapping error: %s, %s\"}";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

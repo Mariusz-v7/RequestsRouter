@@ -14,10 +14,7 @@ import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.util.Collections;
-import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -106,14 +103,4 @@ public class ExceptionHandlerSpec {
         assertThat(response.getPayload()).isEqualTo("Session does not exist");
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void constraintViolation() {
-        Set<ConstraintViolation<?>> violations = Collections.singleton(mock(ConstraintViolation.class));
-        ConstraintViolationException constraintViolationException = new ConstraintViolationException(violations);
-
-        Response response = exceptionHandler.handle(1, constraintViolationException).blockingFirst();
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
-        assertThat(response.getPayload()).isEqualTo(violations);
-    }
 }

@@ -14,8 +14,6 @@ import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
-import javax.validation.ConstraintViolationException;
-
 @Service
 class ExceptionHandler {
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -47,10 +45,6 @@ class ExceptionHandler {
 
         if (e instanceof AuthenticationException) {
             return Observable.just(new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
-        }
-
-        if (e instanceof ConstraintViolationException) {
-            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, ((ConstraintViolationException) e).getConstraintViolations()));
         }
 
         logger.error("Internal error while processing the request", e);

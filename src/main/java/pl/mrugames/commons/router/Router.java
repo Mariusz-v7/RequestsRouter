@@ -10,8 +10,8 @@ import pl.mrugames.commons.router.exceptions.RouterException;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
-import javax.validation.executable.ExecutableValidator;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,13 +21,11 @@ public class Router {
     private final Map<String, RouteInfo> routes;
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
-    private final ExecutableValidator validator;
 
-    private Router(RouterInitializer initializer, AntPathMatcher antPathMatcher, ExecutableValidator executableValidator) {
+    private Router(RouterInitializer initializer, AntPathMatcher antPathMatcher) {
         this.initializer = initializer;
         this.routes = new HashMap<>();
         this.pathMatcher = antPathMatcher;
-        this.validator = executableValidator;
     }
 
     @PostConstruct
@@ -83,19 +81,21 @@ public class Router {
             ++i;
         }
 
-        Set<ConstraintViolation<Object>> constraints = validator.validateParameters(routeInfo.getControllerInstance(), routeInfo.getMethod(), args);
-        if (!constraints.isEmpty()) {
-            List<String> messages = constraints.stream()
-                    .map(c -> getConstraintMessage(c, routeInfo.getParameters()))
-                    .collect(Collectors.toList());
-
-            throw new RouteConstraintViolationException(messages);
-        }
-
         try {
             return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
+
+            if (cause instanceof ConstraintViolationException) {
+                ConstraintViolationException cve = (ConstraintViolationException) cause;
+
+                List<String> messages = cve.getConstraintViolations().stream()
+                        .map(c -> getConstraintMessage(c, routeInfo.getParameters()))
+                        .collect(Collectors.toList());
+
+                throw new RouteConstraintViolationException(messages);
+            }
+
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             } else if (cause instanceof Exception) {
@@ -133,7 +133,7 @@ public class Router {
 
         String paramName = parameters.get(index).getName();
 
-        return paramName + " " + constraintViolation.getMessage();
+        return paramName + ": " + constraintViolation.getMessage();
     }
 
 }
