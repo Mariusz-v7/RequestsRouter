@@ -8,9 +8,9 @@ import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Map<String, Object>> {
@@ -23,17 +23,23 @@ public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<M
         return parameters.stream()
                 .filter(p -> RouteParameter.ParameterType.ARG == p.getParameterType())
                 .map(p -> map(p, payload))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(HashMap::new, (m, v) -> m.put(v.getKey(), v.getValue()), HashMap::putAll);
     }
 
     private Map.Entry<String, Object> map(RouteParameter parameter, Map<String, Object> payload) {
-        Object result = payload.get(parameter.getName());
-        if (result == null) {
+        Object result;
+        if (payload.containsKey(parameter.getName())) {
+            result = payload.get(parameter.getName());
+        } else {
             if (ArgDefaultValue.ARG_NULL_DEFAULT_VALUE.equals(parameter.getDefaultValue())) {
                 throw new ParameterNotFoundException(parameter.getName());
             }
 
             result = parameter.getDefaultValue();
+        }
+
+        if (result == null) {
+            return new AbstractMap.SimpleEntry<>(parameter.getName(), null);
         }
 
         Class<?> type = parameter.getType().isPrimitive() ? Primitives.wrap(parameter.getType()) : parameter.getType();

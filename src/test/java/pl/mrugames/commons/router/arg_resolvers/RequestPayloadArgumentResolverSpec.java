@@ -65,6 +65,26 @@ public class RequestPayloadArgumentResolverSpec {
     }
 
     @Test
+    public void givenRequestContainsNull_whenResolve_thenPassNull() {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("a", 1);
+        payload.put("b", null);
+        payload.put("c", 12.1);
+        payload.put("d", "xxx");
+
+        RouteInfo routeInfo = routes.get("GET:app/test/concat");
+
+        Map<String, Object> result = resolver.resolve(payload, routeInfo.getParameters());
+
+        assertThat(result).containsExactly(
+                MapEntry.entry("a", 1),
+                MapEntry.entry("b", null),
+                MapEntry.entry("c", 12.1),
+                MapEntry.entry("d", "xxx")
+        );
+    }
+
+    @Test
     public void givenRequestWithAdditionalPayloadFields_thenIgnoreThem() {
         Map<String, Object> payload = new HashMap<>();
         payload.put("a", 1);
