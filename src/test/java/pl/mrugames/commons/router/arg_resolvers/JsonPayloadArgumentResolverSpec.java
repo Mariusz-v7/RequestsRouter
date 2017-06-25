@@ -1,5 +1,8 @@
 package pl.mrugames.commons.router.arg_resolvers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +35,9 @@ public class JsonPayloadArgumentResolverSpec {
 
     @Autowired
     private RouterInitializer initializer;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     private Map<String, RouteInfo> routes;
 
@@ -139,6 +145,20 @@ public class JsonPayloadArgumentResolverSpec {
         Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
 
         assertThat(result).containsExactly(MapEntry.entry("user", new UserModel("Mariusz", 12)));
+    }
+
+    @Test
+    public void nullParametersShouldBeAcceptable() throws JsonProcessingException {
+        String pattern = "POST:app/test/player";
+        RouteInfo routeInfo = routes.get(pattern);
+
+        ObjectNode node = mapper.createObjectNode();
+        node.putNull("user");
+
+        String json = node.toString();
+
+        Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
+        assertThat(result).containsExactly(MapEntry.entry("user", null));
     }
 
 }

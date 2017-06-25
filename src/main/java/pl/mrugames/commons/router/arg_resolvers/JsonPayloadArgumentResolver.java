@@ -13,9 +13,9 @@ import pl.mrugames.commons.router.exceptions.RouterException;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class JsonPayloadArgumentResolver implements PayloadArgumentResolver<String> {
@@ -33,7 +33,7 @@ public class JsonPayloadArgumentResolver implements PayloadArgumentResolver<Stri
             return parameters.stream()
                     .filter(p -> p.getParameterType() == RouteParameter.ParameterType.ARG)
                     .map(p -> map(p, rootNode))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    .collect(HashMap::new, (m, v) -> m.put(v.getKey(), v.getValue()), HashMap::putAll);
         } catch (JsonParseException e) {
             throw new RouterException(e.getMessage(), e);
         } catch (IOException e) {
