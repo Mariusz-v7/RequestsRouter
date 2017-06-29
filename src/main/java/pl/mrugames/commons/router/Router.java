@@ -22,7 +22,7 @@ public class Router {
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
 
-    private Router(RouterInitializer initializer, AntPathMatcher antPathMatcher) {
+    Router(RouterInitializer initializer, AntPathMatcher antPathMatcher) {
         this.initializer = initializer;
         this.routes = new HashMap<>();
         this.pathMatcher = antPathMatcher;

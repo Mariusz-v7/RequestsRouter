@@ -14,7 +14,7 @@ import java.util.Map;
 class RouterController {
     private final RouterInitializer routerInitializer;
 
-    private RouterController(RouterInitializer routerInitializer) {
+    RouterController(RouterInitializer routerInitializer) {
         this.routerInitializer = routerInitializer;
     }
 

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
@@ -15,6 +16,12 @@ import javax.validation.executable.ExecutableValidator;
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class RouterConfiguration {
+
+    @Bean
+    public MethodValidationPostProcessor methodValidationPostProcessor() {
+        return new MethodValidationPostProcessor();
+    }
+
     @Bean
     ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();

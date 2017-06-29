@@ -1,6 +1,5 @@
 package pl.mrugames.commons.router;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -148,8 +147,6 @@ public class RouterSpec {
     }
 
     @Test
-    @Ignore
-    // TODO: validation will be done by spring. Add test when method invocation throws Constraint violation cause
     public void validationTest() throws InvocationTargetException, IllegalAccessException {
         Map<String, Object> pathParams = new HashMap<>();
         pathParams.put("a", -1);
@@ -159,7 +156,16 @@ public class RouterSpec {
 
         expectedException.expect(RouteConstraintViolationException.class);
 
-        router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
+        try {
+            router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
+        } catch (RouteConstraintViolationException e) {
+            assertThat(e.getMessages()).containsExactlyInAnyOrder(
+                    "a: must be greater than or equal to 0",
+                    "b: must be less than or equal to 2"
+            );
+
+            throw e;
+        }
     }
 
     @Test

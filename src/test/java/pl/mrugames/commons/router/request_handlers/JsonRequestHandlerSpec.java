@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.Observable;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,8 +161,6 @@ public class JsonRequestHandlerSpec {
 
     @Test
     @SuppressWarnings("unchecked")
-    @Ignore
-    // TODO: validation will be done by spring. Add test when method invocation throws Constraint violation cause
     public void givenRequestViolatingConstraints_thenErrorResponse() throws IOException {
         String req = prepareJsonRequest("app/test/validation2", "\"a\":-1,\"b\":10");
         String realResponse = handler.handleRequest(req).blockingFirst();
@@ -171,9 +168,9 @@ public class JsonRequestHandlerSpec {
 
         assertThat(response.getId()).isEqualTo(2);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
-        assertThat((List<String>) response.getPayload()).contains(
-                "b must be less than or equal to 2",
-                "a must be greater than or equal to 0"
+        assertThat((List<String>) response.getPayload()).containsExactlyInAnyOrder(
+                "b: must be less than or equal to 2",
+                "a: must be greater than or equal to 0"
         );
     }
 }
