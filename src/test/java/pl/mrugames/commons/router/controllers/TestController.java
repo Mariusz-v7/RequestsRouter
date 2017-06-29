@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.annotations.Arg;
@@ -12,6 +13,9 @@ import javax.validation.constraints.Min;
 
 @Controller("app/test")
 public class TestController {
+
+    @Autowired
+    private ValidateMe validateMe;
 
     @Route("route1")
     public String route1() {
@@ -127,5 +131,15 @@ public class TestController {
     @Route("deny")
     public void deny() {
 
+    }
+
+    @Route("validate-deeper/{a}")
+    public void validateDeeper(@PathVar("a") int value) {
+        validateMe.validateMe(true, value);
+    }
+
+    @Route("validate-deeper2/{a}/{b}")
+    public void validateDeeper(@PathVar("a") int a, @PathVar("b") int b) {
+        validateMe.v2(b, a);
     }
 }

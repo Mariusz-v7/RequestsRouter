@@ -177,4 +177,46 @@ public class RouterSpec {
 
         router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
     }
+
+    @Test
+    public void givenControllerIsNotValidated_butServiceIs_whenPassWrongArgs_thenExceptionWithProperMessage() throws IllegalAccessException {
+        Map<String, Object> pathParams = new HashMap<>();
+        pathParams.put("a", -1);
+
+        RouteInfo routeInfo = router.findRoute("app/test/validate-deeper/-1", RequestMethod.GET);
+
+        expectedException.expect(RouteConstraintViolationException.class);
+
+        try {
+            router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
+        } catch (RouteConstraintViolationException e) {
+            assertThat(e.getMessages()).containsExactly(
+                    "value '-1' must be greater than or equal to 0"
+            );
+
+            throw e;
+        }
+    }
+
+    @Test
+    public void givenNestedServiceIsValidated_whenPassWrongArguments_thenException() throws IllegalAccessException {
+        Map<String, Object> pathParams = new HashMap<>();
+        pathParams.put("a", 1);
+        pathParams.put("b", -1);
+
+        RouteInfo routeInfo = router.findRoute("app/test/validate-deeper2/1/-1", RequestMethod.GET);
+
+        expectedException.expect(RouteConstraintViolationException.class);
+
+        try {
+            router.navigate(routeInfo, pathParams, Collections.emptyMap(), Collections.emptyMap());
+        } catch (RouteConstraintViolationException e) {
+            assertThat(e.getMessages()).containsExactlyInAnyOrder(
+                    "value '1' must be less than or equal to 0",
+                    "value '-1' must be greater than or equal to 0"
+            );
+
+            throw e;
+        }
+    }
 }

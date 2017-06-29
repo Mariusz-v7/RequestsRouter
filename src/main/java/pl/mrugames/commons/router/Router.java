@@ -90,7 +90,7 @@ public class Router {
                 ConstraintViolationException cve = (ConstraintViolationException) cause;
 
                 List<String> messages = cve.getConstraintViolations().stream()
-                        .map(c -> getConstraintMessage(c, routeInfo.getParameters()))
+                        .map(c -> getConstraintMessage(c, routeInfo.getParameters(), routeInfo.getMethod().getDeclaringClass()))
                         .collect(Collectors.toList());
 
                 throw new RouteConstraintViolationException(messages);
@@ -106,7 +106,11 @@ public class Router {
         }
     }
 
-    private String getConstraintMessage(ConstraintViolation<?> constraintViolation, List<RouteParameter> parameters) {
+    private String getConstraintMessage(ConstraintViolation<?> constraintViolation, List<RouteParameter> parameters, Class<?> controllerClass) {
+        if (!controllerClass.equals(constraintViolation.getRootBeanClass())) {
+            return String.format("value '%s' %s", constraintViolation.getInvalidValue(), constraintViolation.getMessage());
+        }
+
         Iterator<Path.Node> iterator = constraintViolation.getPropertyPath().iterator();
         Path.Node parameter = null;
         while (iterator.hasNext()) {
