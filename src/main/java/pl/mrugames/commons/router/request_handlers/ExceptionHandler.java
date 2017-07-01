@@ -3,6 +3,7 @@ package pl.mrugames.commons.router.request_handlers;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.Response;
@@ -43,7 +44,7 @@ class ExceptionHandler {
             return Observable.just(new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage()));
         }
 
-        if (e instanceof AuthenticationException) {
+        if (e instanceof AuthenticationException || e instanceof AccessDeniedException) {
             return Observable.just(new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
         }
 

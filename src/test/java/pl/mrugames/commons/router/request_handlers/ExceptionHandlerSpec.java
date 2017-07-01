@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
@@ -90,6 +91,16 @@ public class ExceptionHandlerSpec {
         doReturn("message").when(authenticationException).getMessage();
 
         Response response = exceptionHandler.handle(1, authenticationException).blockingFirst();
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
+        assertThat(response.getPayload()).isEqualTo("message");
+    }
+
+    @Test
+    public void accessDeniedException() {
+        AccessDeniedException accessDeniedException = mock(AccessDeniedException.class);
+        doReturn("message").when(accessDeniedException).getMessage();
+
+        Response response = exceptionHandler.handle(1, accessDeniedException).blockingFirst();
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
         assertThat(response.getPayload()).isEqualTo("message");
     }
