@@ -175,7 +175,13 @@ public class ObjectRequestHandlerSpec {
     @Test
     public void givenRouterReturnsMono_whenRequest_thenCopyMonoDataIntoResponse() {
         Stream.of(ResponseStatus.values()).forEach(status -> {
-            Mono<String> returnedVal = Mono.of(status, "asdf");
+            Mono<String> returnedVal;
+
+            if (status == ResponseStatus.OK) {
+                returnedVal = Mono.ok("ok");
+            } else {
+                returnedVal = Mono.error(status, "error");
+            }
 
             try {
                 doReturn(returnedVal).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
@@ -190,7 +196,12 @@ public class ObjectRequestHandlerSpec {
 
             assertThat(response.getId()).isEqualTo(92);
             assertThat(response.getStatus()).isEqualTo(status);
-            assertThat(response.getPayload()).isEqualTo("asdf");
+
+            if (status == ResponseStatus.OK) {
+                assertThat(response.getPayload()).isEqualTo("ok");
+            } else {
+                assertThat(response.getPayload()).isEqualTo("error");
+            }
         });
     }
 

@@ -60,7 +60,10 @@ public class RequestProcessor {
 
         if (returnValue instanceof Mono) {
             Mono<?> mono = (Mono) returnValue;
-            return Observable.just(new Response(requestId, mono.getResponseStatus(), mono.getPayload()));
+
+            Object payload = mono.getResponseStatus() == ResponseStatus.OK ? mono.getPayload() : mono.getError();
+
+            return Observable.just(new Response(requestId, mono.getResponseStatus(), payload));
         }
 
         if (returnValue instanceof Subject) {
