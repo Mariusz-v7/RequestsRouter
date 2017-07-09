@@ -13,6 +13,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.RouteInfo;
 import pl.mrugames.commons.router.RouterInitializer;
 import pl.mrugames.commons.router.TestConfiguration;
+import pl.mrugames.commons.router.controllers.TestController;
 import pl.mrugames.commons.router.controllers.UserModel;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
@@ -166,5 +167,49 @@ public class RequestPayloadArgumentResolverSpec {
         expectedException.expectMessage("Incompatible parameter: 'description'. Expected: '" + String.class + "', but actual was: '" + UserModel.class + "'");
 
         resolver.resolve(Collections.singletonMap("description", new UserModel("name", 1)), routeInfo.getParameters());
+    }
+
+    @Test
+    public void resolverShouldResolveObjects() {
+        TestController.ConcatRouteDTO dto = new TestController.ConcatRouteDTO(1, "str", 12.1, "xxx");
+
+        RouteInfo routeInfo = routes.get("GET:app/test/concat");
+
+        Map<String, Object> result = resolver.resolve(dto, routeInfo.getParameters());
+
+        assertThat(result).containsExactly(
+                MapEntry.entry("a", 1),
+                MapEntry.entry("b", "str"),
+                MapEntry.entry("c", 12.1),
+                MapEntry.entry("d", "xxx")
+        );
+    }
+
+    @Test
+    public void resolverShouldResolveObjects_andApplyDefaultParameters() {
+        TestController.ConcatRouteWithOptionalDTO dto = new TestController.ConcatRouteWithOptionalDTO(1, "str", 12.1);
+
+        RouteInfo routeInfo = routes.get("GET:app/test/concat");
+
+        Map<String, Object> result = resolver.resolve(dto, routeInfo.getParameters());
+
+        assertThat(result).containsExactly(
+                MapEntry.entry("a", 1),
+                MapEntry.entry("b", "str"),
+                MapEntry.entry("c", 12.1),
+                MapEntry.entry("d", "last")
+        );
+    }
+
+    @Test
+    public void givenInvalidDTO_thenException() {
+        TestController.ConcatRouteInvalidDTO dto = new TestController.ConcatRouteInvalidDTO(1, "str");
+
+        RouteInfo routeInfo = routes.get("GET:app/test/concat");
+
+        expectedException.expect(ParameterNotFoundException.class);
+        expectedException.expectMessage("Could not find 'c' parameter in the request");
+
+        resolver.resolve(dto, routeInfo.getParameters());
     }
 }

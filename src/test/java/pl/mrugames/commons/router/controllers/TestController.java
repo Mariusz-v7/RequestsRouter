@@ -14,6 +14,79 @@ import javax.validation.constraints.Min;
 @Controller("app/test")
 public class TestController {
 
+    public static class ConcatRouteDTO {
+        private final int a;
+        private final String b;
+        private final Double c;
+        private final String d;
+
+        public ConcatRouteDTO(int a, String b, double c, String d) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        public int getA() {
+            return a;
+        }
+
+        public String getB() {
+            return b;
+        }
+
+        public double getC() {
+            return c;
+        }
+
+        public String getD() {
+            return d;
+        }
+    }
+
+
+    public static class ConcatRouteWithOptionalDTO {
+        private final int a;
+        private final String b;
+        private final Double c;
+
+        public ConcatRouteWithOptionalDTO(int a, String b, Double c) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+
+        public int getA() {
+            return a;
+        }
+
+        public String getB() {
+            return b;
+        }
+
+        public Double getC() {
+            return c;
+        }
+    }
+
+    public static class ConcatRouteInvalidDTO {
+        private final int a;
+        private final String b;
+
+        public ConcatRouteInvalidDTO(int a, String b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        public int getA() {
+            return a;
+        }
+
+        public String getB() {
+            return b;
+        }
+    }
+
     @Autowired
     private ValidateMe validateMe;
 

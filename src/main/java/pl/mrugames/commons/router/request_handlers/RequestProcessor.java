@@ -12,7 +12,6 @@ import pl.mrugames.commons.router.sessions.Session;
 import pl.mrugames.commons.router.sessions.SessionManager;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
 @Component
 public class RequestProcessor {
@@ -48,7 +47,7 @@ public class RequestProcessor {
                                          String securityCode,
                                          String route,
                                          RequestMethod requestMethod,
-                                         Map<String, Object> requestPayload) throws InvocationTargetException, IllegalAccessException {
+                                         Object requestPayload) throws InvocationTargetException, IllegalAccessException {
 
         Session session = sessionManager.getSession(sessionId, securityCode);
 

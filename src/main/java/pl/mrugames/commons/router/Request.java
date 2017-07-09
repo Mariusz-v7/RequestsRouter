@@ -1,7 +1,6 @@
 package pl.mrugames.commons.router;
 
 import java.io.Serializable;
-import java.util.Map;
 
 public class Request implements Serializable {
     private final long id;
@@ -9,10 +8,16 @@ public class Request implements Serializable {
     private final String securityCode;
     private final String route;
     private final RequestMethod requestMethod;
-    private final Map<String, Object> payload;
+    private final Object payload;
     private final RequestType requestType;
 
-    public Request(long id, String session, String securityCode, String route, RequestMethod requestMethod, Map<String, Object> payload) {
+    /**
+     * @param payload: can be an instance of Map<String, Object> or Object.
+     *                 In case of Object, the class has to contain proper getters.
+     *                 e.g. if parameter name is "a" then getter is "getA",
+     *                 when parameter name is "helloWorld" then getter is "getHelloWorld".
+     */
+    public Request(long id, String session, String securityCode, String route, RequestMethod requestMethod, Object payload) {
         this.id = id;
         this.session = session;
         this.securityCode = securityCode;
@@ -22,7 +27,7 @@ public class Request implements Serializable {
         this.requestType = RequestType.STANDARD;
     }
 
-    public Request(long id, String session, String securityCode, String route, RequestMethod requestMethod, Map<String, Object> payload, RequestType requestType) {
+    public Request(long id, String session, String securityCode, String route, RequestMethod requestMethod, Object payload, RequestType requestType) {
         this.id = id;
         this.session = session;
         this.securityCode = securityCode;
@@ -48,7 +53,7 @@ public class Request implements Serializable {
         return requestMethod;
     }
 
-    public Map<String, Object> getPayload() {
+    public Object getPayload() {
         return payload;
     }
 
