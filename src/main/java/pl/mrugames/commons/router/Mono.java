@@ -1,5 +1,7 @@
 package pl.mrugames.commons.router;
 
+import java.util.function.Function;
+
 public class Mono<T> {
     public static Mono<Void> OK = new Mono<>(ResponseStatus.OK);
 
@@ -51,5 +53,13 @@ public class Mono<T> {
 
     public String getError() {
         return error;
+    }
+
+    public <M> Mono<M> map(Function<T, M> mapper) {
+        if (responseStatus != ResponseStatus.OK) {
+            return new Mono<>(responseStatus, error);
+        } else {
+            return new Mono<>(responseStatus, mapper.apply(payload));
+        }
     }
 }
