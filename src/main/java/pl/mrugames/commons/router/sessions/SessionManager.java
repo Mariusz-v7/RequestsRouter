@@ -32,7 +32,7 @@ public class SessionManager {
     }
 
     public Session getSession(String sessionId, @Nullable String securityCode) {
-        if (sessionId.length() < SESSION_ID_MIN_LENGTH) {
+        if (sessionId == null || sessionId.length() < SESSION_ID_MIN_LENGTH) {
             throw new IllegalArgumentException("Session id must be at least " + SESSION_ID_MIN_LENGTH + " characters long");
         }
 

@@ -102,6 +102,14 @@ public class SessionManagerSpec {
     }
 
     @Test
+    public void whenGetSessionWithNullId_thenException() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Session id must be at least " + SessionManager.SESSION_ID_MIN_LENGTH + " characters long");
+
+        sessionManager.getSession(null, "");
+    }
+
+    @Test
     public void givenSessionHasSecurityCodeSet_whenGetWithWrongCode_thenException() {
         Session session = sessionManager.getSession(sessionId + "withSecurityCode", "");
         session.setSecurityCode("1234");
