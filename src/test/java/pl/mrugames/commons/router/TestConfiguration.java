@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
@@ -87,5 +88,10 @@ public class TestConfiguration {
     @Bean
     public AuthenticationManager authenticationManager() {
         return mock(AuthenticationManager.class);
+    }
+
+    @Bean
+    public MetricRegistry metricRegistry() {
+        return new MetricRegistry();
     }
 }

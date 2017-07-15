@@ -1,5 +1,7 @@
 package pl.mrugames.commons.router.sessions;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,9 +23,12 @@ public class SessionManager {
     private final Map<String, Session> sessions;
     private final long sessionExpireTimeMillis;
 
-    SessionManager(@Value("${" + RouterProperties.SESSION_EXPIRE_TIME + "}") long sessionExpireTimeMillis) {
+    SessionManager(@Value("${" + RouterProperties.SESSION_EXPIRE_TIME + "}") long sessionExpireTimeMillis,
+                   MetricRegistry metricRegistry) {
         this.sessionExpireTimeMillis = sessionExpireTimeMillis;
         sessions = new ConcurrentHashMap<>();
+
+        metricRegistry.register(MetricRegistry.name(SessionManager.class, "sessions_amount"), (Gauge) sessions::size);
     }
 
     public Session getSession(String sessionId, @Nullable String securityCode) {
