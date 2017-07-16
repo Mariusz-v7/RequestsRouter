@@ -79,7 +79,19 @@ public class RequestProcessor {
 
     Observable<Response> onObservable(Observable<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
         sourceSubject.subscribe(
-                next -> responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, next)),
+                next -> {
+                    if (next instanceof Mono) {
+                        Mono<?> mono = (Mono) next;
+                        if (mono.getResponseStatus() == ResponseStatus.OK || mono.getResponseStatus() == ResponseStatus.STREAM) {
+                            responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, mono.getPayload()));
+                        } else {
+                            responseSubject.onNext(new Response(requestId, mono.getResponseStatus(), mono.getError()));
+                            responseSubject.onComplete();
+                        }
+                    } else {
+                        responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, next));
+                    }
+                },
                 error -> {
                     responseSubject.onNext(new Response(requestId, ResponseStatus.ERROR, error));
                     responseSubject.onComplete();
