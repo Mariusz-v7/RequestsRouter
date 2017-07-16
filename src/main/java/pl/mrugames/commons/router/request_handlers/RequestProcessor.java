@@ -81,7 +81,7 @@ public class RequestProcessor {
         sourceSubject.subscribe(
                 next -> responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, next)),
                 error -> {
-                    responseSubject.onNext(new Response(requestId, ResponseStatus.CLOSE, error));
+                    responseSubject.onNext(new Response(requestId, ResponseStatus.ERROR, error));
                     responseSubject.onComplete();
                 },
                 () -> {

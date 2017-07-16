@@ -100,7 +100,7 @@ public class RequestProcessorSpec {
     }
 
     @Test
-    public void givenSourceSubjectEmitsError_thenResponseSubjectEmitsClose() {
+    public void givenSourceSubjectEmitsError_thenResponseSubjectEmitsError() {
         TestObserver<Response> responseObserver = TestObserver.create();
         TestObserver<Response> subjectObserver = TestObserver.create();
         TestObserver<String> sourceSubjectObserver = TestObserver.create();
@@ -114,8 +114,8 @@ public class RequestProcessorSpec {
         RuntimeException rte = new RuntimeException("bla");
         sourceSubject.onError(rte);
 
-        responseObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
-        subjectObserver.assertValue(new Response(99, ResponseStatus.CLOSE, rte));
+        responseObserver.assertValue(new Response(99, ResponseStatus.ERROR, rte));
+        subjectObserver.assertValue(new Response(99, ResponseStatus.ERROR, rte));
 
         responseObserver.assertComplete();
         subjectObserver.assertComplete();
