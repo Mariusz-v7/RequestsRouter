@@ -67,13 +67,17 @@ public class RequestProcessor {
 
         if (returnValue instanceof Subject) {
             session.registerEmitter(requestId, (Subject) returnValue);
-            return onSubject((Subject) returnValue, PublishSubject.create(), requestId);
+            return onObservable((Subject<?>) returnValue, PublishSubject.create(), requestId);
+        }
+
+        if (returnValue instanceof Observable) {
+            return onObservable((Observable<?>) returnValue, PublishSubject.create(), requestId);
         }
 
         return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
     }
 
-    Observable<Response> onSubject(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
+    Observable<Response> onObservable(Observable<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
         sourceSubject.subscribe(
                 next -> responseSubject.onNext(new Response(requestId, ResponseStatus.STREAM, next)),
                 error -> {

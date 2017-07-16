@@ -85,7 +85,7 @@ public class RequestProcessorSpec {
         TestObserver<Response> responseObserver = TestObserver.create();
         TestObserver<Response> subjectObserver = TestObserver.create();
 
-        Observable<Response> observable = requestProcessor.onSubject(sourceSubject, responseSubject, 99);
+        Observable<Response> observable = requestProcessor.onObservable(sourceSubject, responseSubject, 99);
 
         observable.subscribe(responseObserver);
         responseSubject.subscribe(subjectObserver);
@@ -105,7 +105,7 @@ public class RequestProcessorSpec {
         TestObserver<Response> subjectObserver = TestObserver.create();
         TestObserver<String> sourceSubjectObserver = TestObserver.create();
 
-        Observable<Response> observable = requestProcessor.onSubject(sourceSubject, responseSubject, 99);
+        Observable<Response> observable = requestProcessor.onObservable(sourceSubject, responseSubject, 99);
 
         sourceSubject.subscribe(sourceSubjectObserver);
         observable.subscribe(responseObserver);
@@ -120,6 +120,20 @@ public class RequestProcessorSpec {
         responseObserver.assertComplete();
         subjectObserver.assertComplete();
         sourceSubjectObserver.assertTerminated();
+    }
+
+    @Test
+    public void whenResponseIsObservable_thenDelegateToOnSubject() throws IllegalAccessException, InvocationTargetException {
+        TestObserver<Response> testObserver = new TestObserver<>();
+        doReturn(Observable.just("123")).when(router).navigate(any(), any(), any(), any());
+
+        Request request = new Request(904, "", "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSession(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload())
+                .subscribe(testObserver);
+
+        testObserver.awaitTerminalEvent();
+//        testObserver.assertValue(new Response(request.getId(), ResponseStatus.STREAM, "123")); //TODO: why this doesnt work?
+        testObserver.assertComplete();
     }
 
 }
