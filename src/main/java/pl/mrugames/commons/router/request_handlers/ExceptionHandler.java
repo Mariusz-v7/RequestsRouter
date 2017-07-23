@@ -14,40 +14,84 @@ import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
+
 @Service
-class ExceptionHandler {
+public class ExceptionHandler {
+    private class Handler<T extends Throwable> {
+        final Class<T> supportedType;
+        final Function<T, Response> handler;
+
+        Handler(Class<T> supportedType, Function<T, Response> handler) {
+            this.supportedType = supportedType;
+            this.handler = handler;
+        }
+    }
+
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private final List<Handler<Throwable>> handlers;
 
     ExceptionHandler() {
+        handlers = new CopyOnWriteArrayList<>();
+    }
+
+    @PostConstruct
+    void init() {
+        registerHandler(ParameterNotFoundException.class, e -> new Response(-1, ResponseStatus.BAD_REQUEST, e.getMessage()));
+        registerHandler(IllegalArgumentException.class, e -> new Response(-1, ResponseStatus.BAD_REQUEST, e.getMessage()));
+        registerHandler(IncompatibleParameterException.class, e -> new Response(-1, ResponseStatus.BAD_REQUEST, e.getMessage()));
+        registerHandler(RouteConstraintViolationException.class, e -> new Response(-1, ResponseStatus.BAD_PARAMETERS, e.getMessages()));
+        registerHandler(SessionExpiredException.class, e -> new Response(-1, ResponseStatus.BAD_REQUEST, "Session expired"));
+        registerHandler(SessionDoesNotExistException.class, e -> new Response(-1, ResponseStatus.BAD_REQUEST, "Session does not exist"));
+        registerHandler(ApplicationException.class, e -> new Response(-1, e.getResponseStatus(), e.getMessage()));
+        registerHandler(AuthenticationException.class, e -> new Response(-1, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
+        registerHandler(AccessDeniedException.class, e -> new Response(-1, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
     }
 
     Response handle(long requestId, Throwable e) {
+        Handler<Throwable> mostSpecific = null;
+        for (Handler<Throwable> handler : handlers) {
+            if (!handler.supportedType.isAssignableFrom(e.getClass())) {
+                continue;
+            }
 
-        if (e instanceof ParameterNotFoundException || e instanceof IllegalArgumentException || e instanceof IncompatibleParameterException) {
-            return new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage());
+            if (mostSpecific == null || mostSpecific.supportedType.isAssignableFrom(handler.supportedType)) {
+                mostSpecific = handler;
+            }
         }
 
-        if (e instanceof RouteConstraintViolationException) {
-            return new Response(requestId, ResponseStatus.BAD_PARAMETERS, ((RouteConstraintViolationException) e).getMessages());
-        }
-
-        if (e instanceof SessionExpiredException) {
-            return new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired");
-        }
-
-        if (e instanceof SessionDoesNotExistException) {
-            return new Response(requestId, ResponseStatus.BAD_REQUEST, "Session does not exist");
-        }
-
-        if (e instanceof ApplicationException) {
-            return new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage());
-        }
-
-        if (e instanceof AuthenticationException || e instanceof AccessDeniedException) {
-            return new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage());
+        if (mostSpecific != null) {
+            Response sample = mostSpecific.handler.apply(e);
+            return new Response(requestId, sample.getStatus(), sample.getPayload());
         }
 
         logger.error("Internal error while processing the request", e);
         return new Response(requestId, ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
+    }
+
+    /**
+     * @param handler - handler which translates the exception to response. Response id will be rewritten thus
+     *                it doesn't matter.
+     *                example:
+     *                exceptionHandler.registerHandler(RuntimeException.class,
+     *                e -> new Response(-1, ResponseStatus.BAD_PARAMETERS, customPayload));
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Throwable> void registerHandler(@NotNull Class<T> supportedType, Function<T, Response> handler) {
+        if (supportedType == null) {
+            throw new IllegalArgumentException("Supported type may not be null");
+        }
+
+        for (Handler existing : handlers) {
+            if (supportedType.equals(existing.supportedType)) {
+                throw new IllegalArgumentException("Handler of type '" + existing.supportedType.getSimpleName() + "' is already registered");
+            }
+        }
+
+        handlers.add(new Handler(supportedType, handler));
     }
 }
