@@ -1,6 +1,5 @@
 package pl.mrugames.commons.router.request_handlers;
 
-import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,33 +21,33 @@ class ExceptionHandler {
     ExceptionHandler() {
     }
 
-    Observable<Response> handle(long requestId, Exception e) {
+    Response handle(long requestId, Throwable e) {
 
         if (e instanceof ParameterNotFoundException || e instanceof IllegalArgumentException || e instanceof IncompatibleParameterException) {
-            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage()));
+            return new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage());
         }
 
         if (e instanceof RouteConstraintViolationException) {
-            return Observable.just(new Response(requestId, ResponseStatus.BAD_PARAMETERS, ((RouteConstraintViolationException) e).getMessages()));
+            return new Response(requestId, ResponseStatus.BAD_PARAMETERS, ((RouteConstraintViolationException) e).getMessages());
         }
 
         if (e instanceof SessionExpiredException) {
-            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired"));
+            return new Response(requestId, ResponseStatus.BAD_REQUEST, "Session expired");
         }
 
         if (e instanceof SessionDoesNotExistException) {
-            return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, "Session does not exist"));
+            return new Response(requestId, ResponseStatus.BAD_REQUEST, "Session does not exist");
         }
 
         if (e instanceof ApplicationException) {
-            return Observable.just(new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage()));
+            return new Response(requestId, ((ApplicationException) e).getResponseStatus(), e.getMessage());
         }
 
         if (e instanceof AuthenticationException || e instanceof AccessDeniedException) {
-            return Observable.just(new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage()));
+            return new Response(requestId, ResponseStatus.PERMISSION_DENIED, e.getMessage());
         }
 
         logger.error("Internal error while processing the request", e);
-        return Observable.just(new Response(requestId, ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e))));
+        return new Response(requestId, ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e.getMessage(), ErrorUtil.exceptionStackTraceToString(e)));
     }
 }

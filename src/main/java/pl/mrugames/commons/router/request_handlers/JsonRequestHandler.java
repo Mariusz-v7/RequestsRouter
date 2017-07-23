@@ -80,7 +80,7 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
                     throw new IllegalStateException("Unknown request type: " + request.getRequestType());
             }
         } catch (Exception e) {
-            response = exceptionHandler.handle(request.getId(), e);
+            response = Observable.just(exceptionHandler.handle(request.getId(), e));
         }
 
         return response.map(r -> responseToString(r, json, request.getId()));

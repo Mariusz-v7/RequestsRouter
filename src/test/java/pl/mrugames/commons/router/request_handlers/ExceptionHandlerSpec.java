@@ -33,7 +33,7 @@ public class ExceptionHandlerSpec {
     @Test
     public void parameterNotFound() {
         Exception e = new ParameterNotFoundException("xxx");
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo(e.getMessage());
     }
@@ -41,7 +41,7 @@ public class ExceptionHandlerSpec {
     @Test
     public void illegalArgument() {
         Exception e = new IllegalArgumentException("xxx");
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo(e.getMessage());
     }
@@ -49,7 +49,7 @@ public class ExceptionHandlerSpec {
     @Test
     public void incompatibleParameter() {
         Exception e = new IncompatibleParameterException("asdf", String.class, Integer.class);
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo(e.getMessage());
     }
@@ -58,7 +58,7 @@ public class ExceptionHandlerSpec {
     public void constraintViolationException() {
         RouteConstraintViolationException e = new RouteConstraintViolationException(Collections.emptyList());
 
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
     }
 
@@ -66,7 +66,7 @@ public class ExceptionHandlerSpec {
     public void sessionExpiredException() {
         SessionExpiredException e = new SessionExpiredException();
 
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("Session expired");
     }
@@ -76,11 +76,11 @@ public class ExceptionHandlerSpec {
         ApplicationException e1 = new ApplicationException(ResponseStatus.BAD_PARAMETERS, "bla");
         ApplicationException e2 = new ApplicationException(ResponseStatus.BAD_REQUEST, "alb");
 
-        Response response = exceptionHandler.handle(1, e1).blockingFirst();
+        Response response = exceptionHandler.handle(1, e1);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
         assertThat(response.getPayload()).isEqualTo("bla");
 
-        response = exceptionHandler.handle(2, e2).blockingFirst();
+        response = exceptionHandler.handle(2, e2);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("alb");
     }
@@ -90,7 +90,7 @@ public class ExceptionHandlerSpec {
         AuthenticationException authenticationException = mock(AuthenticationException.class);
         doReturn("message").when(authenticationException).getMessage();
 
-        Response response = exceptionHandler.handle(1, authenticationException).blockingFirst();
+        Response response = exceptionHandler.handle(1, authenticationException);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
         assertThat(response.getPayload()).isEqualTo("message");
     }
@@ -100,7 +100,7 @@ public class ExceptionHandlerSpec {
         AccessDeniedException accessDeniedException = mock(AccessDeniedException.class);
         doReturn("message").when(accessDeniedException).getMessage();
 
-        Response response = exceptionHandler.handle(1, accessDeniedException).blockingFirst();
+        Response response = exceptionHandler.handle(1, accessDeniedException);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.PERMISSION_DENIED);
         assertThat(response.getPayload()).isEqualTo("message");
     }
@@ -109,7 +109,7 @@ public class ExceptionHandlerSpec {
     public void sessionDoesNotExist() {
         SessionDoesNotExistException e = new SessionDoesNotExistException();
 
-        Response response = exceptionHandler.handle(1, e).blockingFirst();
+        Response response = exceptionHandler.handle(1, e);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
         assertThat(response.getPayload()).isEqualTo("Session does not exist");
     }

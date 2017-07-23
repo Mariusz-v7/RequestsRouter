@@ -21,17 +21,20 @@ public class RequestProcessor {
     private final PathArgumentResolver pathArgumentResolver;
     private final RequestPayloadArgumentResolver requestPayloadArgumentResolver;
     private final SessionArgumentResolver sessionArgumentResolver;
+    private final ExceptionHandler exceptionHandler;
 
     private RequestProcessor(SessionManager sessionManager,
                              Router router,
                              PathArgumentResolver pathArgumentResolver,
                              RequestPayloadArgumentResolver requestPayloadArgumentResolver,
-                             SessionArgumentResolver sessionArgumentResolver) {
+                             SessionArgumentResolver sessionArgumentResolver,
+                             ExceptionHandler exceptionHandler) {
         this.sessionManager = sessionManager;
         this.router = router;
         this.pathArgumentResolver = pathArgumentResolver;
         this.requestPayloadArgumentResolver = requestPayloadArgumentResolver;
         this.sessionArgumentResolver = sessionArgumentResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     Observable<Response> closeStreamRequest(long requestId, String sessionId, String securityCode) {
@@ -93,7 +96,7 @@ public class RequestProcessor {
                     }
                 },
                 error -> {
-                    responseSubject.onNext(new Response(requestId, ResponseStatus.ERROR, error));
+                    responseSubject.onNext(exceptionHandler.handle(requestId, error));
                     responseSubject.onComplete();
                 },
                 () -> {

@@ -24,7 +24,7 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
         try {
             return next(request);
         } catch (Exception e) {
-            return exceptionHandler.handle(request.getId(), e);
+            return Observable.just(exceptionHandler.handle(request.getId(), e));
         }
     }
 
