@@ -9,10 +9,7 @@ import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<Object> {
@@ -29,6 +26,10 @@ public class RequestPayloadArgumentResolver implements PayloadArgumentResolver<O
     }
 
     private Map.Entry<String, Object> map(RouteParameter parameter, Object payload) {
+        if (payload == null) {
+            payload = Collections.EMPTY_MAP;
+        }
+
         Object result;
 
         if (payload instanceof Map) {

@@ -212,4 +212,11 @@ public class RequestPayloadArgumentResolverSpec {
 
         resolver.resolve(dto, routeInfo.getParameters());
     }
+
+    @Test
+    public void givenOneOptionalParameter_whenPayloadIsNull_thenUseDefault() {
+        RouteInfo routeInfo = routes.get("GET:app/test/one-optional");
+        Map<String, Object> result = resolver.resolve(null, routeInfo.getParameters());
+        assertThat(result).containsExactly(MapEntry.entry("one", ""));
+    }
 }

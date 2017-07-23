@@ -215,4 +215,9 @@ public class TestController {
     public void validateDeeper(@PathVar("a") int a, @PathVar("b") int b) {
         validateMe.v2(b, a);
     }
+
+    @Route("one-optional")
+    public String oneOptional(@Arg(value = "one", defaultValue = "") String one) {
+        return one;
+    }
 }
