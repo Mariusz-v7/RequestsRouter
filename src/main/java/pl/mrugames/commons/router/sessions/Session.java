@@ -92,6 +92,19 @@ public class Session {
         return Optional.ofNullable((T) map.get(type));
     }
 
+    /**
+     * Call it only if you are 100% sure that parameter exists.
+     */
+    @SuppressWarnings("unchecked")
+    public synchronized <T> T getExisting(Class<T> type) {
+        Optional<T> optional = get(type);
+        if (optional.isPresent()) {
+            return optional.get();
+        }
+
+        throw new IllegalStateException("Parameter " + type + " does not exist");
+    }
+
     @SuppressWarnings("unchecked")
     public synchronized <T> T remove(Class<T> type) {
         if (isDestroyed) {
