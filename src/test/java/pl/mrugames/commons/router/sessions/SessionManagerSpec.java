@@ -12,6 +12,7 @@ import pl.mrugames.commons.router.TestConfiguration;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -136,5 +137,23 @@ public class SessionManagerSpec {
         Session localSession = Session.getLocalSession().orElse(null);
 
         assertThat(localSession).isSameAs(session2);
+    }
+
+    @Test
+    public void givenSessionExists_whenGetExistingLocal_thenUpdateLastAccessTime() throws InterruptedException {
+        sessionManager.getSession(sessionId, "");
+        Thread.sleep(10);
+        Instant now = Instant.now();
+        Session session = Session.getExistingLocalSession();
+        assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
+    }
+
+    @Test
+    public void givenSessionExists_whenGetLocal_thenUpdateLastAccessTime() throws InterruptedException {
+        sessionManager.getSession(sessionId, "");
+        Thread.sleep(10);
+        Instant now = Instant.now();
+        Optional<Session> session = Session.getLocalSession();
+        assertThat(session.get().getLastAccessed()).isBetween(now, Instant.now());
     }
 }

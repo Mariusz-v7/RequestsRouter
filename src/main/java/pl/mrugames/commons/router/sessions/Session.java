@@ -13,16 +13,22 @@ public class Session {
     private final static ThreadLocal<Session> localSession = new ThreadLocal<>();
 
     public static Optional<Session> getLocalSession() {
-        return Optional.ofNullable(localSession.get());
+        Session session = localSession.get();
+
+        if (session != null) {
+            session.updateLastAccessed(Instant.now());
+        }
+
+        return Optional.ofNullable(session);
     }
 
     public static Session getExistingLocalSession() {
-        Session session = localSession.get();
-        if (session == null) {
+        Optional<Session> session = getLocalSession();
+        if (!session.isPresent()) {
             throw new SessionDoesNotExistException();
         }
 
-        return session;
+        return session.get();
     }
 
     public static void destroyLocalSession() {
