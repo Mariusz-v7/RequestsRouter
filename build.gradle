@@ -22,15 +22,15 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.7'
     compile group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.2.3'
 
-    compile group: 'org.springframework', name: 'spring-core', version: '4.3.7.RELEASE'
-    compile group: 'org.springframework', name: 'spring-context', version: '4.3.7.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.2.2.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-config', version: '4.2.2.RELEASE'
+    compile group: 'org.springframework', name: 'spring-core', version: '4.3.10.RELEASE'
+    compile group: 'org.springframework', name: 'spring-context', version: '4.3.10.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.2.3.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-config', version: '4.2.3.RELEASE'
 
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0.pr2'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.0.pr2'
-    compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.0.8'
+    compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.2'
     compile group: 'org.hibernate', name: 'hibernate-validator', version: '5.4.1.Final'
     compile group: 'org.glassfish', name: 'javax.el', version: '3.0.1-b08'
     compile group: 'javax.inject', name: 'javax.inject', version: '1'
@@ -44,6 +44,7 @@ dependencies {
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.6.2'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.7.RELEASE'
     testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '4.2.2.RELEASE'
+    testCompile group: 'pl.mrugames.commons', name: 'requests-router-testing', version: '1.1.0-SNAPSHOT'
 
 }
 

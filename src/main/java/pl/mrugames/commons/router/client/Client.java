@@ -1,7 +1,7 @@
 package pl.mrugames.commons.router.client;
 
 import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ public class Client {
     }
 
     private ResponseHandle<Object> _send(String route, Object payload, RequestMethod requestMethod, long timeout, long id, RequestType requestType) {
-        Subject<Object> subject = PublishSubject.create();
+        Subject<Object> subject = ReplaySubject.create();
         buffer.put(id, subject);
 
         Observable<Object> observable = subject.timeout(timeout, TimeUnit.MILLISECONDS);

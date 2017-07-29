@@ -2,6 +2,7 @@ package pl.mrugames.commons.router.request_handlers;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import org.springframework.stereotype.Component;
 import pl.mrugames.commons.router.*;
@@ -70,7 +71,7 @@ public class RequestProcessor {
 
         if (returnValue instanceof Subject) {
             session.registerEmitter(requestId, (Subject) returnValue);
-            return onObservable((Subject<?>) returnValue, PublishSubject.create(), requestId);
+            return onObservable((Subject<?>) returnValue, ReplaySubject.create(), requestId);
         }
 
         if (returnValue instanceof Observable) {
