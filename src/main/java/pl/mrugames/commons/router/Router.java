@@ -82,7 +82,18 @@ public class Router {
         }
 
         try {
-            return routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
+            Object returnValue = routeInfo.getMethod().invoke(routeInfo.getControllerInstance(), args);
+            if (returnValue == null) {
+                Class<?> returnType = routeInfo.getMethod().getReturnType();
+
+                if (returnType != void.class) {
+                    return Mono.NO_VAL;
+                } else {
+                    return null;
+                }
+            }
+
+            return returnValue;
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
 

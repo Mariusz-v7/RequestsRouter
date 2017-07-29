@@ -78,9 +78,15 @@ public class Client {
                 clear(response.getId());
                 break;
             default:
-                subject.onError(new ErrorResponseException(response.getStatus(),
-                        response.getPayload() != null ? response.getPayload().toString() : response.getPayload().getClass().getName())
-                );
+                Object payload = response.getPayload();
+                String strPayload;
+                if (payload != null) {
+                    strPayload = payload.toString();
+                } else {
+                    strPayload = "";
+                }
+
+                subject.onError(new ErrorResponseException(response.getStatus(), strPayload));
                 clear(response.getId());
                 break;
         }

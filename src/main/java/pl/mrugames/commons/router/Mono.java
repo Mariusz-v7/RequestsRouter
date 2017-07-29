@@ -1,9 +1,11 @@
 package pl.mrugames.commons.router;
 
+import javax.validation.constraints.NotNull;
 import java.util.function.Function;
 
 public class Mono<T> {
-    public static Mono<Void> OK = new Mono<>(ResponseStatus.OK);
+    public final static Object NO_VAL = new Object();
+    public final static Mono<Void> OK = new Mono<>(ResponseStatus.OK);
 
     public static Mono<Void> of(ResponseStatus status) {
         return new Mono<>(status);
@@ -17,7 +19,11 @@ public class Mono<T> {
         return new Mono<>(status, error);
     }
 
-    public static <T> Mono<T> ok(T payload) {
+    public static <T> Mono<T> ok(@NotNull T payload) {
+        if (payload == null) {
+            throw new IllegalArgumentException("Payload may not be null!");
+        }
+
         return new Mono<>(ResponseStatus.OK, payload);
     }
 

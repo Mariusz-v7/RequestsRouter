@@ -127,7 +127,7 @@ public class RouterSpec {
 
         Object result = router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), session);
 
-        assertThat(result).isNull();
+        assertThat(result).isSameAs(Mono.NO_VAL);
     }
 
     @Test

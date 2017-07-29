@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.Mono;
+import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.client.Client;
+import pl.mrugames.commons.router.client.ErrorResponseException;
 
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -26,8 +28,112 @@ public class IntegrationTests {
                 .response.test();
 
         testObserver.awaitTerminalEvent();
-        testObserver.awaitDone(1, TimeUnit.DAYS);
         testObserver.assertValue(true);
         testObserver.assertComplete();
+    }
+
+    @Test
+    public void givenVoidRoute_whenReceive_thenNoValues() {
+        TestObserver<Object> testObserver = client.send("integration/void")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoValues();
+        testObserver.assertComplete();
+    }
+
+    @Test
+    public void whenRouteReturnsNull_thenReceiveMonoNoValue() {
+        TestObserver<Object> testObserver = client.send("integration/null")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertValue(Mono.NO_VAL);
+        testObserver.assertComplete();
+    }
+
+    @Test
+    public void whenRouteReturnsMonoVoid_thenReceiveNoValues() {
+        TestObserver<Object> testObserver = client.send("integration/mono-void")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoValues();
+        testObserver.assertComplete();
+    }
+
+    @Test
+    public void whenRouteReturnsMonoWithError_thenError() {
+        TestObserver<Object> testObserver = client.send("integration/mono-error")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertError(new ErrorResponseException(ResponseStatus.ERROR, ""));
+    }
+
+    @Test
+    public void whenRouteThrowsException_thenError() {
+        TestObserver<Object> testObserver = client.send("integration/exception")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertError(new ErrorResponseException(ResponseStatus.BAD_REQUEST, "an exception!"));
+    }
+
+    @Test
+    public void whenRouteReturnsMonoErrorWithMessage_thenErrorWithMessage() {
+        TestObserver<Object> testObserver = client.send("integration/mono-error-custom")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertError(new ErrorResponseException(ResponseStatus.BAD_PARAMETERS, "bad params!"));
+    }
+
+    @Test
+    public void whenObservable_thenReturnPayload() {
+        TestObserver<Object> testObserver = client.send("integration/observable")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertComplete();
+        testObserver.assertValue("hello");
+    }
+
+    @Test
+    public void whenObservableMultiple_thenReturnAll() {
+        TestObserver<Object> testObserver = client.send("integration/observable-multi")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertComplete();
+        testObserver.assertValues("hello", "observable");
+    }
+
+    @Test
+    public void whenObservableError_thenEmitError() {
+        TestObserver<Object> testObserver = client.send("integration/observable-error")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertError(new ErrorResponseException(ResponseStatus.BAD_REQUEST, "what?"));
+    }
+
+    @Test
+    public void whenObservableWithMonoVoid_thenReturnNoValues() {
+        TestObserver<Object> testObserver = client.send("integration/observable-mono-void")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertNoValues();
+        testObserver.assertComplete();
+    }
+
+    @Test
+    public void whenObservableMonoError_thenReturnError() {
+        TestObserver<Object> testObserver = client.send("integration/observable-mono-error")
+                .response.test();
+
+        testObserver.awaitTerminalEvent();
+        testObserver.assertError(new ErrorResponseException(ResponseStatus.ERROR, "error"));
     }
 }
