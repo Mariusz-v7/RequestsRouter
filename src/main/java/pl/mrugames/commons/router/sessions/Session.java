@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class Session {
-    private final static ThreadLocal<Session> localSession = new ThreadLocal<>();
+    private final static ThreadLocal<Session> localSession = new InheritableThreadLocal<>();
 
     public static Optional<Session> getLocalSession() {
         Session session = localSession.get();

@@ -25,6 +25,8 @@ public class LoginLogoutService {
         this.anonymousKey = anonymousKey;
         this.rememberMeKey = rememberMeKey;
         this.anonymousUserFactory = anonymousUserFactory;
+
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
 
     public void initNewContext() {
