@@ -61,7 +61,7 @@ public class ClientSpec {
         TestObserver<Object> testObserver = new TestObserver<>();
         client._send("", "", RequestMethod.GET, 100);
 
-        Subject<Object> subject = client.getBuffer().get(1L);
+        Subject<?> subject = client.getBuffer().get(1L);
 
         subject.subscribe(testObserver);
         testObserver.awaitTerminalEvent();

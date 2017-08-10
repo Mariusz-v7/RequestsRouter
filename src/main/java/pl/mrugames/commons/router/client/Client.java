@@ -19,7 +19,7 @@ public class Client {
     private final static Logger logger = LoggerFactory.getLogger(Client.class);
 
     private final long defaultTimeout;
-    private final Map<Long, Subject<Object>> buffer;
+    private final Map<Long, Subject<?>> buffer;
     private final AtomicLong id;
     private final Connector connector;
 
@@ -36,27 +36,28 @@ public class Client {
         _send(null, null, null, defaultTimeout, id, RequestType.CLOSE_STREAM);
     }
 
-    public ResponseHandle<Object> send(String route) {
+    public <T> ResponseHandle<T> send(String route) {
         return _send(route, null, RequestMethod.GET, defaultTimeout);
     }
 
-    public ResponseHandle<Object> send(String route, Object payload) {
+    public <T> ResponseHandle<T> send(String route, Object payload) {
         return _send(route, payload, RequestMethod.GET, defaultTimeout);
     }
 
-    public ResponseHandle<Object> send(String route, Object payload, RequestMethod requestMethod) {
+    public <T> ResponseHandle<T> send(String route, Object payload, RequestMethod requestMethod) {
         return _send(route, payload, requestMethod, defaultTimeout);
     }
 
     /**
      * @param timeout [ms]
      */
-    public ResponseHandle<Object> send(String route, Object payload, RequestMethod requestMethod, long timeout) {
+    public <T> ResponseHandle<T> send(String route, Object payload, RequestMethod requestMethod, long timeout) {
         return _send(route, payload, requestMethod, timeout);
     }
 
+    @SuppressWarnings("unchecked")
     void onFrameReceive(Response response) {
-        Subject<Object> subject = buffer.get(response.getId());
+        Subject subject = buffer.get(response.getId());
         if (subject == null) {
             logger.warn("Unknown frame received: {}", response);
             return;
@@ -92,20 +93,20 @@ public class Client {
         }
     }
 
-    ResponseHandle<Object> _send(String route, Object payload, RequestMethod requestMethod, long timeout) {
+    <T> ResponseHandle<T> _send(String route, Object payload, RequestMethod requestMethod, long timeout) {
         long id = this.id.incrementAndGet();
         return _send(route, payload, requestMethod, timeout, id, RequestType.STANDARD);
     }
 
-    Map<Long, Subject<Object>> getBuffer() {
+    Map<Long, Subject<?>> getBuffer() {
         return buffer;
     }
 
-    private ResponseHandle<Object> _send(String route, Object payload, RequestMethod requestMethod, long timeout, long id, RequestType requestType) {
-        Subject<Object> subject = ReplaySubject.create();
+    private <T> ResponseHandle<T> _send(String route, Object payload, RequestMethod requestMethod, long timeout, long id, RequestType requestType) {
+        Subject<T> subject = ReplaySubject.create();
         buffer.put(id, subject);
 
-        Observable<Object> observable = subject.timeout(timeout, TimeUnit.MILLISECONDS);
+        Observable<T> observable = subject.timeout(timeout, TimeUnit.MILLISECONDS);
 
         observable.subscribe(n -> {
         }, e -> {
