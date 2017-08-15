@@ -8,9 +8,12 @@ import pl.mrugames.commons.router.RequestType;
 
 import java.util.Map;
 
-class JsonRequest extends Request {
+/**
+ * Used only for deserialization
+ */
+public class JsonRequest extends Request {
     @JsonCreator
-    JsonRequest(@JsonProperty("id") Long id,
+    public JsonRequest(@JsonProperty("id") Long id,
                 @JsonProperty("session") String session,
                 @JsonProperty("securityCode") String securityCode,
                 @JsonProperty("route") String route,
