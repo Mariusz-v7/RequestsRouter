@@ -17,7 +17,6 @@ import pl.mrugames.commons.router.controllers.UserModel;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -39,15 +38,17 @@ public class JsonRequestHandlerSpec {
     private ObjectMapper mapper;
 
     private Request request;
-    private String jsonRequest;
+    private JsonRequest jsonRequest;
     private Map<String, Object> payload = new HashMap<>();
 
     @Before
-    public void before() throws JsonProcessingException {
+    public void before() throws IOException {
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
         request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "", "app/test/json", RequestMethod.GET, payload);
-        jsonRequest = mapper.writeValueAsString(request);
+        String rawJson = mapper.writeValueAsString(request);
+        jsonRequest = mapper.readValue(rawJson, JsonRequest.class);
+        jsonRequest.setRawJson(rawJson);
     }
 
     @After
@@ -96,81 +97,8 @@ public class JsonRequestHandlerSpec {
     }
 
     @Test
-    public void givenObjectMapperThrowExceptionOnReadingRequest_thenSendBackErrorMessage() throws IOException {
-        doThrow(new RuntimeException("failed to read")).when(mapper).readValue(anyString(), any(Class.class));
-        String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
-
-        assertThat(realResponse).matches(
-                String.format("\\" + JsonRequestHandler.JSON_READ_ERROR_RESPONSE, -1, "failed to read", "[\\s\\S]*")
-        );
-    }
-
-    @Test
     public void payloadResolverTest() throws InvocationTargetException, IllegalAccessException {
         handler.handleRequest(jsonRequest).blockingFirst();
         verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), anyString(), any(), eq(payload));
-    }
-
-    @Test
-    public void givenRequestHasMissingPayloadArguments_thenReturnBadRequestResponse() throws IOException {
-        String req = prepareJsonRequest("app/test/json", "");
-        String realResponse = handler.handleRequest(req).blockingFirst();
-
-        Response response = mapper.readValue(realResponse, JsonResponse.class);
-
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
-        assertThat(response.getPayload()).isEqualTo("Could not find 'arg1' parameter in the request");
-    }
-
-    @Test
-    public void givenRequestWithoutId_thenResponseErrorWithIdMinusOne() throws IOException {
-        String req = String.format(
-                "{\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
-                        "\"route\":\"%s\"," +
-                        "\"requestMethod\":\"GET\"," +
-                        "\"payload\":{}," +
-                        "\"requestType\":\"STANDARD\"}",
-                "some/route");
-
-        String realResponse = handler.handleRequest(req).blockingFirst();
-        Response response = mapper.readValue(realResponse, JsonResponse.class);
-
-        assertThat(response.getId()).isEqualTo(-1);
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
-        assertThat(response.getPayload()).isEqualTo("'id' is missing n the request");
-    }
-
-    @Test
-    public void givenRequestWithDamagedRequestMethod_thenResponseError() throws IOException {
-        String req = String.format(
-                "{\"id\":99," +
-                        "\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
-                        "\"route\":\"%s\"," +
-                        "\"requestMethod\":\"GE\"," +
-                        "\"payload\":{}," +
-                        "\"requestType\":\"STANDARD\"}",
-                "some/route");
-
-        String realResponse = handler.handleRequest(req).blockingFirst();
-        Response response = mapper.readValue(realResponse, JsonResponse.class);
-
-        assertThat(response.getId()).isEqualTo(99);
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_REQUEST);
-        assertThat((String) response.getPayload()).contains("Can not deserialize value of type pl.mrugames.commons.router.RequestMethod from String \"GE\": value not one of declared Enum instance names: [POST, DELETE, GET, PUT, PATCH]");
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void givenRequestViolatingConstraints_thenErrorResponse() throws IOException {
-        String req = prepareJsonRequest("app/test/validation2", "\"a\":-1,\"b\":10");
-        String realResponse = handler.handleRequest(req).blockingFirst();
-        Response response = mapper.readValue(realResponse, JsonResponse.class);
-
-        assertThat(response.getId()).isEqualTo(2);
-        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
-        assertThat((List<String>) response.getPayload()).containsExactlyInAnyOrder(
-                "b: must be less than or equal to 2",
-                "a: must be greater than or equal to 0"
-        );
     }
 }

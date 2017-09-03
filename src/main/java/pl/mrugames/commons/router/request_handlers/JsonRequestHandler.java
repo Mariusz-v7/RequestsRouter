@@ -1,18 +1,19 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.mrugames.commons.router.*;
+import pl.mrugames.commons.router.Response;
+import pl.mrugames.commons.router.RouteInfo;
+import pl.mrugames.commons.router.Router;
 import pl.mrugames.commons.router.arg_resolvers.JsonPayloadArgumentResolver;
 
 import java.util.Map;
 
 @Component
-public class JsonRequestHandler implements RequestHandler<String, String> {
+public class JsonRequestHandler implements RequestHandler<JsonRequest, String> {
     public static final String JSON_READ_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON read error: %s, %s\"}"; //todo: build json using json mapper
     public static final String JSON_MAPPING_ERROR_RESPONSE = "{\"id\":%d,\"status\":\"INTERNAL_ERROR\",\"payload\":\"JSON mapping error: %s, %s\"}";
 
@@ -37,53 +38,39 @@ public class JsonRequestHandler implements RequestHandler<String, String> {
     }
 
     @Override
-    public Observable<String> handleRequest(String json) {
-        Request request;
-        try {
-            try {
-                request = mapper.readValue(json, JsonRequest.class);
-            } catch (InvalidFormatException e) {
-                long requestId = mapper.readTree(json).get("id").asLong();
-                return Observable.just(new Response(requestId, ResponseStatus.BAD_REQUEST, e.getMessage()))
-                        .map(r -> responseToString(r, json, requestId));
-            }
-        } catch (Exception e) {
-            logger.error("Failed to read JSON: {}", json, e);
-            return Observable.just(ErrorUtil.getErrorResponse(JSON_READ_ERROR_RESPONSE, e, -1));
-        }
-
+    public Observable<String> handleRequest(JsonRequest jsonRequest) {
         Observable<Response> response;
         try {
-            if (request.getId() == -1) {
-                throw new IllegalArgumentException("'id' is missing n the request");
+            if (jsonRequest.getId() == -1) {
+                throw new IllegalArgumentException("'id' is missing in the request");
             }
 
-            switch (request.getRequestType()) {
+            switch (jsonRequest.getRequestType()) {
                 case STANDARD:
-                    RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
+                    RouteInfo routeInfo = router.findRoute(jsonRequest.getRoute(), jsonRequest.getRequestMethod());
 
-                    String payloadJson = mapper.readTree(json).get("payload").toString();
+                    String payloadJson = mapper.readTree(jsonRequest.getRawJson()).get("payload").toString();
 
                     Map<String, Object> payload = argResolver.resolve(payloadJson, routeInfo.getParameters());
                     response = requestProcessor.standardRequest(routeInfo,
-                            request.getId(),
-                            request.getSession(),
-                            request.getSecurityCode(),
-                            request.getRoute(),
-                            request.getRequestMethod(),
+                            jsonRequest.getId(),
+                            jsonRequest.getSession(),
+                            jsonRequest.getSecurityCode(),
+                            jsonRequest.getRoute(),
+                            jsonRequest.getRequestMethod(),
                             payload);
                     break;
                 case CLOSE_STREAM:
-                    response = requestProcessor.closeStreamRequest(request.getId(), request.getSession(), request.getSecurityCode());
+                    response = requestProcessor.closeStreamRequest(jsonRequest.getId(), jsonRequest.getSession(), jsonRequest.getSecurityCode());
                     break;
                 default:
-                    throw new IllegalStateException("Unknown request type: " + request.getRequestType());
+                    throw new IllegalStateException("Unknown request type: " + jsonRequest.getRequestType());
             }
         } catch (Exception e) {
-            response = Observable.just(exceptionHandler.handle(request.getId(), e));
+            response = Observable.just(exceptionHandler.handle(jsonRequest.getId(), e));
         }
 
-        return response.map(r -> responseToString(r, json, request.getId()));
+        return response.map(r -> responseToString(r, jsonRequest.getRawJson(), jsonRequest.getId()));
     }
 
     private String responseToString(Response response, String json, long requestId) {

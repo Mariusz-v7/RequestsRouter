@@ -12,6 +12,8 @@ import java.util.Map;
  * Used only for deserialization
  */
 public class JsonRequest extends Request {
+    private volatile String rawJson;
+
     @JsonCreator
     public JsonRequest(@JsonProperty("id") Long id,
                 @JsonProperty("session") String session,
@@ -31,5 +33,13 @@ public class JsonRequest extends Request {
     @Override
     public Map<String, Object> getPayload() {
         throw new UnsupportedOperationException();
+    }
+
+    public String getRawJson() {
+        return rawJson;
+    }
+
+    public void setRawJson(String rawJson) {
+        this.rawJson = rawJson;
     }
 }
