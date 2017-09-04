@@ -2,8 +2,8 @@ package pl.mrugames.commons.router;
 
 import java.io.Serializable;
 
-public interface FrameTranslator {
-    Object translateToRequestOrResponse(Serializable serializable);
+public interface FrameTranslator<T extends Serializable> {
+    Object translateToRequestOrResponse(T serializable);
 
-    Serializable translateFromRequest(Request request);
+    T translateFromRequest(Request request);
 }

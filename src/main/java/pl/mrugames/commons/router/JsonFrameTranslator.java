@@ -8,10 +8,9 @@ import pl.mrugames.commons.router.request_handlers.JsonRequest;
 import pl.mrugames.commons.router.request_handlers.JsonResponse;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 @Service
-public class JsonFrameTranslator implements FrameTranslator {
+public class JsonFrameTranslator implements FrameTranslator<String> {
     private final ObjectMapper objectMapper;
 
     JsonFrameTranslator(ObjectMapper objectMapper) {
@@ -38,8 +37,7 @@ public class JsonFrameTranslator implements FrameTranslator {
     }
 
     @Override
-    public Object translateToRequestOrResponse(Serializable serializable) {
-        String json = (String) serializable;
+    public Object translateToRequestOrResponse(String json) {
         Class<?> type = recognize(json);
 
         try {
@@ -56,11 +54,11 @@ public class JsonFrameTranslator implements FrameTranslator {
             throw new IllegalArgumentException("Failed to serialize frame", e);
         }
 
-        throw new IllegalArgumentException("Unknown frame type: " + serializable);
+        throw new IllegalArgumentException("Unknown frame type: " + json);
     }
 
     @Override
-    public Serializable translateFromRequest(Request request) {
+    public String translateFromRequest(Request request) {
         try {
             return objectMapper.writeValueAsString(request);
         } catch (JsonProcessingException e) {
