@@ -45,4 +45,11 @@ public class JsonFrameTranslatorSpec {
         String str = objectMapper.writeValueAsString(response);
         assertThat(jsonFrameTranslator.recognize(str)).isEqualTo(Response.class);
     }
+
+    @Test
+    public void whenCloseStream_thenRecognizeRequest() throws JsonProcessingException {
+        String str = "{\"id\":700,\"session\":\"\",\"requestType\":\"CLOSE_STREAM\"}";
+        assertThat(jsonFrameTranslator.recognize(str)).isEqualTo(Request.class);
+    }
+
 }

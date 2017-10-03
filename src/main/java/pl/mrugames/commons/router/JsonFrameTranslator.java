@@ -21,7 +21,7 @@ public class JsonFrameTranslator implements FrameTranslator<String> {
         try {
             if (frame != null) {
                 JsonNode node = objectMapper.readTree(frame);
-                if (node.has("route") && node.has("requestMethod")) {
+                if (node.has("route") && node.has("requestMethod") || node.has("requestType") && RequestType.CLOSE_STREAM.name().equals(node.get("requestType").asText())) {
                     return Request.class;
                 }
 
