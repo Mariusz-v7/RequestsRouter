@@ -75,9 +75,7 @@ public class RequestProcessor {
         }
 
         if (returnValue instanceof Observable) {
-            Subject<Response> responseSubject = ReplaySubject.create();
-            session.registerEmitter(requestId, responseSubject);
-            return onObservable((Observable<?>) returnValue, responseSubject, requestId);
+            return onObservable((Observable<?>) returnValue, ReplaySubject.create(), requestId);
         }
 
         return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
@@ -108,9 +106,7 @@ public class RequestProcessor {
                 }
         );
 
-        // clean up subscription
-        sourceSubject.subscribe(next -> {
-        }, error -> disposable.dispose(), disposable::dispose);
+        //TODO: in case of Observable -> clear subscription onClose.
 
         return responseSubject.hide();
     }
