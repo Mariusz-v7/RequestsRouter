@@ -1,7 +1,6 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import org.springframework.stereotype.Component;
@@ -75,14 +74,17 @@ public class RequestProcessor {
         }
 
         if (returnValue instanceof Observable) {
-            return onObservable((Observable<?>) returnValue, ReplaySubject.create(), requestId);
+            Subject<Response> subject = ReplaySubject.create();
+            session.registerEmitter(requestId, subject);
+            ((Observable<Response>) returnValue).subscribe(subject);
+            return onObservable(subject, ReplaySubject.create(), requestId);
         }
 
         return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
     }
 
-    Observable<Response> onObservable(Observable<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
-        Disposable disposable = sourceSubject.subscribe(
+    Observable<Response> onObservable(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
+        sourceSubject.subscribe(
                 next -> {
                     if (next instanceof Mono) {
                         Mono<?> mono = (Mono) next;
@@ -105,8 +107,6 @@ public class RequestProcessor {
                     responseSubject.onComplete();
                 }
         );
-
-        //TODO: in case of Observable -> clear subscription onClose.
 
         return responseSubject.hide();
     }
