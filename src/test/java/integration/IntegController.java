@@ -1,6 +1,9 @@
 package integration;
 
 import io.reactivex.Observable;
+import io.reactivex.subjects.Subject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import pl.mrugames.commons.router.Mono;
 import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.annotations.Arg;
@@ -9,6 +12,10 @@ import pl.mrugames.commons.router.annotations.Route;
 
 @Controller("integration")
 public class IntegController {
+
+    @Autowired
+    @Qualifier("integrationSubject")
+    Subject<String> subject;
 
     @Route
     public boolean basicTest(@Arg("a") int a) {
@@ -68,5 +75,10 @@ public class IntegController {
     @Route("observable-mono-error")
     public Observable<Mono<Void>> observableMonoError() {
         return Observable.just(Mono.error(ResponseStatus.ERROR, "error"));
+    }
+
+    @Route("subj-observable")
+    public Observable<String> subjToObs() {
+        return subject.hide();
     }
 }

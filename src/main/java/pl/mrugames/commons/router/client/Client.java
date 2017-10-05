@@ -103,22 +103,29 @@ public class Client {
     }
 
     private <T> ResponseHandle<T> _send(String route, Object payload, RequestMethod requestMethod, long timeout, long id, RequestType requestType) {
-        Subject<T> subject = ReplaySubject.create();
-        buffer.put(id, subject);
+        Observable<T> result;
+        if (requestType != RequestType.CLOSE_STREAM) {
+            Subject<T> subject = ReplaySubject.create();
+            buffer.put(id, subject);
 
-        Observable<T> observable = subject.timeout(timeout, TimeUnit.MILLISECONDS);
+            Observable<T> observable = subject.timeout(timeout, TimeUnit.MILLISECONDS);
 
-        observable.subscribe(n -> {
-        }, e -> {
-            if (e instanceof TimeoutException) {
-                subject.onError(e);
-                clear(id);
-            }
-        });
+            observable.subscribe(n -> {
+            }, e -> {
+                if (e instanceof TimeoutException) {
+                    subject.onError(e);
+                    clear(id);
+                }
+            });
+
+            result = subject.hide();
+        } else {
+            result = Observable.empty();
+        }
 
         connector.send(id, route, payload, requestMethod, requestType);
 
-        return new ResponseHandle<>(id, subject.hide());
+        return new ResponseHandle<>(id, result);
     }
 
     private void clear(long id) {

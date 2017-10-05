@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.sessions;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,6 +30,11 @@ public class SessionManagerSpec {
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
+
+    @Before
+    public void before() {
+        sessionManager.clear();
+    }
 
     @Test
     public void givenSessionDoesNotExist_whenGetSession_thenNewOneIsCreated() {
@@ -65,7 +71,7 @@ public class SessionManagerSpec {
 
         session.updateLastAccessed(Instant.now().minus(30, ChronoUnit.MINUTES));
 
-        TimeUnit.MILLISECONDS.sleep(200);
+        sessionManager.cleaner();
 
         assertThat(sessionManager.contains(sessionId)).isFalse();
         assertThat(session.isDestroyed()).isTrue();

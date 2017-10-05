@@ -1,9 +1,11 @@
 package integration;
 
 import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.Subject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -11,6 +13,7 @@ import pl.mrugames.commons.router.Mono;
 import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.client.Client;
 import pl.mrugames.commons.router.client.ErrorResponseException;
+import pl.mrugames.commons.router.client.ResponseHandle;
 
 import java.util.Collections;
 
@@ -21,6 +24,10 @@ import java.util.Collections;
 public class IntegrationTests {
     @Autowired
     private Client client;
+
+    @Autowired
+    @Qualifier("integrationSubject")
+    Subject<String> subject;
 
     @Test
     public void shouldNavigateToProperRouteAndReturnProperResult() {
@@ -135,5 +142,24 @@ public class IntegrationTests {
 
         testObserver.awaitTerminalEvent();
         testObserver.assertError(new ErrorResponseException(ResponseStatus.ERROR, "error"));
+    }
+
+    @Test
+    public void givenSubscribedToObservable_whenCloseStream_thenSendClose() {
+        ResponseHandle<Object> responseHandle = client.send("integration/subj-observable");
+
+        TestObserver<Object> testObserver = responseHandle.response.test();
+
+        subject.onNext("a");
+        subject.onNext("b");
+
+        client.closeStream(responseHandle.id);
+
+        subject.onNext("c");
+        subject.onNext("d");
+
+        testObserver.assertValues("a", "b");
+        testObserver.assertValueCount(2);
+        testObserver.assertComplete();
     }
 }

@@ -59,8 +59,13 @@ public class SessionManager {
         }
     }
 
+    void clear() {
+        sessions.values().forEach(Session::destroy);
+        sessions.clear();
+    }
+
     @Scheduled(fixedDelayString = "${" + RouterProperties.SESSION_EXPIRE_TIME + "}")
-    private void cleaner() {
+    void cleaner() {
         Instant expireTime = Instant.now().minus(sessionExpireTimeMillis, ChronoUnit.MILLIS);
 
         sessions.entrySet().stream()

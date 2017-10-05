@@ -214,4 +214,16 @@ public class ClientSpec {
         verify(connector).send(eq(2L), eq(null), eq(null), eq(null), eq(RequestType.CLOSE_STREAM));
     }
 
+    @Test
+    public void givenStream_whenClose_thenDoNotOverwriteBuffer() {
+        client.send("");
+
+        Subject<?> subject1 = client.getBuffer().get(1L);
+
+        client.closeStream(1L);
+
+        Subject<?> subject2 = client.getBuffer().get(1L);
+
+        assertThat(subject1).isSameAs(subject2);
+    }
 }
