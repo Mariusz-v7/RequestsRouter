@@ -247,4 +247,45 @@ public class SessionSpec {
 
         verify(session1, never()).destroy();
     }
+
+    @Test
+    public void whenRegisterSubscription_thenInsertIntoMap() {
+        session.registerSubscription(1, subject1.subscribe());
+        assertThat(session.getSubscriptionsAmount()).isEqualTo(1);
+    }
+
+    @Test
+    public void givenSubscriptionExists_whenRegisterAgain_thenException() {
+        session.registerSubscription(1, subject1.subscribe());
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Subscription with id 1 is already registered");
+        session.registerSubscription(1, subject1.subscribe());
+    }
+
+    @Test
+    public void givenSubscriptionRegistered_whenSourceExpires_andRegisterNextSession_thenRemoveExpired() {
+        session.registerSubscription(1, subject1.subscribe());
+        subject1.onComplete();
+        session.registerSubscription(2, subject2.subscribe());
+
+        assertThat(session.getSubscriptionsAmount()).isEqualTo(1);
+    }
+
+    @Test
+    public void givenSubscriptionRegistered_whenUnregister_thenDisposeAndRemoveFromMap() {
+        session.registerSubscription(1, subject1.subscribe());
+        session.unregisterSubscription(1);
+
+        assertThat(session.getSubscriptionsAmount()).isEqualTo(0);
+        assertThat(subject1.hasObservers()).isFalse();
+    }
+
+    @Test
+    public void givenSubscriptionRegistered_whenDestroy_thenDisposeAndClearMap() {
+        session.registerSubscription(1, subject1.subscribe());
+        session.destroy();
+
+        assertThat(session.getSubscriptionsAmount()).isEqualTo(0);
+        assertThat(subject1.hasObservers()).isFalse();
+    }
 }

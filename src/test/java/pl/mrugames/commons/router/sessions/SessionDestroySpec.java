@@ -82,4 +82,9 @@ public class SessionDestroySpec {
     public void getSecurityCode() {
         session.getSecurityCode();
     }
+
+    @Test
+    public void registerSubscription() {
+        session.registerSubscription(1, subject.subscribe());
+    }
 }

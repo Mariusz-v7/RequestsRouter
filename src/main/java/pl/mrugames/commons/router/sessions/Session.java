@@ -1,5 +1,6 @@
 package pl.mrugames.commons.router.sessions;
 
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.Subject;
 
 import java.time.Instant;
@@ -49,6 +50,7 @@ public class Session {
     private final Consumer<Session> onDestroyMethod;
     private final Map<Class<?>, Object> map;
     private final Map<Long, Subject<?>> emitters;
+    private final Map<Long, Disposable> subscriptions;
 
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
@@ -59,6 +61,7 @@ public class Session {
         this.onDestroyMethod = onDestroyMethod;
         this.map = new ConcurrentHashMap<>();
         this.emitters = new ConcurrentHashMap<>();
+        this.subscriptions = new ConcurrentHashMap<>();
 
         lastAccessed = Instant.now();
     }
@@ -146,16 +149,23 @@ public class Session {
         isDestroyed = true;
         onDestroyMethod.accept(this);
 
-        emitters.entrySet().stream()
-                .map(Map.Entry::getValue)
+        emitters.values()
                 .forEach(Subject::onComplete);
+
+        subscriptions.values()
+                .forEach(Disposable::dispose);
 
         map.clear();
         emitters.clear();
+        subscriptions.clear();
     }
 
     public synchronized int getEmittersAmount() {
         return emitters.size();
+    }
+
+    public synchronized int getSubscriptionsAmount() {
+        return subscriptions.size();
     }
 
     public synchronized void registerEmitter(long requestId, Subject<?> emitter) {
@@ -178,6 +188,31 @@ public class Session {
         Subject<?> subject = emitters.remove(requestId);
         if (subject != null) {
             subject.onComplete();
+        }
+    }
+
+    public synchronized void registerSubscription(long requestId, Disposable subscription) {
+        if (isDestroyed) {
+            throw new SessionExpiredException();
+        }
+
+        if (subscriptions.containsKey(requestId)) {
+            throw new IllegalArgumentException("Subscription with id " + requestId + " is already registered");
+        }
+
+        subscriptions.put(requestId, subscription);
+
+        subscriptions.forEach((k, v) -> {
+            if (v.isDisposed()) {
+                subscriptions.remove(k);
+            }
+        });
+    }
+
+    public synchronized void unregisterSubscription(long requestId) {
+        Disposable disposable = subscriptions.remove(requestId);
+        if (disposable != null) {
+            disposable.dispose();
         }
     }
 
