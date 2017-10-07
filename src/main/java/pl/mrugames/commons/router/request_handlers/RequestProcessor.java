@@ -1,6 +1,7 @@
 package pl.mrugames.commons.router.request_handlers;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,7 @@ public class RequestProcessor {
         Session session = sessionManager.getSession(sessionId, securityCode);
 
         session.unregisterEmitter(requestId);
+        session.unregisterSubscription(requestId);
         return Observable.empty();
     }
 
@@ -54,33 +56,37 @@ public class RequestProcessor {
 
         Session session = sessionManager.getSession(sessionId, securityCode);
 
-        Object returnValue = router.navigate(routeInfo,
-                pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
-                requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
-                sessionArgumentResolver.resolve(session, routeInfo.getParameters())
-        );
+        synchronized (session) { // prevent race condition when subject is created and session is destroyed before subject is registered as emitter
+            Object returnValue = router.navigate(routeInfo,
+                    pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
+                    requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
+                    sessionArgumentResolver.resolve(session, routeInfo.getParameters())
+            );
 
-        if (returnValue instanceof Mono) {
-            Mono<?> mono = (Mono) returnValue;
+            if (returnValue instanceof Mono) {
+                Mono<?> mono = (Mono) returnValue;
 
-            Object payload = mono.getResponseStatus() == ResponseStatus.OK ? mono.getPayload() : mono.getError();
+                Object payload = mono.getResponseStatus() == ResponseStatus.OK ? mono.getPayload() : mono.getError();
 
-            return Observable.just(new Response(requestId, mono.getResponseStatus(), payload));
+                return Observable.just(new Response(requestId, mono.getResponseStatus(), payload));
+            }
+
+            if (returnValue instanceof Subject) {
+                session.registerEmitter(requestId, (Subject) returnValue);
+                return onObservable((Subject<?>) returnValue, ReplaySubject.create(), requestId);
+            }
+
+            if (returnValue instanceof Observable) {
+                Subject<Object> subject = ReplaySubject.create();
+                Disposable disposable = ((Observable<?>) returnValue).subscribe(subject::onNext, subject::onError, subject::onComplete);
+
+                session.registerEmitter(requestId, subject);
+                session.registerSubscription(requestId, disposable);
+                return onObservable(subject, ReplaySubject.create(), requestId);
+            }
+
+            return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
         }
-
-        if (returnValue instanceof Subject) {
-            session.registerEmitter(requestId, (Subject) returnValue);
-            return onObservable((Subject<?>) returnValue, ReplaySubject.create(), requestId);
-        }
-
-        if (returnValue instanceof Observable) {
-            Subject<Response> subject = ReplaySubject.create();
-            session.registerEmitter(requestId, subject);
-            ((Observable<Response>) returnValue).subscribe(subject);
-            return onObservable(subject, ReplaySubject.create(), requestId);
-        }
-
-        return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
     }
 
     Observable<Response> onObservable(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {

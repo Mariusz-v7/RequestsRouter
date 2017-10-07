@@ -17,6 +17,8 @@ import pl.mrugames.commons.router.client.ResponseHandle;
 
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
         Cfg.class
@@ -161,5 +163,24 @@ public class IntegrationTests {
         testObserver.assertValues("a", "b");
         testObserver.assertValueCount(2);
         testObserver.assertComplete();
+    }
+
+    @Test
+    public void givenMultipleSubscribersToObservable_whenCloseStream_thenSourceHasNoObservables() {
+        assertThat(subject.hasObservers()).isFalse();
+
+        ResponseHandle<Object> responseHandle1 = client.send("integration/subj-observable");
+        ResponseHandle<Object> responseHandle2 = client.send("integration/subj-observable");
+        ResponseHandle<Object> responseHandle3 = client.send("integration/subj-observable");
+        ResponseHandle<Object> responseHandle4 = client.send("integration/subj-observable");
+
+        assertThat(subject.hasObservers()).isTrue();
+
+        client.closeStream(responseHandle1.id);
+        client.closeStream(responseHandle2.id);
+        client.closeStream(responseHandle3.id);
+        client.closeStream(responseHandle4.id);
+
+        assertThat(subject.hasObservers()).isFalse();
     }
 }
