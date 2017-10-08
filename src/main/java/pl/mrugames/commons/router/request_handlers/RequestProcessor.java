@@ -56,37 +56,48 @@ public class RequestProcessor {
 
         Session session = sessionManager.getSession(sessionId, securityCode);
 
-        synchronized (session) { // prevent race condition when subject is created and session is destroyed before subject is registered as emitter
-            Object returnValue = router.navigate(routeInfo,
-                    pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
-                    requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
-                    sessionArgumentResolver.resolve(session, routeInfo.getParameters())
-            );
+        Object returnValue = router.navigate(routeInfo,
+                pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),
+                requestPayloadArgumentResolver.resolve(requestPayload, routeInfo.getParameters()),
+                sessionArgumentResolver.resolve(session, routeInfo.getParameters())
+        );
 
-            if (returnValue instanceof Mono) {
-                Mono<?> mono = (Mono) returnValue;
+        if (returnValue instanceof Mono) {
+            Mono<?> mono = (Mono) returnValue;
 
-                Object payload = mono.getResponseStatus() == ResponseStatus.OK ? mono.getPayload() : mono.getError();
+            Object payload = mono.getResponseStatus() == ResponseStatus.OK ? mono.getPayload() : mono.getError();
 
-                return Observable.just(new Response(requestId, mono.getResponseStatus(), payload));
-            }
+            return Observable.just(new Response(requestId, mono.getResponseStatus(), payload));
+        }
 
-            if (returnValue instanceof Subject) {
+        if (returnValue instanceof Subject) {
+            try {
                 session.registerEmitter(requestId, (Subject) returnValue);
-                return onObservable((Subject<?>) returnValue, ReplaySubject.create(), requestId);
+            } catch (RuntimeException e) {
+                ((Subject) returnValue).onComplete();
+                throw e;
             }
 
-            if (returnValue instanceof Observable) {
-                Subject<Object> subject = ReplaySubject.create();
-                Disposable disposable = ((Observable<?>) returnValue).subscribe(subject::onNext, subject::onError, subject::onComplete);
+            return onObservable((Subject<?>) returnValue, ReplaySubject.create(), requestId);
+        }
 
+        if (returnValue instanceof Observable) {
+            Subject<Object> subject = ReplaySubject.create();
+            Disposable disposable = ((Observable<?>) returnValue).subscribe(subject::onNext, subject::onError, subject::onComplete);
+
+            try {
                 session.registerEmitter(requestId, subject);
                 session.registerSubscription(requestId, disposable);
-                return onObservable(subject, ReplaySubject.create(), requestId);
+            } catch (RuntimeException e) {
+                subject.onComplete();
+                disposable.dispose();
+                throw e;
             }
 
-            return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
+            return onObservable(subject, ReplaySubject.create(), requestId);
         }
+
+        return Observable.just(new Response(requestId, ResponseStatus.OK, returnValue));
     }
 
     Observable<Response> onObservable(Subject<?> sourceSubject, Subject<Response> responseSubject, long requestId) {
