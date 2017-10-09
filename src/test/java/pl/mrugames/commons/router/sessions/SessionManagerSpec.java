@@ -39,7 +39,7 @@ public class SessionManagerSpec {
         Instant now = Instant.now();
 
         sessionManager.createSession();
-        Session session = sessionManager.getSession(null);
+        Session session = sessionManager.getSession();
         assertThat(session.getLastAccessed()).isNotNull();
 
         assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
@@ -47,29 +47,18 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionExists_whenGetSession_thenLastAccessTimeIsUpdated() throws InterruptedException {
-        sessionManager.getSession(null);
+        sessionManager.getSession();
         TimeUnit.MILLISECONDS.sleep(3);
 
         Instant now = Instant.now();
-        Session session = sessionManager.getSession(null);
+        Session session = sessionManager.getSession();
         assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
-    }
-
-    @Test
-    public void givenSessionHasSecurityCodeSet_whenGetWithWrongCode_thenException() {
-        Session session = sessionManager.createSession();
-        session.setSecurityCode("1234");
-
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Wrong security code");
-
-        sessionManager.getSession(null);
     }
 
     @Test
     public void givenSessionIsCreated_whenGetLocalSession_thenReturnSameInstance() {
         sessionManager.createSession();
-        Session session = sessionManager.getSession(null);
+        Session session = sessionManager.getSession();
         Session localSession = Session.getLocalSession().orElse(null);
 
         assertThat(localSession).isSameAs(session);
@@ -77,7 +66,7 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionExists_whenGetExistingLocal_thenUpdateLastAccessTime() throws InterruptedException {
-        sessionManager.getSession(null);
+        sessionManager.getSession();
         Thread.sleep(10);
         Instant now = Instant.now();
         Session session = Session.getExistingLocalSession();
@@ -86,7 +75,7 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionExists_whenGetLocal_thenUpdateLastAccessTime() throws InterruptedException {
-        sessionManager.getSession(null);
+        sessionManager.getSession();
         Thread.sleep(10);
         Instant now = Instant.now();
         Optional<Session> session = Session.getLocalSession();

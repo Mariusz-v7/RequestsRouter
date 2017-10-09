@@ -38,8 +38,8 @@ public class RequestProcessor {
         this.exceptionHandler = exceptionHandler;
     }
 
-    Observable<Response> closeStreamRequest(long requestId, String securityCode) {
-        Session session = sessionManager.getSession(securityCode);
+    Observable<Response> closeStreamRequest(long requestId) {
+        Session session = sessionManager.getSession();
 
         session.unregisterEmitter(requestId);
         session.unregisterSubscription(requestId);
@@ -48,12 +48,11 @@ public class RequestProcessor {
 
     Observable<Response> standardRequest(RouteInfo routeInfo,
                                          long requestId,
-                                         String securityCode,
                                          String route,
                                          RequestMethod requestMethod,
                                          Object requestPayload) throws InvocationTargetException, IllegalAccessException {
 
-        Session session = sessionManager.getSession(securityCode);
+        Session session = sessionManager.getSession();
 
         Object returnValue = router.navigate(routeInfo,
                 pathArgumentResolver.resolve(requestMethod + ":" + route, routeInfo.getRoutePattern(), routeInfo.getParameters()),

@@ -25,8 +25,6 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,7 +56,7 @@ public class RequestProcessorSpec {
         sourceSubject = PublishSubject.create();
         responseSubject = PublishSubject.create();
 
-        doReturn(mock(Session.class)).when(sessionManager).getSession(anyString());
+        doReturn(mock(Session.class)).when(sessionManager).getSession();
     }
 
     @After
@@ -68,19 +66,19 @@ public class RequestProcessorSpec {
 
     @Test
     public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
-        doReturn(new Session(mock(Runnable.class))).when(sessionManager).getSession(anyString());
+        doReturn(new Session(mock(Runnable.class))).when(sessionManager).getSession();
 
         TestObserver<Response> testObserver = TestObserver.create();
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload())
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload())
                 .subscribe(testObserver);
 
-        Request closeRequest = new Request(904, "", null, null, null, RequestType.CLOSE_STREAM);
+        Request closeRequest = new Request(904, null, null, null, RequestType.CLOSE_STREAM);
 
         TestObserver<Response> closeObserver = TestObserver.create();
-        requestProcessor.closeStreamRequest(closeRequest.getId(), "")
+        requestProcessor.closeStreamRequest(closeRequest.getId())
                 .subscribe(closeObserver);
 
         testObserver.assertValues(new Response(904, ResponseStatus.CLOSE, null));
@@ -139,8 +137,8 @@ public class RequestProcessorSpec {
         TestObserver<Response> testObserver = new TestObserver<>();
         doReturn(Observable.just("123")).when(router).navigate(any(), any(), any(), any());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
-        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload())
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload())
                 .subscribe(testObserver);
 
         testObserver.awaitTerminalEvent();
@@ -152,46 +150,46 @@ public class RequestProcessorSpec {
     public void givenSessionExpired_whenRegisterEmitter_thenThrowException() throws IllegalAccessException, InvocationTargetException {
         Session session = mock(Session.class);
         doThrow(SessionExpiredException.class).when(session).registerEmitter(anyLong(), any());
-        doReturn(session).when(sessionManager).getSession(anyString());
+        doReturn(session).when(sessionManager).getSession();
 
         Subject subject = PublishSubject.create();
 
         doReturn(subject).when(router).navigate(any(), any(), any(), any());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         expectedException.expect(SessionExpiredException.class);
-        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload());
     }
 
     @Test
     public void givenSessionExpired_whenRegisterSubscription_thenException() throws InvocationTargetException, IllegalAccessException {
         Session session = mock(Session.class);
         doThrow(SessionExpiredException.class).when(session).registerEmitter(anyLong(), any());
-        doReturn(session).when(sessionManager).getSession(anyString());
+        doReturn(session).when(sessionManager).getSession();
 
         doReturn(Observable.empty()).when(router).navigate(any(), any(), any(), any());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         expectedException.expect(SessionExpiredException.class);
-        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+        requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload());
     }
 
     @Test
     public void givenSessionExpired_whenRegisterEmitter_thenCloseIt() throws IllegalAccessException, InvocationTargetException {
         Session session = mock(Session.class);
         doThrow(RuntimeException.class).when(session).registerEmitter(anyLong(), any()); // any exception!
-        doReturn(session).when(sessionManager).getSession(anyString());
+        doReturn(session).when(sessionManager).getSession();
 
         Subject subject = PublishSubject.create();
 
         doReturn(subject).when(router).navigate(any(), any(), any(), any());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         try {
-            requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+            requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload());
         } catch (Exception e) {
             // ignore
         }
@@ -203,16 +201,16 @@ public class RequestProcessorSpec {
     public void givenSessionExpired_whenRegisterSubscription_thenCloseIt() throws IllegalAccessException {
         Session session = mock(Session.class);
         doThrow(RuntimeException.class).when(session).registerEmitter(anyLong(), any()); // any exception!
-        doReturn(session).when(sessionManager).getSession(anyString());
+        doReturn(session).when(sessionManager).getSession();
 
         Subject subject = PublishSubject.create();
 
         doReturn(subject.hide()).when(router).navigate(any(), any(), any(), any());
 
-        Request request = new Request(904, "", "app/test/route1", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(904, "app/test/route1", RequestMethod.GET, Collections.emptyMap());
 
         try {
-            requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getSecurityCode(), request.getRoute(), request.getRequestMethod(), request.getPayload());
+            requestProcessor.standardRequest(router.findRoute(request.getRoute(), request.getRequestMethod()), request.getId(), request.getRoute(), request.getRequestMethod(), request.getPayload());
         } catch (Exception e) {
             // ignore
         }

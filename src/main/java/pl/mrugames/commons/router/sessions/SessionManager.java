@@ -5,8 +5,6 @@ import com.codahale.metrics.MetricRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
 @Component
 @EnableScheduling
 public class SessionManager {
@@ -23,13 +21,8 @@ public class SessionManager {
         return session;
     }
 
-    public synchronized Session getSession(@Nullable String securityCode) {
-        Session session = Session.getExistingLocalSession();
-        if (session.getSecurityCode() != null && !session.getSecurityCode().equals(securityCode)) {
-            throw new IllegalArgumentException("Wrong security code. Provided: " + securityCode + ", required: " + session.getSecurityCode());
-        }
-
-        return session;
+    public synchronized Session getSession() {
+        return Session.getExistingLocalSession();
     }
 
     public synchronized void destroySession() {
