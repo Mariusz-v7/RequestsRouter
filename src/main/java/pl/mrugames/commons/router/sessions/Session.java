@@ -31,12 +31,12 @@ public class Session {
         return session.get();
     }
 
-    public static void destroyLocalSession() {
+    static void destroyLocalSession() {
         getLocalSession().ifPresent(Session::destroy);
         localSession.remove();
     }
 
-    static void setLocalSession(Session session) {
+    static synchronized void setLocalSession(Session session) {
         Session current = localSession.get();
         if (current != null && current != session) {
             current.destroy();

@@ -16,14 +16,14 @@ public class SessionManager {
         sessionCounter = metricRegistry.counter(MetricRegistry.name(SessionManager.class, "sessions_amount"));
     }
 
-    public Session createSession() {
+    public synchronized Session createSession() {
         Session session = new Session(sessionCounter::dec);
         Session.setLocalSession(session);
         sessionCounter.inc();
         return session;
     }
 
-    public Session getSession(@Nullable String securityCode) {
+    public synchronized Session getSession(@Nullable String securityCode) {
         Session session = Session.getExistingLocalSession();
         if (session.getSecurityCode() != null && !session.getSecurityCode().equals(securityCode)) {
             throw new IllegalArgumentException("Wrong security code");
@@ -32,7 +32,7 @@ public class SessionManager {
         return session;
     }
 
-    public void destroySession() {
+    public synchronized void destroySession() {
         Session.destroyLocalSession();
     }
 }

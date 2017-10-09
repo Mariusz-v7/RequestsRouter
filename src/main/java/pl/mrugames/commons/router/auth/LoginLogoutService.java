@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.RouterProperties;
-import pl.mrugames.commons.router.sessions.Session;
+import pl.mrugames.commons.router.sessions.SessionManager;
 
 @Service
 public class LoginLogoutService {
@@ -16,15 +16,18 @@ public class LoginLogoutService {
     private final String anonymousKey;
     private final String rememberMeKey;
     private final AnonymousUserFactory<?> anonymousUserFactory;
+    private final SessionManager sessionManager;
 
     private LoginLogoutService(AuthenticationManager authenticationManager,
                                @Value("${" + RouterProperties.ANONYMOUS_KEY + "}") String anonymousKey,
                                @Value("${" + RouterProperties.REMEMBER_ME_KEY + "}") String rememberMeKey,
-                               AnonymousUserFactory<?> anonymousUserFactory) {
+                               AnonymousUserFactory<?> anonymousUserFactory,
+                               SessionManager sessionManager) {
         this.authenticationManager = authenticationManager;
         this.anonymousKey = anonymousKey;
         this.rememberMeKey = rememberMeKey;
         this.anonymousUserFactory = anonymousUserFactory;
+        this.sessionManager = sessionManager;
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
@@ -67,7 +70,7 @@ public class LoginLogoutService {
     }
 
     public void logout() {
-        Session.destroyLocalSession();
+        sessionManager.destroySession();
         initNewContext();
     }
 }
