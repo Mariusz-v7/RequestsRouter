@@ -31,4 +31,8 @@ public class SessionManager {
 
         return session;
     }
+
+    public void destroySession() {
+        Session.destroyLocalSession();
+    }
 }
