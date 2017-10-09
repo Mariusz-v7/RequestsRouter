@@ -34,7 +34,7 @@ public class JsonFrameTranslatorSpec {
 
     @Test
     public void whenRequest_thenRecognizeRequest() throws JsonProcessingException {
-        Request request = new Request(1, "", "", "route", RequestMethod.POST, null);
+        Request request = new Request(1, "", "route", RequestMethod.POST, null);
         String str = objectMapper.writeValueAsString(request);
         assertThat(jsonFrameTranslator.recognize(str)).isEqualTo(Request.class);
     }

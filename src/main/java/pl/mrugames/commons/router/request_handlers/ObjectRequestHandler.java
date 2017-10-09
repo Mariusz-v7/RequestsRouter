@@ -34,13 +34,12 @@ public class ObjectRequestHandler implements RequestHandler<Request, Response> {
                 RouteInfo routeInfo = router.findRoute(request.getRoute(), request.getRequestMethod());
                 return requestProcessor.standardRequest(routeInfo,
                         request.getId(),
-                        request.getSession(),
                         request.getSecurityCode(),
                         request.getRoute(),
                         request.getRequestMethod(),
                         request.getPayload());
             case CLOSE_STREAM:
-                return requestProcessor.closeStreamRequest(request.getId(), request.getSession(), request.getSecurityCode());
+                return requestProcessor.closeStreamRequest(request.getId(), request.getSecurityCode());
             default:
                 throw new IllegalStateException("Unknown request type: " + request.getRequestType());
         }

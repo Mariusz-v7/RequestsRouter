@@ -27,7 +27,7 @@ public class JsonRequestSpec {
 
     @Test
     public void givenRequestWithoutRequestType_whenProcess_thenRequestTypeIsStandard() throws IOException {
-        Request request = new Request(2, "", "asdfgh", "some/route", RequestMethod.GET, Collections.emptyMap());
+        Request request = new Request(2, "asdfgh", "some/route", RequestMethod.GET, Collections.emptyMap());
         String jsonRequest = mapper.writeValueAsString(request);
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
@@ -36,7 +36,7 @@ public class JsonRequestSpec {
 
     @Test
     public void givenRequestWithRequestTypeSet_whenProcess_thenRequestTypeIsValid() throws IOException {
-        Request request = new Request(2, "", "asdfgh", "some/route", RequestMethod.GET, Collections.emptyMap(), RequestType.CLOSE_STREAM);
+        Request request = new Request(2, "asdfgh", "some/route", RequestMethod.GET, Collections.emptyMap(), RequestType.CLOSE_STREAM);
         String jsonRequest = mapper.writeValueAsString(request);
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
@@ -45,8 +45,8 @@ public class JsonRequestSpec {
 
     @Test
     public void testNotRequiredFields() throws IOException {
-        Request request = new Request(2, "asdfgh", "", "", RequestMethod.GET, null, RequestType.CLOSE_STREAM);
-        String jsonRequest = "{\"id\":2,\"session\":\"asdfgh\",\"requestType\":\"CLOSE_STREAM\"}";
+        Request request = new Request(2, "", "", RequestMethod.GET, null, RequestType.CLOSE_STREAM);
+        String jsonRequest = "{\"id\":2,\"requestType\":\"CLOSE_STREAM\"}";
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
         assertThat(result).isEqualTo(request);
@@ -58,14 +58,6 @@ public class JsonRequestSpec {
 
         Request result = mapper.readValue(jsonRequest, JsonRequest.class);
         assertThat(result.getRequestType()).isEqualTo(RequestType.STANDARD);
-    }
-
-    @Test
-    public void missingSessionIdTest() throws IOException {
-        String jsonRequest = "{\"id\":2}";
-
-        Request result = mapper.readValue(jsonRequest, JsonRequest.class);
-        assertThat(result.getSession()).isEqualTo("");
     }
 
     @Test

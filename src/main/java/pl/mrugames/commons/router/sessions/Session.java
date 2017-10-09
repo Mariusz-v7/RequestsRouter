@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 public class Session {
     private final static ThreadLocal<Session> localSession = new InheritableThreadLocal<>();
@@ -46,8 +45,7 @@ public class Session {
         localSession.set(session);
     }
 
-    private final String id;
-    private final Consumer<Session> onDestroyMethod;
+    private final Runnable onDestroyMethod;
     private final Map<Class<?>, Object> map;
     private final Map<Long, Subject<?>> emitters;
     private final Map<Long, Disposable> subscriptions;
@@ -56,8 +54,7 @@ public class Session {
     private volatile boolean isDestroyed;
     private volatile String securityCode;
 
-    public Session(String id, Consumer<Session> onDestroyMethod) {
-        this.id = id;
+    public Session(Runnable onDestroyMethod) {
         this.onDestroyMethod = onDestroyMethod;
         this.map = new ConcurrentHashMap<>();
         this.emitters = new ConcurrentHashMap<>();
@@ -147,7 +144,7 @@ public class Session {
         }
 
         isDestroyed = true;
-        onDestroyMethod.accept(this);
+        onDestroyMethod.run();
 
         emitters.values()
                 .forEach(Subject::onComplete);
@@ -226,10 +223,6 @@ public class Session {
 
     synchronized void updateLastAccessed(Instant instant) {
         lastAccessed = instant;
-    }
-
-    synchronized String getId() {
-        return id;
     }
 
     public synchronized String getSecurityCode() {

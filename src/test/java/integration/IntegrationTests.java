@@ -2,6 +2,7 @@ package integration;
 
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.Subject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.client.Client;
 import pl.mrugames.commons.router.client.ErrorResponseException;
 import pl.mrugames.commons.router.client.ResponseHandle;
+import pl.mrugames.commons.router.sessions.SessionManager;
 
 import java.util.Collections;
 
@@ -30,6 +32,14 @@ public class IntegrationTests {
     @Autowired
     @Qualifier("integrationSubject")
     Subject<String> subject;
+
+    @Autowired
+    SessionManager sessionManager;
+
+    @Before
+    public void before() {
+        sessionManager.createSession();
+    }
 
     @Test
     public void shouldNavigateToProperRouteAndReturnProperResult() {
@@ -183,4 +193,5 @@ public class IntegrationTests {
 
         assertThat(subject.hasObservers()).isFalse();
     }
+
 }

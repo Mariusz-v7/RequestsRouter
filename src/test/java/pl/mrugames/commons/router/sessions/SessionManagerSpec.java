@@ -12,7 +12,6 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import pl.mrugames.commons.router.TestConfiguration;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -33,22 +32,14 @@ public class SessionManagerSpec {
 
     @Before
     public void before() {
-        sessionManager.clear();
-    }
-
-    @Test
-    public void givenSessionDoesNotExist_whenGetSession_thenNewOneIsCreated() {
-        assertThat(sessionManager.contains(sessionId)).isFalse();
-        Session session = sessionManager.getSession(sessionId, "");
-        assertThat(sessionManager.getAllSessions()).contains(session);
-        assertThat(sessionManager.contains(sessionId)).isTrue();
     }
 
     @Test
     public void givenNewSessionIsCreated_thenLastAccessTimeIsNotNull_and() {
         Instant now = Instant.now();
 
-        Session session = sessionManager.getSession(sessionId, "");
+        sessionManager.createSession();
+        Session session = sessionManager.getSession(null);
         assertThat(session.getLastAccessed()).isNotNull();
 
         assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
@@ -56,98 +47,37 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionExists_whenGetSession_thenLastAccessTimeIsUpdated() throws InterruptedException {
-        sessionManager.getSession(sessionId, "");
+        sessionManager.getSession(null);
         TimeUnit.MILLISECONDS.sleep(3);
 
         Instant now = Instant.now();
-        Session session = sessionManager.getSession(sessionId, "");
+        Session session = sessionManager.getSession(null);
         assertThat(session.getLastAccessed()).isBetween(now, Instant.now());
     }
 
     @Test
-    public void givenSessionLastAccessTimeIsExpired_thenItShouldBeDeletedAndDestroyed() throws InterruptedException {
-        Session session = sessionManager.getSession(sessionId, "");
-        assertThat(sessionManager.contains(sessionId)).isTrue();
-
-        session.updateLastAccessed(Instant.now().minus(30, ChronoUnit.MINUTES));
-
-        sessionManager.cleaner();
-
-        assertThat(sessionManager.contains(sessionId)).isFalse();
-        assertThat(session.isDestroyed()).isTrue();
-    }
-
-    @Test
-    public void givenSessionIsAdded_whenItIsRemoved_thenRemoveFromCollection() {
-        Session session = sessionManager.getSession(sessionId, "");
-        sessionManager.remove(session);
-        assertThat(sessionManager.contains(sessionId)).isFalse();
-    }
-
-    @Test
-    public void givenSessionIsAdded_whenItIsRemoved_thenCallDestroyMethod() {
-        Session session = sessionManager.getSession(sessionId, "");
-        assertThat(session.isDestroyed()).isFalse();
-
-        sessionManager.remove(session);
-        assertThat(session.isDestroyed()).isTrue();
-    }
-
-    @Test
-    public void givenSessionIsAdded_whenDestroy_thenItIsRemoved() {
-        Session session = sessionManager.getSession(sessionId, "");
-        session.destroy();
-        assertThat(sessionManager.contains(sessionId)).isFalse();
-    }
-
-    @Test
-    public void whenGetSessionWithTooShortId_thenException() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Session id must be at least " + SessionManager.SESSION_ID_MIN_LENGTH + " characters long");
-
-        sessionManager.getSession("123", "");
-    }
-
-    @Test
-    public void whenGetSessionWithNullId_thenException() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Session id must be at least " + SessionManager.SESSION_ID_MIN_LENGTH + " characters long");
-
-        sessionManager.getSession(null, "");
-    }
-
-    @Test
     public void givenSessionHasSecurityCodeSet_whenGetWithWrongCode_thenException() {
-        Session session = sessionManager.getSession(sessionId + "withSecurityCode", "");
+        Session session = sessionManager.createSession();
         session.setSecurityCode("1234");
 
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Wrong security code");
 
-        sessionManager.getSession(sessionId + "withSecurityCode", "");
+        sessionManager.getSession(null);
     }
 
     @Test
     public void givenSessionIsCreated_whenGetLocalSession_thenReturnSameInstance() {
-        Session session = sessionManager.getSession(sessionId, "");
+        sessionManager.createSession();
+        Session session = sessionManager.getSession(null);
         Session localSession = Session.getLocalSession().orElse(null);
 
         assertThat(localSession).isSameAs(session);
     }
 
     @Test
-    public void givenTwoSessionsExists_whenAccessSecond_thenSecondIsSetAsLocal() {
-        Session session1 = sessionManager.getSession(sessionId + "1", "");
-        Session session2 = sessionManager.getSession(sessionId + "2", "");
-
-        Session localSession = Session.getLocalSession().orElse(null);
-
-        assertThat(localSession).isSameAs(session2);
-    }
-
-    @Test
     public void givenSessionExists_whenGetExistingLocal_thenUpdateLastAccessTime() throws InterruptedException {
-        sessionManager.getSession(sessionId, "");
+        sessionManager.getSession(null);
         Thread.sleep(10);
         Instant now = Instant.now();
         Session session = Session.getExistingLocalSession();
@@ -156,7 +86,7 @@ public class SessionManagerSpec {
 
     @Test
     public void givenSessionExists_whenGetLocal_thenUpdateLastAccessTime() throws InterruptedException {
-        sessionManager.getSession(sessionId, "");
+        sessionManager.getSession(null);
         Thread.sleep(10);
         Instant now = Instant.now();
         Optional<Session> session = Session.getLocalSession();

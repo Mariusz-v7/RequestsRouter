@@ -45,7 +45,7 @@ public class JsonRequestHandlerSpec {
     public void before() throws IOException {
         payload.put("arg1", "val1");
         payload.put("arg2", "val2");
-        request = new Request(2, "1123456789012345678901234567890123456789012345678901234567890234567890", "", "app/test/json", RequestMethod.GET, payload);
+        request = new Request(2, "", "app/test/json", RequestMethod.GET, payload);
         String rawJson = mapper.writeValueAsString(request);
         jsonRequest = mapper.readValue(rawJson, JsonRequest.class);
         jsonRequest.setRawJson(rawJson);
@@ -59,7 +59,6 @@ public class JsonRequestHandlerSpec {
     private String prepareJsonRequest(String route, String payload) {
         return String.format(
                 "{\"id\":2," +
-                        "\"session\":\"1123456789012345678901234567890123456789012345678901234567890234567890\"," +
                         "\"route\":\"%s\"," +
                         "\"requestMethod\":\"GET\"," +
                         "\"payload\":{%s}," +
@@ -70,7 +69,7 @@ public class JsonRequestHandlerSpec {
     @Test
     public void givenStringRequest_thenParseIntoRequestAndCallObjectHandler() throws Exception {
         handler.handleRequest(jsonRequest);
-        verify(requestProcessor).standardRequest(any(), eq(request.getId()), eq(request.getSession()), eq(""), eq(request.getRoute()), eq(request.getRequestMethod()), anyMap());
+        verify(requestProcessor).standardRequest(any(), eq(request.getId()), eq(""), eq(request.getRoute()), eq(request.getRequestMethod()), anyMap());
     }
 
     @Test
@@ -80,7 +79,7 @@ public class JsonRequestHandlerSpec {
 
         doReturn(Observable.just(response))
                 .when(requestProcessor)
-                .standardRequest(any(), anyLong(), any(), any(), any(), any(), any());
+                .standardRequest(any(), anyLong(), any(), any(), any(), any());
         String realResponse = handler.handleRequest(jsonRequest).blockingFirst();
 
         assertThat(realResponse).isEqualTo(jsonResponse);
@@ -99,6 +98,6 @@ public class JsonRequestHandlerSpec {
     @Test
     public void payloadResolverTest() throws InvocationTargetException, IllegalAccessException {
         handler.handleRequest(jsonRequest).blockingFirst();
-        verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), anyString(), any(), eq(payload));
+        verify(requestProcessor).standardRequest(any(), anyLong(), anyString(), anyString(), any(), eq(payload));
     }
 }

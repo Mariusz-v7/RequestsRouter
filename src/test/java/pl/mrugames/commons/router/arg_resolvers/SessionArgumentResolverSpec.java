@@ -18,7 +18,6 @@ import pl.mrugames.commons.router.sessions.Session;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
@@ -41,11 +40,10 @@ public class SessionArgumentResolverSpec {
     public final ExpectedException expectedException = ExpectedException.none();
 
     @Before
-    @SuppressWarnings("unchecked")
     public void before() {
         routes = initializer.getRoutes();
 
-        session = new Session("", mock(Consumer.class));
+        session = new Session(mock(Runnable.class));
         session.add(new UserModel("Mruczek", 123));
         session.add("bla bla");
     }

@@ -13,15 +13,13 @@ import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.controllers.Interface;
 import pl.mrugames.commons.router.controllers.UserModel;
 
-import java.util.function.Consumer;
-
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionSpec {
-    private Consumer<Session> destroyMethod;
+    private Runnable destroyMethod;
     private Session session;
     private PublishSubject<Response> subject1;
     private PublishSubject<Response> subject2;
@@ -30,11 +28,10 @@ public class SessionSpec {
     public final ExpectedException expectedException = ExpectedException.none();
 
     @Before
-    @SuppressWarnings("unchecked")
     public void before() {
-        destroyMethod = mock(Consumer.class);
+        destroyMethod = mock(Runnable.class);
 
-        session = new Session("asdf", destroyMethod);
+        session = new Session(destroyMethod);
 
         subject1 = PublishSubject.create();
         subject2 = PublishSubject.create();
@@ -49,7 +46,7 @@ public class SessionSpec {
     @Test
     public void whenSessionDestroy_thenDestroyMethodIsCalled() {
         session.destroy();
-        verify(destroyMethod).accept(session);
+        verify(destroyMethod).run();
     }
 
     @Test
@@ -155,8 +152,7 @@ public class SessionSpec {
 
     @Test
     public void whenSessionIsCreated_thenItIsNotDestroyed() {
-        Session session = new Session("", s -> {
-        });
+        Session session = new Session(mock(Runnable.class));
 
         assertThat(session.isDestroyed()).isFalse();
     }
