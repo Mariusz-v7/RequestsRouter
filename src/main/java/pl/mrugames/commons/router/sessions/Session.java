@@ -52,7 +52,6 @@ public class Session {
 
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
-    private volatile String securityCode;
 
     public Session(Runnable onDestroyMethod) {
         this.onDestroyMethod = onDestroyMethod;
@@ -223,21 +222,5 @@ public class Session {
 
     synchronized void updateLastAccessed(Instant instant) {
         lastAccessed = instant;
-    }
-
-    public synchronized String getSecurityCode() {
-        if (isDestroyed) {
-            throw new SessionExpiredException();
-        }
-
-        return securityCode;
-    }
-
-    public synchronized void setSecurityCode(String securityCode) {
-        if (isDestroyed) {
-            throw new SessionExpiredException();
-        }
-
-        this.securityCode = securityCode;
     }
 }

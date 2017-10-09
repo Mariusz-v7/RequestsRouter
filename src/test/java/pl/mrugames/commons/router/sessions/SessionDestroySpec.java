@@ -75,16 +75,6 @@ public class SessionDestroySpec {
     }
 
     @Test
-    public void setSecurityCode() {
-        session.setSecurityCode("124");
-    }
-
-    @Test
-    public void getSecurityCode() {
-        session.getSecurityCode();
-    }
-
-    @Test
     public void registerSubscription() {
         session.registerSubscription(1, subject.subscribe());
     }
