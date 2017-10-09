@@ -213,7 +213,7 @@ public class Session {
         }
     }
 
-    synchronized boolean isDestroyed() {
+    public synchronized boolean isDestroyed() {
         return isDestroyed;
     }
 
