@@ -26,7 +26,7 @@ public class SessionManager {
     public synchronized Session getSession(@Nullable String securityCode) {
         Session session = Session.getExistingLocalSession();
         if (session.getSecurityCode() != null && !session.getSecurityCode().equals(securityCode)) {
-            throw new IllegalArgumentException("Wrong security code");
+            throw new IllegalArgumentException("Wrong security code. Provided: " + securityCode + ", required: " + session.getSecurityCode());
         }
 
         return session;
