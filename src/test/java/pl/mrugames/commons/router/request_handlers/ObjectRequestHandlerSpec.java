@@ -232,7 +232,7 @@ public class ObjectRequestHandlerSpec {
 
     @Test
     public void givenRouterReturnsSubject_whenRequest_thenRegisterEmitter() throws InvocationTargetException, IllegalAccessException {
-        Session session = spy(new Session(mock(Runnable.class)));
+        Session session = spy(new Session());
 
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());
         doReturn(session).when(sessionManager).getSession();

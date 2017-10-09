@@ -9,8 +9,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import static org.mockito.Mockito.mock;
-
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionDestroySpec {
     private Session session;
@@ -21,7 +19,7 @@ public class SessionDestroySpec {
 
     @Before
     public void before() {
-        session = new Session(mock(Runnable.class));
+        session = new Session();
         session.destroy();
 
         expectedException.expect(SessionExpiredException.class);

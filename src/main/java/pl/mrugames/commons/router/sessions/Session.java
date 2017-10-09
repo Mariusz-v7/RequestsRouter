@@ -36,6 +36,14 @@ public class Session {
         localSession.remove();
     }
 
+    static void clearLocalSession() {
+        Optional<Session> session = getLocalSession();
+        if (session.isPresent()) {
+            session.get().destroy();
+            session.get().isDestroyed = false; // reuse it
+        }
+    }
+
     static synchronized void setLocalSession(Session session) {
         Session current = localSession.get();
         if (current != null && current != session) {
@@ -45,7 +53,6 @@ public class Session {
         localSession.set(session);
     }
 
-    private final Runnable onDestroyMethod;
     private final Map<Class<?>, Object> map;
     private final Map<Long, Subject<?>> emitters;
     private final Map<Long, Disposable> subscriptions;
@@ -53,8 +60,7 @@ public class Session {
     private volatile Instant lastAccessed;
     private volatile boolean isDestroyed;
 
-    public Session(Runnable onDestroyMethod) {
-        this.onDestroyMethod = onDestroyMethod;
+    public Session() {
         this.map = new ConcurrentHashMap<>();
         this.emitters = new ConcurrentHashMap<>();
         this.subscriptions = new ConcurrentHashMap<>();
@@ -143,7 +149,6 @@ public class Session {
         }
 
         isDestroyed = true;
-        onDestroyMethod.run();
 
         emitters.values()
                 .forEach(Subject::onComplete);

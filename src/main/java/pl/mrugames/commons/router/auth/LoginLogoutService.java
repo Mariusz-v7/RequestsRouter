@@ -70,7 +70,7 @@ public class LoginLogoutService {
     }
 
     public void logout() {
-        sessionManager.destroySession();
+        sessionManager.clearSession();
         initNewContext();
     }
 }

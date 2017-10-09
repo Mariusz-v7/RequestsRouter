@@ -15,7 +15,7 @@ public class SessionManager {
     }
 
     public synchronized Session createSession() {
-        Session session = new Session(sessionCounter::dec);
+        Session session = new Session();
         Session.setLocalSession(session);
         sessionCounter.inc();
         return session;
@@ -27,5 +27,14 @@ public class SessionManager {
 
     public synchronized void destroySession() {
         Session.destroyLocalSession();
+        sessionCounter.dec();
+    }
+
+    /**
+     * If session needs to be reused! Does not remove the session from memory!
+     * Call destroySession() when you want to finish!
+     */
+    public synchronized void clearSession() {
+
     }
 }

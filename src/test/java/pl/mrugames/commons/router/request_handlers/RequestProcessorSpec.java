@@ -66,7 +66,7 @@ public class RequestProcessorSpec {
 
     @Test
     public void givenEmitterRegistered_whenRequestWithTypeOfCLOSE_STREAM_thenShutdownEmitter() throws InvocationTargetException, IllegalAccessException {
-        doReturn(new Session(mock(Runnable.class))).when(sessionManager).getSession();
+        doReturn(new Session()).when(sessionManager).getSession();
 
         TestObserver<Response> testObserver = TestObserver.create();
         doReturn(sourceSubject).when(router).navigate(any(), anyMap(), anyMap(), anyMap());

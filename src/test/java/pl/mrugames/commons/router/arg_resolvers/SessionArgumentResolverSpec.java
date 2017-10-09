@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.mock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -43,7 +42,7 @@ public class SessionArgumentResolverSpec {
     public void before() {
         routes = initializer.getRoutes();
 
-        session = new Session(mock(Runnable.class));
+        session = new Session();
         session.add(new UserModel("Mruczek", 123));
         session.add("bla bla");
     }

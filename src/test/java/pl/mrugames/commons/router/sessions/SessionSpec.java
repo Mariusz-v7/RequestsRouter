@@ -19,7 +19,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class SessionSpec {
-    private Runnable destroyMethod;
     private Session session;
     private PublishSubject<Response> subject1;
     private PublishSubject<Response> subject2;
@@ -29,9 +28,7 @@ public class SessionSpec {
 
     @Before
     public void before() {
-        destroyMethod = mock(Runnable.class);
-
-        session = new Session(destroyMethod);
+        session = new Session();
 
         subject1 = PublishSubject.create();
         subject2 = PublishSubject.create();
@@ -41,12 +38,6 @@ public class SessionSpec {
     public void after() {
         subject1.onComplete();
         subject2.onComplete();
-    }
-
-    @Test
-    public void whenSessionDestroy_thenDestroyMethodIsCalled() {
-        session.destroy();
-        verify(destroyMethod).run();
     }
 
     @Test
@@ -152,7 +143,7 @@ public class SessionSpec {
 
     @Test
     public void whenSessionIsCreated_thenItIsNotDestroyed() {
-        Session session = new Session(mock(Runnable.class));
+        Session session = new Session();
 
         assertThat(session.isDestroyed()).isFalse();
     }
