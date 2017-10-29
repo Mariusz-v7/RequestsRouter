@@ -17,11 +17,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Client {
     private final static Logger logger = LoggerFactory.getLogger(Client.class);
+    private final static AtomicLong CLIENT_ID = new AtomicLong();
 
     private final long defaultTimeout;
     private final Map<Long, Subject<?>> buffer;
     private final AtomicLong id;
     private final Connector connector;
+    private final long clientId;
 
     public Client(long defaultTimeout,
                   Connector connector) {
@@ -30,6 +32,7 @@ public class Client {
         this.id = new AtomicLong();
         this.connector = connector;
         connector.onResponseReceive(this::onFrameReceive);
+        this.clientId = CLIENT_ID.incrementAndGet();
     }
 
     public void closeStream(long id) {
@@ -139,4 +142,7 @@ public class Client {
         return connector.isRunning();
     }
 
+    public long getClientId() {
+        return clientId;
+    }
 }
