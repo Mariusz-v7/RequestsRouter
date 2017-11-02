@@ -35,6 +35,6 @@ public class SessionManager {
      * Call destroySession() when you want to finish!
      */
     public synchronized void clearSession() {
-
+        Session.clearLocalSession();
     }
 }
