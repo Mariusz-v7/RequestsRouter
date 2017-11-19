@@ -1,7 +1,9 @@
 package pl.mrugames.commons.router.auth;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,17 +19,20 @@ public class LoginLogoutService {
     private final String rememberMeKey;
     private final AnonymousUserFactory<?> anonymousUserFactory;
     private final SessionManager sessionManager;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private LoginLogoutService(AuthenticationManager authenticationManager,
                                @Value("${" + RouterProperties.ANONYMOUS_KEY + "}") String anonymousKey,
                                @Value("${" + RouterProperties.REMEMBER_ME_KEY + "}") String rememberMeKey,
                                AnonymousUserFactory<?> anonymousUserFactory,
-                               SessionManager sessionManager) {
+                               SessionManager sessionManager,
+                               ApplicationEventPublisher applicationEventPublisher) {
         this.authenticationManager = authenticationManager;
         this.anonymousKey = anonymousKey;
         this.rememberMeKey = rememberMeKey;
         this.anonymousUserFactory = anonymousUserFactory;
         this.sessionManager = sessionManager;
+        this.applicationEventPublisher = applicationEventPublisher;
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
@@ -48,12 +53,16 @@ public class LoginLogoutService {
     public Authentication login(String username, String password) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        applicationEventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
         return authentication;
     }
 
     public Authentication login(AbstractAuthenticationToken authenticationToken) {
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        applicationEventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
         return authentication;
     }
 
@@ -66,6 +75,8 @@ public class LoginLogoutService {
 
         Authentication authentication = authenticationManager.authenticate(rememberMeAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        applicationEventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
         return authentication;
     }
 
