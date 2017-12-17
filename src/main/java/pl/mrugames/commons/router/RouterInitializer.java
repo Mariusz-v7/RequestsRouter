@@ -13,6 +13,8 @@ import pl.mrugames.commons.router.annotations.Route;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 @Component
@@ -50,8 +52,6 @@ public class RouterInitializer {
                     continue;
                 }
 
-                List<String> allowedRolesList = Collections.emptyList();
-
                 List<RouteParameter> parameters = new ArrayList<>(method.getParameterCount());
                 for (Parameter parameter : method.getParameters()) {
                     String name = null;
@@ -76,12 +76,24 @@ public class RouterInitializer {
                         parameterType = RouteParameter.ParameterType.PATH_VAR;
                     }
 
-                    parameters.add(new RouteParameter(name, parameter.getType(), defaultValue, parameterType));
+                    Class<?>[] generics;
+                    if (parameter.getParameterizedType() instanceof ParameterizedType) {
+                        Type[] genericTypes = ((ParameterizedType) parameter.getParameterizedType()).getActualTypeArguments();
+                        generics = new Class[genericTypes.length];
+
+                        for (int i = 0; i < generics.length; ++i) {
+                            generics[i] = (Class<?>) genericTypes[i];
+                        }
+                    } else {
+                        generics = new Class[0];
+                    }
+
+                    parameters.add(new RouteParameter(name, parameter.getType(), defaultValue, parameterType, generics));
                 }
 
                 String path = route.method().name() + ":" + pathMatcher.combine(baseRoute, route.value());
 
-                RouteInfo routeInfo = new RouteInfo(controller, method, parameters, path, allowedRolesList);
+                RouteInfo routeInfo = new RouteInfo(controller, method, parameters, path);
 
                 if (routes.containsKey(path)) {
                     RouteInfo colliding = routes.get(path);

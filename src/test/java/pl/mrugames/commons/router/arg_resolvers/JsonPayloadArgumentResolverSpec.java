@@ -21,6 +21,9 @@ import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouterException;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -159,6 +162,31 @@ public class JsonPayloadArgumentResolverSpec {
 
         Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
         assertThat(result).containsExactly(MapEntry.entry("user", null));
+    }
+
+    @Test
+    public void shouldResolveGenericList() throws JsonProcessingException {
+        List<ExampleType> arg = Arrays.asList(
+                new ExampleType(1, 2),
+                new ExampleType(2, 2),
+                new ExampleType(1, 3),
+                new ExampleType(4, 2)
+        );
+
+        String json = mapper.writeValueAsString(Collections.singletonMap("list", arg));
+
+        String pattern = "GET:app/test/generic-list";
+        RouteInfo routeInfo = routes.get(pattern);
+
+        Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
+
+        assertThat(result).containsKeys("list");
+
+        assertThat(result.get("list")).isInstanceOf(List.class);
+
+        List<?> list = (List<?>) result.get("list");
+
+        list.forEach(a -> assertThat(a).isInstanceOf(ExampleType.class));
     }
 
 }

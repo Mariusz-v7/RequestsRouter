@@ -11,12 +11,14 @@ public class RouteParameter implements Serializable {
     private final Class<?> type;
     private final String defaultValue;
     private final ParameterType parameterType;
+    private final Class<?>[] generics;
 
-    RouteParameter(String name, Class<?> type, String defaultValue, ParameterType parameterType) {
+    RouteParameter(String name, Class<?> type, String defaultValue, ParameterType parameterType, Class<?>[] generics) {
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.parameterType = parameterType;
+        this.generics = generics;
     }
 
     public String getName() {
@@ -33,5 +35,9 @@ public class RouteParameter implements Serializable {
 
     public ParameterType getParameterType() {
         return parameterType;
+    }
+
+    public Class<?>[] getGenerics() {
+        return generics;
     }
 }

@@ -1,6 +1,7 @@
 package pl.mrugames.commons.router.arg_resolvers;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -57,7 +58,12 @@ public class JsonPayloadArgumentResolver implements PayloadArgumentResolver<Stri
 
         Object mapped;
         try {
-            mapped = mapper.readValue(strNode, parameter.getType());
+            if (parameter.getGenerics().length > 0) {
+                JavaType type = mapper.getTypeFactory().constructParametricType(parameter.getType(), parameter.getGenerics());
+                mapped = mapper.readValue(strNode, type);
+            } else {
+                mapped = mapper.readValue(strNode, parameter.getType());
+            }
         } catch (InvalidFormatException e) {
             throw new IncompatibleParameterException(parameter.getName(), e.getTargetType(), e);
         } catch (IOException e) {

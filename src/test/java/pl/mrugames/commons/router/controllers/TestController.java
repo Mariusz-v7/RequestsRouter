@@ -7,9 +7,11 @@ import pl.mrugames.commons.router.annotations.Arg;
 import pl.mrugames.commons.router.annotations.Controller;
 import pl.mrugames.commons.router.annotations.PathVar;
 import pl.mrugames.commons.router.annotations.Route;
+import pl.mrugames.commons.router.arg_resolvers.ExampleType;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 @Controller("app/test")
 public class TestController {
@@ -219,5 +221,10 @@ public class TestController {
     @Route("one-optional")
     public String oneOptional(@Arg(value = "one", defaultValue = "") String one) {
         return one;
+    }
+
+    @Route("generic-list")
+    public void genericList(@Arg("list") List<ExampleType> list) {
+
     }
 }
