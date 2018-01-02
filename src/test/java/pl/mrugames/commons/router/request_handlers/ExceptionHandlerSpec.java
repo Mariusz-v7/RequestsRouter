@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
+import pl.mrugames.commons.router.RouteExceptionWrapper;
 import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
@@ -17,6 +18,7 @@ import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -204,6 +206,18 @@ public class ExceptionHandlerSpec {
 
         assertThat(response.getId()).isEqualTo(20);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void routeExceptionWrapper() {
+        exceptionHandler.registerHandler(IOException.class, e -> new Response(0, ResponseStatus.BAD_PARAMETERS, "wrapper"));
+
+        IOException e = new IOException();
+        RouteExceptionWrapper wrapper = new RouteExceptionWrapper(e);
+
+        Response response = exceptionHandler.handle(20, wrapper);
+        assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
+        assertThat(response.getPayload()).isEqualTo("wrapper");
     }
 
 }

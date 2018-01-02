@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
-import pl.mrugames.commons.router.exceptions.RouterException;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
@@ -110,7 +109,7 @@ public class Router {
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             } else if (cause instanceof Exception) {
-                throw new RouterException("Method invocation exception", e);
+                throw new RouteExceptionWrapper(cause);
             }
 
             throw (Error) e.getCause();

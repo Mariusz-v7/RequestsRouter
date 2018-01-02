@@ -7,6 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
+import pl.mrugames.commons.router.RouteExceptionWrapper;
 import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
@@ -53,6 +54,10 @@ public class ExceptionHandler {
     }
 
     Response handle(long requestId, Throwable e) {
+        if (e instanceof RouteExceptionWrapper) {
+            e = e.getCause();
+        }
+
         Handler<Throwable> mostSpecific = null;
         for (Handler<Throwable> handler : handlers) {
             if (!handler.supportedType.isAssignableFrom(e.getClass())) {
