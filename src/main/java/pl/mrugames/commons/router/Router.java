@@ -20,11 +20,13 @@ public class Router {
     private final Map<String, RouteInfo> routes;
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
+    private final I18nReplacer i18nReplacer;
 
-    Router(RouterInitializer initializer, AntPathMatcher antPathMatcher) {
+    Router(RouterInitializer initializer, AntPathMatcher antPathMatcher, I18nReplacer i18nReplacer) {
         this.initializer = initializer;
         this.routes = new HashMap<>();
         this.pathMatcher = antPathMatcher;
+        this.i18nReplacer = i18nReplacer;
     }
 
     @PostConstruct
@@ -90,6 +92,10 @@ public class Router {
                 } else {
                     return null;
                 }
+            }
+
+            if (returnValue instanceof String) {
+                returnValue = i18nReplacer.replace((String) returnValue);
             }
 
             return returnValue;

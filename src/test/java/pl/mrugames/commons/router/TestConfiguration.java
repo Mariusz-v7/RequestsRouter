@@ -4,10 +4,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import pl.mrugames.commons.router.arg_resolvers.PathArgumentResolver;
 import pl.mrugames.commons.router.arg_resolvers.RequestPayloadArgumentResolver;
@@ -16,6 +18,8 @@ import pl.mrugames.commons.router.auth.AnonymousUserFactory;
 import pl.mrugames.commons.router.request_handlers.ObjectRequestHandler;
 import pl.mrugames.commons.router.request_handlers.RequestProcessor;
 import pl.mrugames.commons.router.sessions.SessionManager;
+
+import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -31,6 +35,17 @@ public class TestConfiguration {
 
         return configurer;
     }
+
+    @Bean
+    MessageSource messageSource() throws IOException {
+        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+        source.setBasenames("i18n");
+        source.setDefaultEncoding("UTF-8");
+        source.setFallbackToSystemLocale(false);
+
+        return source;
+    }
+
 
     @Bean
     @Primary

@@ -225,6 +225,6 @@ public class TestController {
 
     @Route("generic-list")
     public void genericList(@Arg("list") List<ExampleType> list) {
-
     }
+
 }
