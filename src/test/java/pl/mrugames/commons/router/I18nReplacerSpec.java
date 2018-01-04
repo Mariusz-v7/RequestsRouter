@@ -26,5 +26,23 @@ public class I18nReplacerSpec {
     @Test
     public void twoMessagesReplaceTest() {
         assertThat(replacer.replace("${i18n.one}, ${i18n.two}")).isEqualTo("raz, dwa");
+        assertThat(replacer.replace("${i18n.one()}, ${i18n.two(   )}")).isEqualTo("raz, dwa");
+    }
+
+    @Test
+    public void withParamsTest() {
+        assertThat(replacer.replace("${i18n.params('first one', '123')}")).isEqualTo("first: first one, second: 123!");
+        assertThat(replacer.replace("${i18n.params(' ... ', '')}")).isEqualTo("first:  ... , second: !");
+        assertThat(replacer.replace("${i18n.params('first one','123')}")).isEqualTo("first: first one, second: 123!");
+        assertThat(replacer.replace("${i18n.params('first one',     '123')}")).isEqualTo("first: first one, second: 123!");
+        assertThat(replacer.replace("${i18n.params(   'first one','123'   )}")).isEqualTo("first: first one, second: 123!");
+    }
+
+    @Test
+    public void withOneParam() {
+        assertThat(replacer.replace("${i18n.param('xXx')}")).isEqualTo("yYy xXx");
+        assertThat(replacer.replace("${i18n.param( 'xXx')}")).isEqualTo("yYy xXx");
+        assertThat(replacer.replace("${i18n.param('xXx' )}")).isEqualTo("yYy xXx");
+        assertThat(replacer.replace("${i18n.param(    'xXx'   )}")).isEqualTo("yYy xXx");
     }
 }
