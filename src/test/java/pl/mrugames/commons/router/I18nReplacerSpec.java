@@ -36,6 +36,8 @@ public class I18nReplacerSpec {
         assertThat(replacer.replace("${i18n.params('first one','123')}")).isEqualTo("first: first one, second: 123!");
         assertThat(replacer.replace("${i18n.params('first one',     '123')}")).isEqualTo("first: first one, second: 123!");
         assertThat(replacer.replace("${i18n.params(   'first one','123'   )}")).isEqualTo("first: first one, second: 123!");
+
+        assertThat(replacer.replace("${i18n.params('x', 'y')} / ${i18n.params('y', 'x')}")).isEqualTo("first: x, second: y! / first: y, second: x!");
     }
 
     @Test

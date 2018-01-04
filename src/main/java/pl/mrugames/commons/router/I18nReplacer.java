@@ -13,7 +13,7 @@ class I18nReplacer {
     private final MessageSource messageSource;
     private final Pattern simple = Pattern.compile("\\$\\{([A-Za-z0-9._]*?)}");
     private final Pattern argsPattern = Pattern.compile("'(.*?)'");
-    private final Pattern withParams = Pattern.compile("\\$\\{([A-Za-z0-9._]*?)\\(\\s*('.*')*\\s*\\)}");
+    private final Pattern withParams = Pattern.compile("\\$\\{([A-Za-z0-9._]*?)\\(\\s*('.*?')*\\s*\\)}");
 
 
     I18nReplacer(MessageSource messageSource) {
