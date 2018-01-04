@@ -100,33 +100,7 @@ public class Router {
             if (returnValue instanceof String) {
                 returnValue = i18nReplacer.replace((String) returnValue);
             } else if (returnValue.getClass().isAnnotationPresent(Translate.class)) {
-                for (Field field : returnValue.getClass().getDeclaredFields()) {
-                    if (!field.getType().isAssignableFrom(String.class)) {
-                        continue;
-                    } else {
-                        //TODO check if nested class has annotation Translate.
-                    }
-
-                    boolean accessible = field.isAccessible();
-                    if (!accessible) {
-                        field.setAccessible(true);
-                    }
-
-                    String str = (String) field.get(returnValue);
-                    String translated = i18nReplacer.replace(str);
-
-                    if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
-                        throw new IllegalArgumentException("Field " + field.getName() + " is final. Cannot apply translation.");
-                    }
-
-                    if (!str.equals(translated)) {
-                        field.set(returnValue, translated);
-                    }
-
-                    if (!accessible) {
-                        field.setAccessible(false);
-                    }
-                }
+                translateObject(returnValue);
             }
 
             return returnValue;
@@ -185,6 +159,50 @@ public class Router {
         String paramName = parameters.get(index).getName();
 
         return paramName + ": " + constraintViolation.getMessage();
+    }
+
+    private void translateObject(Object returnValue) throws IllegalAccessException {
+
+        for (Field field : returnValue.getClass().getDeclaredFields()) {
+            boolean accessible = field.isAccessible();
+
+            if (!field.getType().isAssignableFrom(String.class)) {
+                if (field.getType().isAnnotationPresent(Translate.class)) {
+                    if (!accessible) {
+                        field.setAccessible(true);
+                    }
+
+                    Object nestedValue = field.get(returnValue);
+
+                    if (!accessible) {
+                        field.setAccessible(false);
+                    }
+
+                    translateObject(nestedValue);
+                }
+
+                continue;
+            }
+
+            if (!accessible) {
+                field.setAccessible(true);
+            }
+
+            String str = (String) field.get(returnValue);
+            String translated = i18nReplacer.replace(str);
+
+            if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
+                throw new IllegalArgumentException("Field " + field.getName() + " is final. Cannot apply translation.");
+            }
+
+            if (!str.equals(translated)) {
+                field.set(returnValue, translated);
+            }
+
+            if (!accessible) {
+                field.setAccessible(false);
+            }
+        }
     }
 
 }

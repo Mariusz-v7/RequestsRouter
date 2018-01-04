@@ -37,4 +37,12 @@ public class I18nSpec {
         assertThat(result.getValue()).isEqualTo("raz");
     }
 
+    @Test
+    public void translateNestedObjectsSpec() throws IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("i18n/model", RequestMethod.GET);
+        ModelToTranslate result = (ModelToTranslate) router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+
+        assertThat(result.getNestedModelToTranslate().getValue()).isEqualTo("dwa");
+    }
+
 }
