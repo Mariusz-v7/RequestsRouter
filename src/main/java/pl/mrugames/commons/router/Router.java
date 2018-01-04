@@ -5,13 +5,16 @@ import org.hibernate.validator.internal.engine.path.NodeImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
+import pl.mrugames.commons.router.annotations.Translate;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,6 +99,34 @@ public class Router {
 
             if (returnValue instanceof String) {
                 returnValue = i18nReplacer.replace((String) returnValue);
+            } else if (returnValue.getClass().isAnnotationPresent(Translate.class)) {
+                for (Field field : returnValue.getClass().getDeclaredFields()) {
+                    if (!field.getType().isAssignableFrom(String.class)) {
+                        continue;
+                    } else {
+                        //TODO check if nested class has annotation Translate.
+                    }
+
+                    boolean accessible = field.isAccessible();
+                    if (!accessible) {
+                        field.setAccessible(true);
+                    }
+
+                    String str = (String) field.get(returnValue);
+                    String translated = i18nReplacer.replace(str);
+
+                    if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
+                        throw new IllegalArgumentException("Field " + field.getName() + " is final. Cannot apply translation.");
+                    }
+
+                    if (!str.equals(translated)) {
+                        field.set(returnValue, translated);
+                    }
+
+                    if (!accessible) {
+                        field.setAccessible(false);
+                    }
+                }
             }
 
             return returnValue;

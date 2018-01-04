@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import pl.mrugames.commons.router.controllers.ModelToTranslate;
 
 import java.util.Collections;
 
@@ -26,6 +27,14 @@ public class I18nSpec {
         String result = (String) router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
 
         assertThat(result).isEqualTo("Prosty ciąg znaków");
+    }
+
+    @Test
+    public void givenRouterReturnsSimpleModel_thenReplaceString() throws IllegalAccessException {
+        RouteInfo routeInfo = router.findRoute("i18n/model", RequestMethod.GET);
+        ModelToTranslate result = (ModelToTranslate) router.navigate(routeInfo, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+
+        assertThat(result.getValue()).isEqualTo("raz");
     }
 
 }

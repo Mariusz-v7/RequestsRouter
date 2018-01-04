@@ -10,4 +10,9 @@ public class I18nController {
     public String returnString() {
         return "${i18n.simple_string}";
     }
+
+    @Route("model")
+    public ModelToTranslate modelToTranslate() {
+        return new ModelToTranslate();
+    }
 }
