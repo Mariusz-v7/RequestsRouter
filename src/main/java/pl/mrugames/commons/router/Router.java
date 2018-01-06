@@ -193,23 +193,25 @@ public class Router {
                 continue;
             }
 
-            if (!accessible) {
-                field.setAccessible(true);
-            }
+            try {
+                if (!accessible) {
+                    field.setAccessible(true);
+                }
 
-            String str = (String) field.get(returnValue);
-            String translated = i18nReplacer.replace(str);
+                String str = (String) field.get(returnValue);
+                String translated = i18nReplacer.replace(str);
 
-            if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
-                throw new IllegalArgumentException("Field " + field.getName() + " is final. Cannot apply translation.");
-            }
+                if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
+                    throw new IllegalArgumentException("Field: " + returnValue.getClass().getSimpleName() + "#" + field.getName() + " is final. Cannot apply translation.");
+                }
 
-            if (!str.equals(translated)) {
-                field.set(returnValue, translated);
-            }
-
-            if (!accessible) {
-                field.setAccessible(false);
+                if (!str.equals(translated)) {
+                    field.set(returnValue, translated);
+                }
+            } finally {
+                if (!accessible) {
+                    field.setAccessible(false);
+                }
             }
         }
     }
