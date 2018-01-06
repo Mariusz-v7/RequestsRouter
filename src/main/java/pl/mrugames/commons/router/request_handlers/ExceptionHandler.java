@@ -14,6 +14,8 @@ import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
+import pl.mrugames.social.i18n.I18nObjectTranslator;
+import pl.mrugames.social.i18n.Translatable;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
@@ -33,10 +35,12 @@ public class ExceptionHandler {
         }
     }
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final List<Handler<Throwable>> handlers;
+    private final I18nObjectTranslator objectTranslator;
 
-    ExceptionHandler() {
+    ExceptionHandler(I18nObjectTranslator objectTranslator) {
+        this.objectTranslator = objectTranslator;
         handlers = new CopyOnWriteArrayList<>();
     }
 
@@ -71,7 +75,19 @@ public class ExceptionHandler {
 
         if (mostSpecific != null) {
             Response sample = mostSpecific.handler.apply(e);
-            return new Response(requestId, sample.getStatus(), sample.getPayload());
+            Object payload = sample.getPayload();
+            if (payload instanceof String) {
+                payload = objectTranslator.translateString((String) payload);
+            } else if (payload instanceof Translatable) {
+                try {
+                    objectTranslator.translate(payload);
+                } catch (IllegalAccessException e1) {
+                    logger.error("Failed to translate object", e1);
+                    return new Response(requestId, ResponseStatus.INTERNAL_ERROR, String.format("Error: %s, %s", e1.getMessage(), ErrorUtil.exceptionStackTraceToString(e1)));
+                }
+            }
+
+            return new Response(requestId, sample.getStatus(), payload);
         }
 
         logger.error("Internal error while processing the request", e);

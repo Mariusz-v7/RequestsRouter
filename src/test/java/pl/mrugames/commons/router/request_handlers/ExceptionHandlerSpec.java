@@ -11,19 +11,21 @@ import org.springframework.security.core.AuthenticationException;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
 import pl.mrugames.commons.router.RouteExceptionWrapper;
+import pl.mrugames.commons.router.controllers.ModelToTranslate;
 import pl.mrugames.commons.router.exceptions.ApplicationException;
 import pl.mrugames.commons.router.exceptions.IncompatibleParameterException;
 import pl.mrugames.commons.router.exceptions.ParameterNotFoundException;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
 import pl.mrugames.commons.router.sessions.SessionDoesNotExistException;
 import pl.mrugames.commons.router.sessions.SessionExpiredException;
+import pl.mrugames.social.i18n.I18nObjectTranslator;
 
 import java.io.IOException;
 import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class ThirdException extends ArithmeticException {
 }
@@ -31,13 +33,17 @@ class ThirdException extends ArithmeticException {
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ExceptionHandlerSpec {
     private ExceptionHandler exceptionHandler;
+    private I18nObjectTranslator objectTranslator;
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void before() {
-        exceptionHandler = new ExceptionHandler();
+        objectTranslator = mock(I18nObjectTranslator.class);
+        doAnswer(e -> e.getArguments()[0]).when(objectTranslator).translateString(any());
+
+        exceptionHandler = new ExceptionHandler(objectTranslator);
         exceptionHandler.init();
     }
 
@@ -218,6 +224,22 @@ public class ExceptionHandlerSpec {
         Response response = exceptionHandler.handle(20, wrapper);
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.BAD_PARAMETERS);
         assertThat(response.getPayload()).isEqualTo("wrapper");
+    }
+
+    @Test
+    public void i18nTranslationTest() {
+        doReturn("translated").when(objectTranslator).translateString("${test}");
+        exceptionHandler.registerHandler(IOException.class, e -> new Response(0, ResponseStatus.BAD_PARAMETERS, "${test}"));
+        Response response = exceptionHandler.handle(20, new IOException());
+        assertThat(response.getPayload()).isEqualTo("translated");
+    }
+
+    @Test
+    public void i18nObjectTranslationTest() throws IllegalAccessException {
+        ModelToTranslate modelToTranslate = new ModelToTranslate();
+        exceptionHandler.registerHandler(IOException.class, e -> new Response(0, ResponseStatus.BAD_PARAMETERS, modelToTranslate));
+        exceptionHandler.handle(20, new IOException());
+        verify(objectTranslator).translate(modelToTranslate);
     }
 
 }
