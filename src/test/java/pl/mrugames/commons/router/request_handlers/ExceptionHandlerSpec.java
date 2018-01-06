@@ -43,7 +43,7 @@ public class ExceptionHandlerSpec {
         objectTranslator = mock(I18nObjectTranslator.class);
         doAnswer(e -> e.getArguments()[0]).when(objectTranslator).translateString(any());
 
-        exceptionHandler = new ExceptionHandler(objectTranslator);
+        exceptionHandler = new ExceptionHandler(objectTranslator, true);
         exceptionHandler.init();
     }
 
