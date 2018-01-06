@@ -12,9 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,13 +21,13 @@ public class Router {
     private final Map<String, RouteInfo> routes;
     private final RouterInitializer initializer;
     private final AntPathMatcher pathMatcher;
-    private final I18nReplacer i18nReplacer;
+    private final I18nObjectTranslator objectTranslator;
 
-    Router(RouterInitializer initializer, AntPathMatcher antPathMatcher, I18nReplacer i18nReplacer) {
+    Router(RouterInitializer initializer, AntPathMatcher antPathMatcher, I18nObjectTranslator objectTranslator) {
         this.initializer = initializer;
         this.routes = new HashMap<>();
         this.pathMatcher = antPathMatcher;
-        this.i18nReplacer = i18nReplacer;
+        this.objectTranslator = objectTranslator;
     }
 
     @PostConstruct
@@ -98,9 +96,9 @@ public class Router {
             }
 
             if (returnValue instanceof String) {
-                returnValue = i18nReplacer.replace((String) returnValue);
+                returnValue = objectTranslator.translateString((String) returnValue);
             } else if (returnValue.getClass().isAnnotationPresent(Translate.class)) {
-                translateObject(returnValue);
+                objectTranslator.translate(returnValue);
             }
 
             return returnValue;
@@ -161,59 +159,6 @@ public class Router {
         return paramName + ": " + constraintViolation.getMessage();
     }
 
-    private void translateObject(Object returnValue) throws IllegalAccessException {
 
-        for (Field field : returnValue.getClass().getDeclaredFields()) {
-            boolean accessible = field.isAccessible();
-
-            if (!field.getType().isAssignableFrom(String.class)) {
-                try {
-                    if (!accessible) {
-                        field.setAccessible(true);
-                    }
-
-                    Object nestedValue = field.get(returnValue);
-
-                    if (field.getType().isAnnotationPresent(Translate.class)) {
-                        translateObject(nestedValue);
-                    } else if (nestedValue instanceof Collection) {
-                        Collection<?> collection = (Collection<?>) nestedValue;
-                        for (Object element : collection) {
-                            if (element.getClass().isAnnotationPresent(Translate.class)) {
-                                translateObject(element);
-                            }
-                        }
-                    }
-                } finally {
-                    if (!accessible) {
-                        field.setAccessible(false);
-                    }
-                }
-
-                continue;
-            }
-
-            try {
-                if (!accessible) {
-                    field.setAccessible(true);
-                }
-
-                String str = (String) field.get(returnValue);
-                String translated = i18nReplacer.replace(str);
-
-                if (!str.equals(translated) && Modifier.isFinal(field.getModifiers())) {
-                    throw new IllegalArgumentException("Field: " + returnValue.getClass().getSimpleName() + "#" + field.getName() + " is final. Cannot apply translation.");
-                }
-
-                if (!str.equals(translated)) {
-                    field.set(returnValue, translated);
-                }
-            } finally {
-                if (!accessible) {
-                    field.setAccessible(false);
-                }
-            }
-        }
-    }
 
 }
