@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 @Configuration
-@ComponentScan("pl.mrugames.commons")
+@ComponentScan({"pl.mrugames.commons", "pl.mrugames.social"})
 public class TestConfiguration {
 
     @Bean

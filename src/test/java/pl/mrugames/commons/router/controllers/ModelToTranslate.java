@@ -1,12 +1,11 @@
 package pl.mrugames.commons.router.controllers;
 
-import pl.mrugames.commons.router.annotations.Translate;
+import pl.mrugames.social.i18n.Translatable;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Translate
-public class ModelToTranslate {
+public class ModelToTranslate implements Translatable {
     private String value = "${i18n.one}";
     private double justTest = 123; // only strings should be replaced
     private final String regularString = "regularString"; // fields without placeholders (${...}) may be final

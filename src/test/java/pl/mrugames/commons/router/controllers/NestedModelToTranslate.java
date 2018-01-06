@@ -1,9 +1,9 @@
 package pl.mrugames.commons.router.controllers;
 
-import pl.mrugames.commons.router.annotations.Translate;
 
-@Translate
-public class NestedModelToTranslate {
+import pl.mrugames.social.i18n.Translatable;
+
+public class NestedModelToTranslate implements Translatable {
     private String value = "${i18n.two}";
 
     public String getValue() {

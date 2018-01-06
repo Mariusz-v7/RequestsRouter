@@ -5,8 +5,9 @@ import org.hibernate.validator.internal.engine.path.NodeImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import pl.mrugames.commons.router.annotations.ArgDefaultValue;
-import pl.mrugames.commons.router.annotations.Translate;
 import pl.mrugames.commons.router.exceptions.RouteConstraintViolationException;
+import pl.mrugames.social.i18n.I18nObjectTranslator;
+import pl.mrugames.social.i18n.Translatable;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
@@ -97,7 +98,7 @@ public class Router {
 
             if (returnValue instanceof String) {
                 returnValue = objectTranslator.translateString((String) returnValue);
-            } else if (returnValue.getClass().isAnnotationPresent(Translate.class)) {
+            } else if (returnValue instanceof Translatable) {
                 objectTranslator.translate(returnValue);
             }
 
