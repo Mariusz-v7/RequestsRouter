@@ -2,12 +2,16 @@ package pl.mrugames.commons.router.controllers;
 
 import pl.mrugames.commons.router.annotations.Translate;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Translate
 public class ModelToTranslate {
     private String value = "${i18n.one}";
     private double justTest = 123; // only strings should be replaced
     private final String regularString = "regularString"; // fields without placeholders (${...}) may be final
     private final NestedModelToTranslate nestedModelToTranslate = new NestedModelToTranslate();
+    private final List<NestedModelToTranslate> list = Arrays.asList(new NestedModelToTranslate(), new NestedModelToTranslate());
 
 
     public String getValue() {
@@ -16,5 +20,9 @@ public class ModelToTranslate {
 
     public NestedModelToTranslate getNestedModelToTranslate() {
         return nestedModelToTranslate;
+    }
+
+    public List<NestedModelToTranslate> getList() {
+        return list;
     }
 }

@@ -167,18 +167,27 @@ public class Router {
             boolean accessible = field.isAccessible();
 
             if (!field.getType().isAssignableFrom(String.class)) {
-                if (field.getType().isAnnotationPresent(Translate.class)) {
+                try {
                     if (!accessible) {
                         field.setAccessible(true);
                     }
 
                     Object nestedValue = field.get(returnValue);
 
+                    if (field.getType().isAnnotationPresent(Translate.class)) {
+                        translateObject(nestedValue);
+                    } else if (nestedValue instanceof Collection) {
+                        Collection<?> collection = (Collection<?>) nestedValue;
+                        for (Object element : collection) {
+                            if (element.getClass().isAnnotationPresent(Translate.class)) {
+                                translateObject(element);
+                            }
+                        }
+                    }
+                } finally {
                     if (!accessible) {
                         field.setAccessible(false);
                     }
-
-                    translateObject(nestedValue);
                 }
 
                 continue;
