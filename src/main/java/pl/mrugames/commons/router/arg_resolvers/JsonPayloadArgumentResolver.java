@@ -51,9 +51,17 @@ public class JsonPayloadArgumentResolver implements PayloadArgumentResolver<Stri
                 throw new ParameterNotFoundException(parameter.getName());
             }
 
-            strNode = "\"" + parameter.getDefaultValue() + "\"";
+            if (parameter.getDefaultValue() == null) {
+                strNode = null;
+            } else {
+                strNode = "\"" + parameter.getDefaultValue() + "\"";
+            }
         } else {
             strNode = node.toString();
+        }
+
+        if (strNode == null) {
+            return new AbstractMap.SimpleEntry<>(parameter.getName(), null);
         }
 
         Object mapped;

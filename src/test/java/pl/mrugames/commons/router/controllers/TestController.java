@@ -12,6 +12,7 @@ import pl.mrugames.commons.router.arg_resolvers.ExampleType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;
+import java.util.Map;
 
 @Controller("app/test")
 public class TestController {
@@ -225,6 +226,11 @@ public class TestController {
 
     @Route("generic-list")
     public void genericList(@Arg("list") List<ExampleType> list) {
+    }
+
+    @Route("required-false")
+    public String requiredFalse(@Arg(value = "data", required = false) Map<String, String> data) {
+        return String.valueOf(data);
     }
 
 }

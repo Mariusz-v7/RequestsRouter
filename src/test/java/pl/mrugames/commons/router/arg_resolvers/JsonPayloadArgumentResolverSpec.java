@@ -189,4 +189,16 @@ public class JsonPayloadArgumentResolverSpec {
         list.forEach(a -> assertThat(a).isInstanceOf(ExampleType.class));
     }
 
+    @Test
+    public void optionalParametersShouldBeSetToNull() {
+        String pattern = "GET:app/test/required-false";
+        RouteInfo routeInfo = routes.get(pattern);
+
+        ObjectNode node = mapper.createObjectNode();
+        String json = node.toString();
+
+        Map<String, Object> result = resolver.resolve(json, routeInfo.getParameters());
+        assertThat(result).containsExactly(MapEntry.entry("data", null));
+    }
+
 }
