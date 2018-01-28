@@ -11,4 +11,6 @@ public @interface Arg {
     String value();
 
     String defaultValue() default ArgDefaultValue.ARG_NULL_DEFAULT_VALUE;
+
+    boolean required() default true;
 }

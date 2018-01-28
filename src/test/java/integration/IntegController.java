@@ -10,6 +10,8 @@ import pl.mrugames.commons.router.annotations.Arg;
 import pl.mrugames.commons.router.annotations.Controller;
 import pl.mrugames.commons.router.annotations.Route;
 
+import java.util.Map;
+
 @Controller("integration")
 public class IntegController {
 
@@ -81,4 +83,15 @@ public class IntegController {
     public Observable<String> subjToObs() {
         return subject.hide();
     }
+
+    @Route("required-false")
+    public String requiredFalse(@Arg(value = "arg", required = false) Map<String, String> data) {
+        return String.valueOf(data);
+    }
+
+    @Route("required-false-with-default")
+    public String requiredFalseWithDefault(@Arg(value = "arg", required = false, defaultValue = "default") String data) {
+        return data;
+    }
+
 }

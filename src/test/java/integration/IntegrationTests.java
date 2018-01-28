@@ -194,4 +194,21 @@ public class IntegrationTests {
         assertThat(subject.hasObservers()).isFalse();
     }
 
+    @Test
+    public void givenParameterNotRequired_whenNavigate_thenInsertNull() {
+        ResponseHandle<String> responseHandle = client.send("integration/required-false");
+        TestObserver<String> testObserver = responseHandle.response.test();
+
+        testObserver.assertValue("null");
+        testObserver.assertNoErrors();
+    }
+
+    @Test
+    public void givenParameterNotRequiredAndDefaultSet_whenNavigate_thenInsertDefault() {
+        ResponseHandle<String> responseHandle = client.send("integration/required-false-with-default");
+        TestObserver<String> testObserver = responseHandle.response.test();
+
+        testObserver.assertValue("default");
+        testObserver.assertNoErrors();
+    }
 }

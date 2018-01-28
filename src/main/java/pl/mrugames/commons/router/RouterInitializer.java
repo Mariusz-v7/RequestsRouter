@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import pl.mrugames.commons.router.annotations.Arg;
-import pl.mrugames.commons.router.annotations.Controller;
-import pl.mrugames.commons.router.annotations.PathVar;
-import pl.mrugames.commons.router.annotations.Route;
+import pl.mrugames.commons.router.annotations.*;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -69,7 +66,11 @@ public class RouterInitializer {
 
                     if (arg != null) {
                         name = arg.value();
-                        defaultValue = arg.defaultValue();
+                        if (!arg.required() && arg.defaultValue().equals(ArgDefaultValue.ARG_NULL_DEFAULT_VALUE)) {
+                            defaultValue = null;
+                        } else {
+                            defaultValue = arg.defaultValue();
+                        }
                         parameterType = RouteParameter.ParameterType.ARG;
                     } else if (pathVar != null) {
                         name = pathVar.value();
