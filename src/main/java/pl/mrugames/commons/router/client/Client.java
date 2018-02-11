@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.RequestType;
 import pl.mrugames.commons.router.Response;
+import pl.mrugames.commons.router.sessions.Session;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,15 +25,20 @@ public class Client {
     private final AtomicLong id;
     private final Connector connector;
     private final long clientId;
+    private final Session session;
 
-    public Client(long defaultTimeout,
-                  Connector connector) {
+    public Client(long defaultTimeout, Connector connector, Session session) {
         this.defaultTimeout = defaultTimeout;
         this.buffer = new ConcurrentHashMap<>();
         this.id = new AtomicLong();
         this.connector = connector;
+        this.session = session;
         connector.onResponseReceive(this::onFrameReceive);
         this.clientId = CLIENT_ID.incrementAndGet();
+    }
+
+    public Session getSession() {
+        return session;
     }
 
     public void closeStream(long id) {

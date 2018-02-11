@@ -11,6 +11,7 @@ import pl.mrugames.commons.router.RequestMethod;
 import pl.mrugames.commons.router.RequestType;
 import pl.mrugames.commons.router.Response;
 import pl.mrugames.commons.router.ResponseStatus;
+import pl.mrugames.commons.router.sessions.Session;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class ClientSpec {
 
         doReturn(true).when(connector).isRunning();
 
-        client = spy(new Client(1000, connector));
+        client = spy(new Client(1000, connector, new Session()));
     }
 
     @Test
