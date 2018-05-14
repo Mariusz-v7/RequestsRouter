@@ -1,10 +1,10 @@
-group 'pl.mrugames.commons'
+group 'pl.mrugames.synapse'
 version '1.1.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 repositories {
     mavenLocal()
@@ -16,6 +16,9 @@ configurations.all {
 }
 
 dependencies {
+    compile group: 'io.projectreactor', name: 'reactor-core', version: '3.1.7.RELEASE'
+
+    //
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.25'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'

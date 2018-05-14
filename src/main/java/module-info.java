@@ -1,0 +1,3 @@
+module pl.mrugames.synapse {
+
+}

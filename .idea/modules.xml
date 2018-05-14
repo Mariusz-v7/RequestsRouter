@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/requests-router.iml" filepath="$PROJECT_DIR$/.idea/modules/requests-router.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/requests-router_main.iml" filepath="$PROJECT_DIR$/.idea/modules/requests-router_main.iml" group="requests-router" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/requests-router_test.iml" filepath="$PROJECT_DIR$/.idea/modules/requests-router_test.iml" group="requests-router" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/synapse.iml" filepath="$PROJECT_DIR$/.idea/modules/synapse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/synapse_main.iml" filepath="$PROJECT_DIR$/.idea/modules/synapse_main.iml" group="synapse" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/synapse_test.iml" filepath="$PROJECT_DIR$/.idea/modules/synapse_test.iml" group="synapse" />
     </modules>
   </component>
 </project>
