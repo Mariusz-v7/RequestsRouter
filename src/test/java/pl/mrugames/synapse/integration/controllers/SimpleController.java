@@ -5,7 +5,7 @@ import pl.mrugames.synapse.annotations.Controller;
 import pl.mrugames.synapse.annotations.Route;
 
 @Controller("test/simple-controller")
-public class SimpleController {
+public class SimpleController extends SuperController {
 
     @Route("route1")
     public void getRoute1() {
@@ -21,5 +21,9 @@ public class SimpleController {
 
     @Route("route2")
     public void getRoute2() {
+    }
+
+    public void notARoute() {
+
     }
 }
