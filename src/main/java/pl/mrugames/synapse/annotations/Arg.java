@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Arg {
     String value();
+
+    String defaultValue() default NullDefaultValueIdentifier.NULL_DEFAULT_VALUE_IDENTIFIER;
 }

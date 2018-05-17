@@ -2,6 +2,8 @@ package pl.mrugames.synapse.parser;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.*;
 
@@ -12,13 +14,16 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 class ControllerParserSpec {
     private ControllerParser controllerParser;
+    private ExpressionParser expressionParser;
 
     @BeforeEach
     void before() {
-        controllerParser = new ControllerParser();
+        expressionParser = mock(ExpressionParser.class);
+        controllerParser = spy(new ControllerParser(expressionParser));
     }
 
     @Test
@@ -95,26 +100,47 @@ class ControllerParserSpec {
     @Test
     void givenMethodHasArgArguments_whenGetRouteParameters_thenReturnProperList() throws NoSuchMethodException, NoSuchAlgorithmException, UnsupportedEncodingException {
         class Ctrl {
-            public void route(@Arg("arg1") String arg1, @PathVar("arg2") Integer arg2, @SessionVar("arg3") Double arg3, Byte sessionArg) {
+            public void route(@Arg(value = "arg1", defaultValue = "a") String arg1,
+                              @PathVar("arg2") Integer arg2,
+                              @SessionVar(value = "arg3", defaultValue = "b") Double arg3,
+                              Byte sessionArg) {
             }
         }
 
         Method method = Ctrl.class.getMethod("route", String.class, Integer.class, Double.class, Byte.class);
-
         assertThat(method).isNotNull();
+
+        ///
+
+        doReturn("default 1").when(controllerParser).resolveDefaultValue("a");
+        doReturn("default 2").when(controllerParser).resolveDefaultValue("b");
 
         List<RouteParameter> routeParameters = controllerParser.getRouteParameters(method);
 
         String lastArgName = DigestUtils.md5DigestAsHex(Byte.class.getCanonicalName().getBytes());
 
         assertThat(routeParameters).containsExactlyInAnyOrder(
-                new RouteParameter("arg1", ParameterResolution.PAYLOAD, String.class),
-                new RouteParameter("arg2", ParameterResolution.PATH_VAR, Integer.class),
-                new RouteParameter("arg3", ParameterResolution.SESSION, Double.class),
-                new RouteParameter(lastArgName, ParameterResolution.SESSION, Byte.class)
-
-
+                new RouteParameter("arg1", ParameterResolution.PAYLOAD, String.class, "default 1"),
+                new RouteParameter("arg2", ParameterResolution.PATH_VAR, Integer.class, null),
+                new RouteParameter("arg3", ParameterResolution.SESSION, Double.class, "default 2"),
+                new RouteParameter(lastArgName, ParameterResolution.SESSION, Byte.class, null)
         );
+    }
+
+    @Test
+    void givenDefaultValueEqualsNullDefaultValueIdentifier_whenResolveDefaultValue_thenReturnNull() {
+        assertThat(controllerParser.resolveDefaultValue(NullDefaultValueIdentifier.NULL_DEFAULT_VALUE_IDENTIFIER)).isNull();
+    }
+
+    @Test
+    void givenSomeExpression_whenResolveValueIdentifier_thenDelegateToExpressionParser() {
+        Object r = new Object();
+
+        Expression expression = mock(Expression.class);
+        doReturn(expression).when(expressionParser).parseExpression("hello");
+        doReturn(r).when(expression).getValue();
+
+        assertThat(controllerParser.resolveDefaultValue("hello")).isSameAs(r);
     }
 
 }

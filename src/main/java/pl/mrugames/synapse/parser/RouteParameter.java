@@ -1,14 +1,35 @@
 package pl.mrugames.synapse.parser;
 
+
+import javax.annotation.Nullable;
+
 public class RouteParameter {
     private final String name;
     private final ParameterResolution resolution;
     private final Class<?> type;
+    private final Object defaultValue;
 
-    public RouteParameter(String name, ParameterResolution resolution, Class<?> type) {
+    public RouteParameter(String name, ParameterResolution resolution, Class<?> type, @Nullable Object defaultValue) {
         this.name = name;
         this.resolution = resolution;
         this.type = type;
+        this.defaultValue = defaultValue;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ParameterResolution getResolution() {
+        return resolution;
+    }
+
+    public Class<?> getType() {
+        return type;
+    }
+
+    public Object getDefaultValue() {
+        return defaultValue;
     }
 
     @Override
@@ -20,7 +41,8 @@ public class RouteParameter {
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resolution != that.resolution) return false;
-        return type != null ? type.equals(that.type) : that.type == null;
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        return defaultValue != null ? defaultValue.equals(that.defaultValue) : that.defaultValue == null;
     }
 
     @Override
@@ -28,6 +50,7 @@ public class RouteParameter {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (resolution != null ? resolution.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (defaultValue != null ? defaultValue.hashCode() : 0);
         return result;
     }
 
@@ -37,6 +60,7 @@ public class RouteParameter {
                 "name='" + name + '\'' +
                 ", resolution=" + resolution +
                 ", type=" + type +
+                ", defaultValue=" + defaultValue +
                 '}';
     }
 }
