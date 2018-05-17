@@ -1,11 +1,13 @@
-package pl.mrugames.synapse;
+package pl.mrugames.synapse.parser;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.mrugames.synapse.annotations.Controller;
-import pl.mrugames.synapse.annotations.Route;
+import org.springframework.util.DigestUtils;
+import pl.mrugames.synapse.annotations.*;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,6 +89,31 @@ class ControllerParserSpec {
                 ctrl.getClass().getMethod("superSuperRoute"),
                 ctrl.getClass().getMethod("superRoute"),
                 ctrl.getClass().getMethod("route")
+        );
+    }
+
+    @Test
+    void givenMethodHasArgArguments_whenGetRouteParameters_thenReturnProperList() throws NoSuchMethodException, NoSuchAlgorithmException, UnsupportedEncodingException {
+        class Ctrl {
+            public void route(@Arg("arg1") String arg1, @PathVar("arg2") Integer arg2, @SessionVar("arg3") Double arg3, Byte sessionArg) {
+            }
+        }
+
+        Method method = Ctrl.class.getMethod("route", String.class, Integer.class, Double.class, Byte.class);
+
+        assertThat(method).isNotNull();
+
+        List<RouteParameter> routeParameters = controllerParser.getRouteParameters(method);
+
+        String lastArgName = DigestUtils.md5DigestAsHex(Byte.class.getCanonicalName().getBytes());
+
+        assertThat(routeParameters).containsExactlyInAnyOrder(
+                new RouteParameter("arg1", ParameterResolution.PAYLOAD, String.class),
+                new RouteParameter("arg2", ParameterResolution.PATH_VAR, Integer.class),
+                new RouteParameter("arg3", ParameterResolution.SESSION, Double.class),
+                new RouteParameter(lastArgName, ParameterResolution.SESSION, Byte.class)
+
+
         );
     }
 

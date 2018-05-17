@@ -1,13 +1,15 @@
-package pl.mrugames.synapse;
+package pl.mrugames.synapse.parser;
 
-import pl.mrugames.synapse.annotations.Controller;
-import pl.mrugames.synapse.annotations.Route;
+import org.springframework.util.DigestUtils;
+import pl.mrugames.synapse.annotations.*;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class ControllerParser {
 
@@ -31,6 +33,33 @@ class ControllerParser {
         return methods.stream()
                 .filter(this::hasRouteAnnotation)
                 .collect(Collectors.toList());
+    }
+
+    List<RouteParameter> getRouteParameters(Method route) {
+        return Stream.of(route.getParameters())
+                .map(this::parseParameter)
+                .collect(Collectors.toList());
+    }
+
+    private RouteParameter parseParameter(Parameter parameter) {
+        Arg arg = parameter.getAnnotation(Arg.class);
+        if (arg != null) {
+            return new RouteParameter(arg.value(), ParameterResolution.PAYLOAD, parameter.getType());
+        }
+
+        PathVar pathVar = parameter.getAnnotation(PathVar.class);
+        if (pathVar != null) {
+            return new RouteParameter(pathVar.value(), ParameterResolution.PATH_VAR, parameter.getType());
+        }
+
+        SessionVar sessionVar = parameter.getAnnotation(SessionVar.class);
+        if (sessionVar != null) {
+            return new RouteParameter(sessionVar.value(), ParameterResolution.SESSION, parameter.getType());
+        }
+
+        String encodedName = DigestUtils.md5DigestAsHex(parameter.getType().getCanonicalName().getBytes());
+
+        return new RouteParameter(encodedName, ParameterResolution.SESSION, parameter.getType());
     }
 
     private List<Method> getSuperRoutes(Class<?> controllerClass, List<Method> methods) {
