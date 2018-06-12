@@ -1,9 +1,11 @@
 package pl.mrugames.synapse.parser;
 
+import com.google.common.primitives.Primitives;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.Controller;
+import pl.mrugames.synapse.annotations.PathVar;
 import pl.mrugames.synapse.annotations.Route;
 
 import java.lang.reflect.Method;
@@ -50,6 +52,15 @@ class ControllerParser {
     }
 
     RouteParameter parseParameter(Parameter parameter) {
+        PathVar pathVar = parameter.getAnnotation(PathVar.class);
+
+        if (pathVar != null) {
+            if (!parameter.getType().isPrimitive() && !Primitives.isWrapperType(parameter.getType())) {
+                throw new IllegalArgumentException("Failed to parse parameter: '" + pathVar.value() + "'. Only primitive types can be set for @PathVar annotation. Type: " + parameter.getType().getCanonicalName());
+            }
+
+            return new RouteParameter(pathVar.value(), ParameterResolution.PATH_VAR, parameter.getType(), null, true);
+        }
 
         String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
         return new RouteParameter(name, ParameterResolution.SESSION, parameter.getType(), null, true);

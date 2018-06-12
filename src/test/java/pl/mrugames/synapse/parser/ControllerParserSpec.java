@@ -150,9 +150,7 @@ class ControllerParserSpec {
         }
 
         Method route = Example.class.getMethod("route", String.class);
-
         Parameter[] parameters = route.getParameters();
-
         RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
 
         String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
@@ -164,4 +162,35 @@ class ControllerParserSpec {
         assertThat(routeParameter.getType()).isEqualTo(String.class);
     }
 
+    @Test
+    void givenPathVarAnnotation_whenParse_thenReturnProperData() throws NoSuchMethodException {
+        class Example {
+            public void route(@PathVar("path-var-name") Integer arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", Integer.class);
+        Parameter[] parameters = route.getParameters();
+        RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
+
+        assertThat(routeParameter.getDefaultValue()).isNull();
+        assertThat(routeParameter.getResolution()).isEqualTo(ParameterResolution.PATH_VAR);
+        assertThat(routeParameter.isRequired()).isTrue();
+        assertThat(routeParameter.getName()).isEqualTo("path-var-name");
+        assertThat(routeParameter.getType()).isEqualTo(Integer.class);
+    }
+
+    @Test
+    void givenPathVarAnnotationOnObjectType_whenParse_thenException() throws NoSuchMethodException {
+        class Example {
+            public void route(@PathVar("path-var-name") Object arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> controllerParser.parseParameter(parameters[0]));
+        assertThat(illegalArgumentException.getMessage())
+                .isEqualTo("Failed to parse parameter: 'path-var-name'. Only primitive types can be set for @PathVar annotation. Type: " + Object.class.getCanonicalName());
+    }
 }

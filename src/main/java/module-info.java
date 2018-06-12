@@ -3,5 +3,6 @@ module pl.mrugames.synapse {
     requires spring.core;
     requires jsr305;
     requires spring.expression;
+    requires com.google.common;
 
 }
