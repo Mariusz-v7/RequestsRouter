@@ -2,14 +2,14 @@ package pl.mrugames.synapse.parser;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.*;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.security.NoSuchAlgorithmException;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,41 +98,6 @@ class ControllerParserSpec {
     }
 
     @Test
-    void givenMethodHasArgArguments_whenGetRouteParameters_thenReturnProperList() throws NoSuchMethodException, NoSuchAlgorithmException, UnsupportedEncodingException {
-        class Ctrl {
-            public void route(@Arg(value = "arg1", defaultValue = "a") String arg1,
-                              @PathVar("arg2") Integer arg2,
-                              @SessionVar(value = "arg3", defaultValue = "b") Double arg3,
-                              Byte sessionArg) {
-            }
-        }
-
-        Method method = Ctrl.class.getMethod("route", String.class, Integer.class, Double.class, Byte.class);
-        assertThat(method).isNotNull();
-
-        ///
-
-        doReturn("default 1").when(controllerParser).resolveDefaultValue("a");
-        doReturn("default 2").when(controllerParser).resolveDefaultValue("b");
-
-        List<RouteParameter> routeParameters = controllerParser.getRouteParameters(method);
-
-        String lastArgName = DigestUtils.md5DigestAsHex(Byte.class.getCanonicalName().getBytes());
-
-        assertThat(routeParameters).containsExactlyInAnyOrder(
-                new RouteParameter("arg1", ParameterResolution.PAYLOAD, String.class, "default 1"),
-                new RouteParameter("arg2", ParameterResolution.PATH_VAR, Integer.class, null),
-                new RouteParameter("arg3", ParameterResolution.SESSION, Double.class, "default 2"),
-                new RouteParameter(lastArgName, ParameterResolution.SESSION, Byte.class, null)
-        );
-    }
-
-    @Test
-    void givenDefaultValueEqualsNullDefaultValueIdentifier_whenResolveDefaultValue_thenReturnNull() {
-        assertThat(controllerParser.resolveDefaultValue(NullDefaultValueIdentifier.NULL_DEFAULT_VALUE_IDENTIFIER)).isNull();
-    }
-
-    @Test
     void givenSomeExpression_whenResolveValueIdentifier_thenDelegateToExpressionParser() {
         Object r = new Object();
 
@@ -141,6 +106,39 @@ class ControllerParserSpec {
         doReturn(r).when(expression).getValue();
 
         assertThat(controllerParser.resolveDefaultValue("hello")).isSameAs(r);
+    }
+
+    @Test
+    void itShouldRecognizeAllParameterTypes_andReturnProperList() throws NoSuchMethodException {
+        class Example {
+            public void route(String normal, @PathVar("") String pathVar, @Arg("") String arg, @SessionVar("") String sessionVar) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", String.class, String.class, String.class, String.class);
+
+        List<RouteParameter> expected = Arrays.asList(
+                mock(RouteParameter.class),
+                mock(RouteParameter.class),
+                mock(RouteParameter.class),
+                mock(RouteParameter.class)
+        );
+
+        doReturn(expected.get(0), expected.get(1), expected.get(2), expected.get(3)).when(controllerParser).parseParameter(any());
+
+        List<RouteParameter> result = controllerParser.getRouteParameters(route);
+        assertThat(result).containsExactlyInAnyOrder(expected.toArray(new RouteParameter[expected.size() - 1]));
+
+        ArgumentCaptor<Parameter> captor = ArgumentCaptor.forClass(Parameter.class);
+        verify(controllerParser, times(expected.size())).parseParameter(captor.capture());
+
+        List<Parameter> allValues = captor.getAllValues();
+        assertThat(allValues).hasSize(expected.size());
+
+        assertThat(allValues.get(0).getAnnotations()).hasSize(0);
+        assertThat(allValues.get(1).isAnnotationPresent(PathVar.class)).isTrue();
+        assertThat(allValues.get(2).isAnnotationPresent(Arg.class)).isTrue();
+        assertThat(allValues.get(3).isAnnotationPresent(SessionVar.class)).isTrue();
     }
 
 }

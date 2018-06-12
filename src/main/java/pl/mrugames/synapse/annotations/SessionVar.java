@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface SessionVar {
     String value();
 
-    String defaultValue() default NullDefaultValueIdentifier.NULL_DEFAULT_VALUE_IDENTIFIER;
+    String defaultValue() default "";
 }
