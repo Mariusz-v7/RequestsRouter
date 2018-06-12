@@ -2,6 +2,7 @@ package pl.mrugames.synapse.parser;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.Controller;
 import pl.mrugames.synapse.annotations.Route;
 
@@ -50,7 +51,8 @@ class ControllerParser {
 
     RouteParameter parseParameter(Parameter parameter) {
 
-        return null;
+        String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
+        return new RouteParameter(name, ParameterResolution.SESSION, parameter.getType(), null, true);
     }
 
     Object resolveDefaultValue(String defaultValue) {

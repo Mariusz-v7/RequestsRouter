@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.*;
 
 import java.lang.reflect.Method;
@@ -139,6 +140,28 @@ class ControllerParserSpec {
         assertThat(allValues.get(1).isAnnotationPresent(PathVar.class)).isTrue();
         assertThat(allValues.get(2).isAnnotationPresent(Arg.class)).isTrue();
         assertThat(allValues.get(3).isAnnotationPresent(SessionVar.class)).isTrue();
+    }
+
+    @Test
+    void noAnnotationArgumentParsing() throws NoSuchMethodException {
+        class Example {
+            public void route(String arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", String.class);
+
+        Parameter[] parameters = route.getParameters();
+
+        RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
+
+        String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
+
+        assertThat(routeParameter.getDefaultValue()).isNull();
+        assertThat(routeParameter.getResolution()).isEqualTo(ParameterResolution.SESSION);
+        assertThat(routeParameter.isRequired()).isTrue();
+        assertThat(routeParameter.getName()).isEqualTo(name);
+        assertThat(routeParameter.getType()).isEqualTo(String.class);
     }
 
 }
