@@ -13,6 +13,7 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +56,15 @@ class ControllerParser {
         PathVar pathVar = parameter.getAnnotation(PathVar.class);
 
         if (pathVar != null) {
+            if (pathVar.value().isEmpty()) {
+                throw new IllegalArgumentException("Failed to parse parameter. Empty value cannot be provided for @PathVar annotation.");
+            }
+
+            Pattern pattern = Pattern.compile("[-A-Za-z0-9_]+");
+            if (!pattern.matcher(pathVar.value()).matches()) {
+                throw new IllegalArgumentException("Failed to parse parameter. Value '" + pathVar.value() + "' is not allowed.");
+            }
+
             if (!parameter.getType().isPrimitive() && !Primitives.isWrapperType(parameter.getType())) {
                 throw new IllegalArgumentException("Failed to parse parameter: '" + pathVar.value() + "'. Only primitive types can be set for @PathVar annotation. Type: " + parameter.getType().getCanonicalName());
             }

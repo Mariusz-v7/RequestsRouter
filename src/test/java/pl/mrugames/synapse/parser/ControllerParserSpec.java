@@ -193,4 +193,33 @@ class ControllerParserSpec {
         assertThat(illegalArgumentException.getMessage())
                 .isEqualTo("Failed to parse parameter: 'path-var-name'. Only primitive types can be set for @PathVar annotation. Type: " + Object.class.getCanonicalName());
     }
+
+    @Test
+    void givenPathVarAnnotationWithEmptyName_whenParse_thenException() throws NoSuchMethodException {
+        class Example {
+            public void route(@PathVar("") Object arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> controllerParser.parseParameter(parameters[0]));
+        assertThat(illegalArgumentException.getMessage())
+                .isEqualTo("Failed to parse parameter. Empty value cannot be provided for @PathVar annotation.");
+    }
+
+    @Test
+        // value should match regexp
+    void givenPathVarAnnotationWithBadValue_whenParse_thenException() throws NoSuchMethodException {
+        class Example {
+            public void route(@PathVar("{'/") Object arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> controllerParser.parseParameter(parameters[0]));
+        assertThat(illegalArgumentException.getMessage())
+                .isEqualTo("Failed to parse parameter. Value '{'/' is not allowed.");
+    }
 }
