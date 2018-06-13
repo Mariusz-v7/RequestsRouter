@@ -4,13 +4,12 @@ import com.google.common.primitives.Primitives;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
+import pl.mrugames.synapse.RequestMethod;
 import pl.mrugames.synapse.annotations.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,6 +19,28 @@ class ControllerParser {
 
     ControllerParser(ExpressionParser expressionParser) {
         this.expressionParser = expressionParser;
+    }
+
+    Map<RequestMethod, Map<String, RouteData>> parseRoutes(List<Object> controllers) {
+        /* TODO:
+        {
+            GET: {
+                'route1/xxx': route data,
+                'route2/yyy': route data,
+            },
+            POST: {
+                'route1/...': route data,
+                'route2/...': route data,
+            }
+        }
+         */
+
+        Map<RequestMethod, Map<String, RouteData>> map = new HashMap<>();
+        for (RequestMethod method : RequestMethod.values()) {
+            map.put(method, new HashMap<>());
+        }
+
+        return Collections.unmodifiableMap(map);
     }
 
     Controller getControllerAnnotation(Object controllerInstance) {

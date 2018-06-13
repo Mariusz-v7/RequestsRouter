@@ -7,12 +7,15 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.DigestUtils;
+import pl.mrugames.synapse.RequestMethod;
 import pl.mrugames.synapse.annotations.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -306,6 +309,23 @@ class ControllerParserSpec {
         assertThat(routeParameter.isRequired()).isTrue();
         assertThat(routeParameter.getType()).isEqualTo(Object.class);
         assertThat(routeParameter.getName()).isEqualTo(name);
+    }
+
+    @Test
+    void givenNoRoutes_whenParseRoutes_thenReturnMapOfEmptyMaps() {
+        Map<RequestMethod, Map<String, RouteData>> requestMethodMapMap = controllerParser.parseRoutes(Collections.emptyList());
+
+        for (RequestMethod method : RequestMethod.values()) {
+            assertThat(requestMethodMapMap.containsKey(method));
+            assertThat(requestMethodMapMap.get(method)).isEmpty();
+        }
+    }
+
+    @Test
+    void parseRoutesShouldReturnUnmodifiableMap() {
+        Map<RequestMethod, Map<String, RouteData>> requestMethodMapMap = controllerParser.parseRoutes(Collections.emptyList());
+
+        assertThrows(UnsupportedOperationException.class, () -> requestMethodMapMap.remove(RequestMethod.GET));
     }
 
 }
