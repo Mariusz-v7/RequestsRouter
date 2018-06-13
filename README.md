@@ -5,7 +5,7 @@ Paths provided in `@Controller` and `@Route` are joined.
 Paths are always normalized to start with a slash and end without it. Multiple repeated slashes are also removed.
 
 E.g.
-`@Controller("ctrl")` and `@Route("route")` will be resolved to `/path/route`
+`@Controller("path")` and `@Route("route")` will be resolved to `/path/route`
 
 `@Controller` and `@Route` will be resolved to `/`.
 
