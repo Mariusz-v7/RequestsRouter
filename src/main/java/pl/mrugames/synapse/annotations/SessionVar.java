@@ -8,7 +8,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SessionVar {
-    String value();
+    String value() default "";
 
-    String defaultValue() default "";
+    String defaultValue() default "null";
+
+    boolean required() default true;
 }

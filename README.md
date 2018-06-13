@@ -22,3 +22,8 @@
 - `default value` resolves to `null` by default
 - `default value` is parsed by Spring's expression parser
 
+4. `@SessionVar(value = "", defaultValue = "null", required = true)`
+- `name` is optional
+- `name` is computed by calculating MD5 sum from cannonical class name if it isn't provided
+- `default value` resolves to `null` by default
+- `default value` is parsed by Spring's expression parser

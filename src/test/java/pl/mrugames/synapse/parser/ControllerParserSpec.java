@@ -265,4 +265,47 @@ class ControllerParserSpec {
 
         assertThat(illegalArgumentException.getMessage()).isEqualTo("Failed to parse parameter. Name has to be provided for @Arg annotation");
     }
+
+    @Test
+    void givenSessionVarAnnotation_whenParse_thenReturnProperData() throws NoSuchMethodException {
+        class Example {
+            public void route(@SessionVar("some name") Object arg) {
+            }
+        }
+
+        doReturn(null).when(controllerParser).resolveDefaultValue("null");
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
+
+        assertThat(routeParameter.getResolution()).isEqualTo(ParameterResolution.SESSION);
+        assertThat(routeParameter.getDefaultValue()).isNull();
+        assertThat(routeParameter.isRequired()).isTrue();
+        assertThat(routeParameter.getType()).isEqualTo(Object.class);
+        assertThat(routeParameter.getName()).isEqualTo("some name");
+    }
+
+    @Test
+    void givenSessionVarAnnotationWithoutName_whenParse_thenResolveToMD5() throws NoSuchMethodException {
+        class Example {
+            public void route(@SessionVar Object arg) {
+            }
+        }
+
+        doReturn(null).when(controllerParser).resolveDefaultValue("null");
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
+
+        String name = DigestUtils.md5DigestAsHex(Object.class.getCanonicalName().getBytes());
+
+        assertThat(routeParameter.getResolution()).isEqualTo(ParameterResolution.SESSION);
+        assertThat(routeParameter.getDefaultValue()).isNull();
+        assertThat(routeParameter.isRequired()).isTrue();
+        assertThat(routeParameter.getType()).isEqualTo(Object.class);
+        assertThat(routeParameter.getName()).isEqualTo(name);
+    }
+
 }

@@ -4,10 +4,7 @@ import com.google.common.primitives.Primitives;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
-import pl.mrugames.synapse.annotations.Arg;
-import pl.mrugames.synapse.annotations.Controller;
-import pl.mrugames.synapse.annotations.PathVar;
-import pl.mrugames.synapse.annotations.Route;
+import pl.mrugames.synapse.annotations.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -83,8 +80,14 @@ class ControllerParser {
             return new RouteParameter(arg.value(), ParameterResolution.PAYLOAD, parameter.getType(), defaultVal, arg.required());
         }
 
-        String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
-        return new RouteParameter(name, ParameterResolution.SESSION, parameter.getType(), null, true);
+        SessionVar sessionVar = parameter.getAnnotation(SessionVar.class);
+        if (sessionVar != null) {
+
+            Object defaultVal = resolveDefaultValue(sessionVar.defaultValue());
+            return new RouteParameter(computeName(sessionVar.value(), parameter.getType()), ParameterResolution.SESSION, parameter.getType(), defaultVal, sessionVar.required());
+        }
+
+        return new RouteParameter(computeName("", parameter.getType()), ParameterResolution.SESSION, parameter.getType(), null, true);
     }
 
     Object resolveDefaultValue(String defaultValue) {
@@ -107,5 +110,13 @@ class ControllerParser {
 
     private boolean hasRouteAnnotation(Method method) {
         return method.isAnnotationPresent(Route.class);
+    }
+
+    private String computeName(String annotationValue, Class<?> type) {
+        if (annotationValue.isEmpty()) {
+            return DigestUtils.md5DigestAsHex(type.getCanonicalName().getBytes());
+        }
+
+        return annotationValue;
     }
 }
