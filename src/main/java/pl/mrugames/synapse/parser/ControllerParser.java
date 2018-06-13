@@ -1,6 +1,8 @@
 package pl.mrugames.synapse.parser;
 
 import com.google.common.primitives.Primitives;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class ControllerParser {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ExpressionParser expressionParser;
 
     ControllerParser(ExpressionParser expressionParser) {
@@ -22,6 +25,7 @@ class ControllerParser {
     }
 
     Map<RequestMethod, Map<String, RouteData>> parseRoutes(List<Object> controllers) {
+        logger.info("Creating routes map...");
 
         Map<RequestMethod, Map<String, RouteData>> map = new HashMap<>();
         for (RequestMethod method : RequestMethod.values()) {
@@ -44,9 +48,13 @@ class ControllerParser {
                     throw new IllegalStateException("Failed to create routes map. Duplicated route '" + path + "' for method " + routeAnnotation.method() + ".");
                 }
 
+                logger.info("Mapping {}#{} to {}:{}", controller.getClass().getName(), route.getName(), routeAnnotation.method(), path);
+
                 pathToRouteData.put(path, null); //todo: resolve RouteData
             }
         }
+
+        logger.info("Creating routes map... Done!");
 
         return Collections.unmodifiableMap(map);
     }

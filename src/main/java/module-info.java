@@ -4,5 +4,6 @@ module pl.mrugames.synapse {
     requires jsr305;
     requires spring.expression;
     requires com.google.common;
+    requires slf4j.api;
 
 }
