@@ -50,13 +50,20 @@ class ControllerParser {
 
                 logger.info("Mapping {}#{} to {}:{}", controller.getClass().getName(), route.getName(), routeAnnotation.method(), path);
 
-                pathToRouteData.put(path, null); //todo: resolve RouteData
+                RouteData routeData = resolveRouteData(routeAnnotation, route);
+                pathToRouteData.put(path, routeData);
             }
         }
 
         logger.info("Creating routes map... Done!");
 
         return Collections.unmodifiableMap(map);
+    }
+
+    RouteData resolveRouteData(Route route, Method method) {
+        //TODO : parameters, etc
+        //TODO: implement later, when there is clear what data is needed.
+        return null;
     }
 
     String normalizePath(String path) {

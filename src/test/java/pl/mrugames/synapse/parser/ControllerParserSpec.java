@@ -405,12 +405,43 @@ class ControllerParserSpec {
             }
         }
 
-
         IllegalStateException illegalStateException = assertThrows(IllegalStateException.class, () -> controllerParser.parseRoutes(Collections.singletonList(
                 new Controller1()
         )));
 
         assertThat(illegalStateException.getMessage()).isEqualTo("Failed to create routes map. Duplicated route '/route1' for method GET.");
+    }
+
+    @Test
+    void properRouteDataIsPutToMap() throws NoSuchMethodException {
+        @Controller
+        class Controller1 {
+            @Route("route1")
+            public void route1() {
+            }
+
+            @Route("route2")
+            public void route2() {
+            }
+        }
+
+        Method route1 = Controller1.class.getMethod("route1");
+        Route routeAnnotation1 = route1.getAnnotation(Route.class);
+
+        Method route2 = Controller1.class.getMethod("route2");
+        Route routeAnnotation2 = route2.getAnnotation(Route.class);
+
+        RouteData routeData1 = mock(RouteData.class);
+        RouteData routeData2 = mock(RouteData.class);
+
+        doReturn(routeData1).when(controllerParser).resolveRouteData(routeAnnotation1, route1);
+        doReturn(routeData2).when(controllerParser).resolveRouteData(routeAnnotation2, route2);
+
+        Map<RequestMethod, Map<String, RouteData>> requestMethodMapMap = controllerParser.parseRoutes(Collections.singletonList(new Controller1()));
+
+        Map<String, RouteData> stringRouteDataMap = requestMethodMapMap.get(RequestMethod.GET);
+        assertThat(stringRouteDataMap.get("/route1")).isSameAs(routeData1);
+        assertThat(stringRouteDataMap.get("/route2")).isSameAs(routeData2);
     }
 
 }
