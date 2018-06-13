@@ -328,4 +328,68 @@ class ControllerParserSpec {
         assertThrows(UnsupportedOperationException.class, () -> requestMethodMapMap.remove(RequestMethod.GET));
     }
 
+    @Test
+    void shouldProperlyParseRoutes() {
+        @Controller
+        class Controller1 {
+            @Route("route1")
+            public void route1() { // resolves to route1
+            }
+
+            @Route("route2")
+            public void route2() { // resolves to route2
+            }
+
+            @Route(value = "route1", method = RequestMethod.POST)
+            public void route1Post() { // resolves to route1 (POST)
+            }
+
+            @Route(method = RequestMethod.POST)
+            public void rootPost() { // resolves to / (POST)
+            }
+        }
+
+        @Controller("main")
+        class Controller2 {
+            @Route
+            public void main() { // resolves to main
+            }
+
+            @Route("route1")
+            public void route1() { // resolves to main/route1
+            }
+
+            @Route(value = "post", method = RequestMethod.POST)
+            public void post() { // resolves to main/post
+            }
+
+        }
+
+        Map<RequestMethod, Map<String, RouteData>> requestMethodMapMap = controllerParser.parseRoutes(Arrays.asList(
+                new Controller1(),
+                new Controller2()
+        ));
+
+        Map<String, RouteData> gets = requestMethodMapMap.get(RequestMethod.GET);
+        Map<String, RouteData> posts = requestMethodMapMap.get(RequestMethod.POST);
+
+        assertThat(gets).containsOnlyKeys("/route1", "/route2", "/main", "/main/route1");
+        assertThat(posts).containsOnlyKeys("/route1", "/main/post", "/");
+    }
+
+    @Test
+    void pathNormalizationTest() {
+        assertThat(controllerParser.normalizePath("/path")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("path/")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("/path/")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("path")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("")).isEqualTo("/");
+        assertThat(controllerParser.normalizePath("/")).isEqualTo("/");
+        assertThat(controllerParser.normalizePath("//")).isEqualTo("/");
+        assertThat(controllerParser.normalizePath("//path")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("path//")).isEqualTo("/path");
+        assertThat(controllerParser.normalizePath("path//route")).isEqualTo("/path/route");
+        assertThat(controllerParser.normalizePath("path///route")).isEqualTo("/path/route");
+    }
+
 }

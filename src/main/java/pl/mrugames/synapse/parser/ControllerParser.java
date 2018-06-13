@@ -22,25 +22,48 @@ class ControllerParser {
     }
 
     Map<RequestMethod, Map<String, RouteData>> parseRoutes(List<Object> controllers) {
-        /* TODO:
-        {
-            GET: {
-                'route1/xxx': route data,
-                'route2/yyy': route data,
-            },
-            POST: {
-                'route1/...': route data,
-                'route2/...': route data,
-            }
-        }
-         */
 
         Map<RequestMethod, Map<String, RouteData>> map = new HashMap<>();
         for (RequestMethod method : RequestMethod.values()) {
             map.put(method, new HashMap<>());
         }
 
+        for (Object controller : controllers) {
+            Controller controllerAnnotation = getControllerAnnotation(controller);
+            String mainRoute = controllerAnnotation.value();
+
+            List<Method> routes = getRoutes(controller);
+            for (Method route : routes) {
+                Route routeAnnotation = route.getAnnotation(Route.class);
+
+                String path = normalizePath(mainRoute + "/" + routeAnnotation.value());
+
+                Map<String, RouteData> pathToRouteData = map.get(routeAnnotation.method());
+
+                pathToRouteData.put(path, null); //todo: resolve RouteData
+                //todo: if path already exists -> throw exception;
+            }
+        }
+
         return Collections.unmodifiableMap(map);
+    }
+
+    String normalizePath(String path) {
+        path = path.replaceAll("/+", "/"); // replace duplicated slashes
+
+        if (path.equals("/") || path.isEmpty()) {
+            return "/";
+        }
+
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        return path;
     }
 
     Controller getControllerAnnotation(Object controllerInstance) {
