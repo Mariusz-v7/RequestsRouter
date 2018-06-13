@@ -40,8 +40,11 @@ class ControllerParser {
 
                 Map<String, RouteData> pathToRouteData = map.get(routeAnnotation.method());
 
+                if (pathToRouteData.containsKey(path)) {
+                    throw new IllegalStateException("Failed to create routes map. Duplicated route '" + path + "' for method " + routeAnnotation.method() + ".");
+                }
+
                 pathToRouteData.put(path, null); //todo: resolve RouteData
-                //todo: if path already exists -> throw exception;
             }
         }
 

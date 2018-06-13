@@ -392,4 +392,25 @@ class ControllerParserSpec {
         assertThat(controllerParser.normalizePath("path///route")).isEqualTo("/path/route");
     }
 
+    @Test
+    void givenDuplicatePath_whenParse_thenException() {
+        @Controller
+        class Controller1 {
+            @Route("route1")
+            void route1() {
+            }
+
+            @Route("route1")
+            void route1Duplicate() {
+            }
+        }
+
+
+        IllegalStateException illegalStateException = assertThrows(IllegalStateException.class, () -> controllerParser.parseRoutes(Collections.singletonList(
+                new Controller1()
+        )));
+
+        assertThat(illegalStateException.getMessage()).isEqualTo("Failed to create routes map. Duplicated route '/route1' for method GET.");
+    }
+
 }
