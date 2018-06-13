@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.DigestUtils;
 import pl.mrugames.synapse.annotations.*;
 
@@ -221,5 +222,47 @@ class ControllerParserSpec {
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> controllerParser.parseParameter(parameters[0]));
         assertThat(illegalArgumentException.getMessage())
                 .isEqualTo("Failed to parse parameter. Value '{'/' is not allowed.");
+    }
+
+    @Test
+    void expressionParserShouldResolveToNull() {
+        expressionParser = new SpelExpressionParser();
+        Expression expression = expressionParser.parseExpression("null");
+
+        assertThat(expression.getValue()).isNull();
+    }
+
+    @Test
+    void givenArgAnnotation_whenParse_thenReturnProperData() throws NoSuchMethodException {
+        class Example {
+            public void route(@Arg("argument") Object arg) {
+            }
+        }
+
+        doReturn(null).when(controllerParser).resolveDefaultValue("null");
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        RouteParameter routeParameter = controllerParser.parseParameter(parameters[0]);
+
+        assertThat(routeParameter.getResolution()).isEqualTo(ParameterResolution.PAYLOAD);
+        assertThat(routeParameter.getDefaultValue()).isNull();
+        assertThat(routeParameter.isRequired()).isTrue();
+        assertThat(routeParameter.getType()).isEqualTo(Object.class);
+        assertThat(routeParameter.getName()).isEqualTo("argument");
+    }
+
+    @Test
+    void givenArgAnnotationWithEmptyName_whenParse_thenException() throws NoSuchMethodException {
+        class Example {
+            public void route(@Arg("") Object arg) {
+            }
+        }
+
+        Method route = Example.class.getMethod("route", Object.class);
+        Parameter[] parameters = route.getParameters();
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> controllerParser.parseParameter(parameters[0]));
+
+        assertThat(illegalArgumentException.getMessage()).isEqualTo("Failed to parse parameter. Name has to be provided for @Arg annotation");
     }
 }

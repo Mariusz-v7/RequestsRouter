@@ -4,6 +4,7 @@ import com.google.common.primitives.Primitives;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.util.DigestUtils;
+import pl.mrugames.synapse.annotations.Arg;
 import pl.mrugames.synapse.annotations.Controller;
 import pl.mrugames.synapse.annotations.PathVar;
 import pl.mrugames.synapse.annotations.Route;
@@ -70,6 +71,16 @@ class ControllerParser {
             }
 
             return new RouteParameter(pathVar.value(), ParameterResolution.PATH_VAR, parameter.getType(), null, true);
+        }
+
+        Arg arg = parameter.getAnnotation(Arg.class);
+        if (arg != null) {
+            if (arg.value().isEmpty()) {
+                throw new IllegalArgumentException("Failed to parse parameter. Name has to be provided for @Arg annotation");
+            }
+
+            Object defaultVal = resolveDefaultValue(arg.defaultValue());
+            return new RouteParameter(arg.value(), ParameterResolution.PAYLOAD, parameter.getType(), defaultVal, arg.required());
         }
 
         String name = DigestUtils.md5DigestAsHex(String.class.getCanonicalName().getBytes());
